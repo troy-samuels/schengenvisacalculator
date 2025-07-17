@@ -4,8 +4,6 @@ import { useState, useEffect } from "react"
 import { Plus, Calendar, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format, differenceInDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import Link from "next/link"
@@ -13,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/hooks/useAuth"
 import { SaveProgressModal } from "@/components/save-progress-modal"
 import { useSchengenCalculator } from "@/lib/hooks/useSchengenCalculator"
+import { EnhancedCalendarPopover } from "@/components/enhanced-calendar-popover"
 
 interface VisaEntry {
   id: string
@@ -201,33 +200,28 @@ export default function SchengenVisaCalculator() {
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntry[]) => {
-    // Convert entries to Trip format for the calculator
-    const tripsForCalculation = updatedEntries
-      .filter((entry) => entry.country && entry.startDate && entry.endDate)
-      .map((entry) => ({
-        id: entry.id,
-        country: entry.country,
-        startDate: entry.startDate!,
-        endDate: entry.endDate!,
-        days: entry.days,
-      }))
+    // Update each entry with cumulative calculated values
+    const entriesWithCalculations = updatedEntries.map((entry, index) => {
+      // Get all completed trips up to and including current row
+      const tripsUpToThisRow = updatedEntries
+        .slice(0, index + 1)
+        .filter((e) => e.country && e.startDate && e.endDate)
+        .map((e) => ({
+          id: e.id,
+          country: e.country,
+          startDate: e.startDate!,
+          endDate: e.endDate!,
+          days: e.days,
+        }))
 
-    // Calculate overall compliance using all valid trips
-    const compliance = calculateCompliance(tripsForCalculation)
-
-    // Update each entry with calculated values
-    const entriesWithCalculations = updatedEntries.map((entry) => {
-      // Calculate individual entry days in last 180 days
-      const entryDaysInLast180 =
-        entry.country && entry.startDate && entry.endDate
-          ? calculateSingleEntryCompliance({
-              id: entry.id,
-              country: entry.country,
-              startDate: entry.startDate,
-              endDate: entry.endDate,
-              days: entry.days,
-            })
-          : 0
+      // Calculate cumulative compliance for trips up to this row
+      const cumulativeCompliance = calculateCompliance(tripsUpToThisRow)
+      
+      // Calculate cumulative days in last 180 days
+      const cumulativeDaysInLast180 = cumulativeCompliance.totalDaysUsed
+      
+      // Calculate remaining days (90 - cumulative days, but not less than 0)
+      const cumulativeDaysRemaining = Math.max(0, 90 - cumulativeDaysInLast180)
 
       // Determine active column based on completion state
       let activeColumn: VisaEntry["activeColumn"] = "country"
@@ -241,8 +235,8 @@ export default function SchengenVisaCalculator() {
 
       return {
         ...entry,
-        daysInLast180: entryDaysInLast180,
-        daysRemaining: compliance.daysRemaining, // This should now update correctly
+        daysInLast180: cumulativeDaysInLast180,
+        daysRemaining: cumulativeDaysRemaining,
         activeColumn,
       }
     })
@@ -520,88 +514,17 @@ export default function SchengenVisaCalculator() {
                     <div
                       className={`${getColumnStyles(entry, "dates")} rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}
                     >
-                      <Popover open={isPopoverOpen(entry.id)} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={!entry.country}
-                          >
-                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
-                            <span className="truncate">
-                              {!entry.country
-                                ? "Select country first"
-                                : entry.startDate && entry.endDate
-                                  ? `${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`
-                                  : entry.startDate
-                                    ? `${format(entry.startDate, "MMM dd")} - End date`
-                                    : "Select dates"}
-                            </span>
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
-                          <div className="p-6">
-                            <CalendarComponent
-                              mode="range"
-                              selected={{
-                                from: entry.startDate || undefined,
-                                to: entry.endDate || undefined,
-                              }}
-                              onSelect={(range) => updateDateRange(entry.id, range)}
-                              numberOfMonths={2}
-                              className="rounded-none border-0"
-                              classNames={{
-                                months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                                month: "space-y-4",
-                                caption: "flex justify-center pt-1 relative items-center mb-4",
-                                caption_label: "text-lg font-semibold text-gray-900",
-                                nav: "space-x-1 flex items-center",
-                                nav_button:
-                                  "h-8 w-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors",
-                                nav_button_previous: "absolute left-0",
-                                nav_button_next: "absolute right-0",
-                                table: "w-full border-collapse space-y-1",
-                                head_row: "flex mb-2",
-                                head_cell: "text-gray-600 rounded-md w-10 font-medium text-sm text-center",
-                                row: "flex w-full mt-2",
-                                cell: "text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                                day: "h-10 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-gray-100 rounded-lg transition-colors",
-                                day_range_start:
-                                  "day-range-start bg-slate-800 text-white hover:bg-slate-800 hover:text-white focus:bg-slate-800 focus:text-white rounded-lg",
-                                day_range_end:
-                                  "day-range-end bg-slate-800 text-white hover:bg-slate-800 hover:text-white focus:bg-slate-800 focus:text-white rounded-lg",
-                                day_selected:
-                                  "bg-slate-800 text-white hover:bg-slate-800 hover:text-white focus:bg-slate-800 focus:text-white rounded-lg",
-                                day_today: "bg-gray-100 text-gray-900 font-semibold",
-                                day_outside: "text-gray-400 opacity-50",
-                                day_disabled: "text-gray-400 opacity-50",
-                                day_range_middle:
-                                  "aria-selected:bg-slate-100 aria-selected:text-slate-900 hover:bg-slate-100",
-                                day_hidden: "invisible",
-                              }}
-                            />
-                            <div className="flex gap-3 mt-6 pt-4 border-t">
-                              <Button
-                                variant="outline"
-                                className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
-                                onClick={() => {
-                                  updateDateRange(entry.id, undefined)
-                                }}
-                              >
-                                Clear
-                              </Button>
-                              <Button
-                                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
-                                onClick={() => {
-                                  setPopoverOpen(entry.id, false)
-                                }}
-                              >
-                                Done
-                              </Button>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      <EnhancedCalendarPopover
+                        dateRange={{
+                          from: entry.startDate || undefined,
+                          to: entry.endDate || undefined,
+                        }}
+                        onDateRangeChange={(range) => updateDateRange(entry.id, range)}
+                        disabled={!entry.country}
+                        placeholder={!entry.country ? "Select country first" : "Select dates"}
+                        isOpen={isPopoverOpen(entry.id)}
+                        onOpenChange={(open) => setPopoverOpen(entry.id, open)}
+                      />
                       {entry.activeColumn === "dates" && (
                         <div className="text-xs text-blue-600 mt-2 text-center font-medium relative z-10">
                           {!entry.country ? "Select a country first" : "Select your travel dates"}
@@ -629,7 +552,7 @@ export default function SchengenVisaCalculator() {
                     {/* Days Remaining with Progress Circle */}
                     <div className={`${getColumnStyles(entry, "results")} rounded-lg p-2`}>
                       <div className="flex items-center justify-center h-20">
-                        <ProgressCircle daysRemaining={totalDaysRemaining} size={80} />
+                        <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                       </div>
                     </div>
                   </div>

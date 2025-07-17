@@ -260,32 +260,28 @@ export default function DashboardPage() {
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntryLocal[]) => {
-    // Convert entries to Trip format for the calculator
-    const tripsForCalculation = updatedEntries
-      .filter((entry) => entry.country && entry.startDate && entry.endDate)
-      .map((entry) => ({
-        id: entry.id,
-        country: entry.country,
-        startDate: entry.startDate!,
-        endDate: entry.endDate!,
-        days: entry.days,
-      }))
+    // Update each entry with cumulative calculated values
+    const entriesWithCalculations = updatedEntries.map((entry, index) => {
+      // Get all completed trips up to and including current row
+      const tripsUpToThisRow = updatedEntries
+        .slice(0, index + 1)
+        .filter((e) => e.country && e.startDate && e.endDate)
+        .map((e) => ({
+          id: e.id,
+          country: e.country,
+          startDate: e.startDate!,
+          endDate: e.endDate!,
+          days: e.days,
+        }))
 
-    // Calculate overall compliance using all valid trips
-    const compliance = calculateCompliance(tripsForCalculation)
-
-    const entriesWithCalculations = updatedEntries.map((entry) => {
-      // Calculate individual entry days in last 180 days
-      const entryDaysInLast180 =
-        entry.country && entry.startDate && entry.endDate
-          ? calculateSingleEntryCompliance({
-              id: entry.id,
-              country: entry.country,
-              startDate: entry.startDate,
-              endDate: entry.endDate,
-              days: entry.days,
-            })
-          : 0
+      // Calculate cumulative compliance for trips up to this row
+      const cumulativeCompliance = calculateCompliance(tripsUpToThisRow)
+      
+      // Calculate cumulative days in last 180 days
+      const cumulativeDaysInLast180 = cumulativeCompliance.totalDaysUsed
+      
+      // Calculate remaining days (90 - cumulative days, but not less than 0)
+      const cumulativeDaysRemaining = Math.max(0, 90 - cumulativeDaysInLast180)
 
       let activeColumn: VisaEntryLocal["activeColumn"] = "country"
       if (entry.country && !entry.startDate) {
@@ -298,8 +294,8 @@ export default function DashboardPage() {
 
       return {
         ...entry,
-        daysInLast180: entryDaysInLast180,
-        daysRemaining: compliance.daysRemaining, // This should now update correctly
+        daysInLast180: cumulativeDaysInLast180,
+        daysRemaining: cumulativeDaysRemaining,
         activeColumn,
       }
     })
@@ -727,7 +723,7 @@ export default function DashboardPage() {
                     {/* Days Remaining with Progress Circle */}
                     <div className={`${getColumnStyles(entry, "results")} rounded-lg p-2`}>
                       <div className="flex items-center justify-center h-20">
-                        <ProgressCircle daysRemaining={totalDaysRemaining} size={80} />
+                        <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                       </div>
                     </div>
                   </div>
