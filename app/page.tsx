@@ -187,16 +187,47 @@ export default function SchengenVisaCalculator() {
     }
   }, [user, authLoading, router])
 
-  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator()
+  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator(false)
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({})
 
-  const updateAllEntries = (updatedEntries: VisaEntry[]) => {
-    // Calculate overall compliance
-    const compliance = calculateCompliance(updatedEntries)
+  const setPopoverOpen = (entryId: string, open: boolean) => {
+    setOpenPopovers((prev) => ({ ...prev, [entryId]: open }))
+  }
+
+  const isPopoverOpen = (entryId: string) => {
+    return openPopovers[entryId] || false
+  }
+
+  // Recalculate all entries whenever entries change
+  const recalculateEntries = (updatedEntries: VisaEntry[]) => {
+    // Convert entries to Trip format for the calculator
+    const tripsForCalculation = updatedEntries
+      .filter((entry) => entry.country && entry.startDate && entry.endDate)
+      .map((entry) => ({
+        id: entry.id,
+        country: entry.country,
+        startDate: entry.startDate!,
+        endDate: entry.endDate!,
+        days: entry.days,
+      }))
+
+    // Calculate overall compliance using all valid trips
+    const compliance = calculateCompliance(tripsForCalculation)
 
     // Update each entry with calculated values
-    const entriesWithRemaining = updatedEntries.map((entry) => {
-      // Calculate individual entry days
-      const entryDaysUsed = calculateSingleEntryCompliance(entry)
+    const entriesWithCalculations = updatedEntries.map((entry) => {
+      // Calculate individual entry days in last 180 days
+      const entryDaysInLast180 =
+        entry.country && entry.startDate && entry.endDate
+          ? calculateSingleEntryCompliance({
+              id: entry.id,
+              country: entry.country,
+              startDate: entry.startDate,
+              endDate: entry.endDate,
+              days: entry.days,
+            })
+          : 0
 
       // Determine active column based on completion state
       let activeColumn: VisaEntry["activeColumn"] = "country"
@@ -210,13 +241,13 @@ export default function SchengenVisaCalculator() {
 
       return {
         ...entry,
-        daysInLast180: entryDaysUsed,
-        daysRemaining: compliance.daysRemaining,
+        daysInLast180: entryDaysInLast180,
+        daysRemaining: compliance.daysRemaining, // This should now update correctly
         activeColumn,
       }
     })
 
-    setEntries(entriesWithRemaining)
+    return entriesWithCalculations
   }
 
   const addEntry = () => {
@@ -230,7 +261,8 @@ export default function SchengenVisaCalculator() {
       daysRemaining: 90,
       activeColumn: "country",
     }
-    updateAllEntries([...entries, newEntry])
+    const updatedEntries = [...entries, newEntry]
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const updateEntry = (id: string, field: keyof VisaEntry, value: any) => {
@@ -242,6 +274,8 @@ export default function SchengenVisaCalculator() {
         if (field === "startDate" || field === "endDate") {
           if (updatedEntry.startDate && updatedEntry.endDate) {
             updatedEntry.days = differenceInDays(updatedEntry.endDate, updatedEntry.startDate) + 1
+          } else {
+            updatedEntry.days = 0
           }
         }
 
@@ -250,7 +284,7 @@ export default function SchengenVisaCalculator() {
       return entry
     })
 
-    updateAllEntries(updatedEntries)
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const updateDateRange = (id: string, dateRange: DateRange | undefined) => {
@@ -274,7 +308,7 @@ export default function SchengenVisaCalculator() {
       return entry
     })
 
-    updateAllEntries(updatedEntries)
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const getColumnStyles = (entry: VisaEntry, columnType: "country" | "dates" | "results") => {
@@ -331,10 +365,21 @@ export default function SchengenVisaCalculator() {
     }
   }
 
+  // Calculate totals for display - use the same logic as recalculateEntries
+  const tripsForCalculation = entries
+    .filter((entry) => entry.country && entry.startDate && entry.endDate)
+    .map((entry) => ({
+      id: entry.id,
+      country: entry.country,
+      startDate: entry.startDate!,
+      endDate: entry.endDate!,
+      days: entry.days,
+    }))
+
   const totalDays = entries.reduce((sum, entry) => sum + entry.days, 0)
-  const totalDaysInLast180 = entries.reduce((sum, entry) => sum + entry.daysInLast180, 0)
-  const totalDaysRemaining = Math.max(0, 90 - totalDaysInLast180)
-  const [showSaveModal, setShowSaveModal] = useState(false)
+  const compliance = calculateCompliance(tripsForCalculation)
+  const totalDaysInLast180 = compliance.totalDaysUsed
+  const totalDaysRemaining = compliance.daysRemaining
 
   return (
     <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
@@ -475,7 +520,7 @@ export default function SchengenVisaCalculator() {
                     <div
                       className={`${getColumnStyles(entry, "dates")} rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}
                     >
-                      <Popover>
+                      <Popover open={isPopoverOpen(entry.id)} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -540,7 +585,6 @@ export default function SchengenVisaCalculator() {
                                 variant="outline"
                                 className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
                                 onClick={() => {
-                                  // Clear selection
                                   updateDateRange(entry.id, undefined)
                                 }}
                               >
@@ -549,7 +593,7 @@ export default function SchengenVisaCalculator() {
                               <Button
                                 className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
                                 onClick={() => {
-                                  // Close popover - this would be handled by the popover component
+                                  setPopoverOpen(entry.id, false)
                                 }}
                               >
                                 Done

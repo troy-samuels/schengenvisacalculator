@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from "react"
-import { subDays, differenceInDays } from "date-fns"
+import { differenceInDays, subDays, startOfDay, isAfter, isBefore } from "date-fns"
 
 interface Trip {
   id: string
@@ -9,101 +9,102 @@ interface Trip {
   startDate: Date | null
   endDate: Date | null
   days: number
-  daysInLast180: number
-  daysRemaining: number
-  activeColumn: "country" | "dates" | "complete" | null
 }
 
-interface CalculatorResult {
+interface ComplianceResult {
   totalDaysUsed: number
   daysRemaining: number
   isCompliant: boolean
   overstayDays: number
-  riskAssessment: {
-    overallRisk: number
-    riskLevel: "MINIMAL" | "LOW" | "MODERATE" | "HIGH" | "CRITICAL"
-    riskFactors: any[]
-    recommendations: any[]
-  }
-  nextResetDate: string | null
 }
 
-export function useSchengenCalculator() {
-  const calculateCompliance = useCallback((trips: Trip[], referenceDate?: string) => {
-    const today = referenceDate ? new Date(referenceDate) : new Date()
-    const last180Days = subDays(today, 179) // 180 days including today
+/**
+ * Basic Schengen Calculator Hook
+ * Provides simple visa compliance calculations
+ */
+export function useSchengenCalculator(useEnhanced = false) {
+  const MAX_DAYS_IN_PERIOD = 90
+  const ROLLING_PERIOD_DAYS = 180
 
-    let totalDaysUsed = 0
+  /**
+   * Calculate days used within the 180-day rolling period
+   */
+  const calculateDaysInPeriod = useCallback((trips: Trip[], referenceDate: Date): number => {
+    const normalizedRefDate = startOfDay(referenceDate)
+    const periodStart = subDays(normalizedRefDate, ROLLING_PERIOD_DAYS - 1)
+    let totalDays = 0
 
-    trips.forEach((trip) => {
-      if (trip.startDate && trip.endDate) {
-        // Calculate overlap with last 180 days
-        const tripStart = trip.startDate > last180Days ? trip.startDate : last180Days
-        const tripEnd = trip.endDate < today ? trip.endDate : today
+    for (const trip of trips) {
+      if (!trip.startDate || !trip.endDate || !trip.country) continue
 
-        if (tripStart <= tripEnd) {
-          const diffDays = differenceInDays(tripEnd, tripStart) + 1
-          totalDaysUsed += diffDays
-        }
+      const tripStart = startOfDay(trip.startDate)
+      const tripEnd = startOfDay(trip.endDate)
+
+      // Calculate overlap with the 180-day period
+      const overlapStart = isAfter(tripStart, periodStart) ? tripStart : periodStart
+      const overlapEnd = isBefore(tripEnd, normalizedRefDate) ? tripEnd : normalizedRefDate
+
+      if (overlapStart <= overlapEnd) {
+        totalDays += differenceInDays(overlapEnd, overlapStart) + 1
       }
-    })
-
-    const daysRemaining = Math.max(0, 90 - totalDaysUsed)
-    const isCompliant = totalDaysUsed <= 90
-    const overstayDays = Math.max(0, totalDaysUsed - 90)
-
-    // Simple risk assessment
-    let riskLevel: CalculatorResult["riskAssessment"]["riskLevel"] = "MINIMAL"
-    if (totalDaysUsed > 80) riskLevel = "HIGH"
-    else if (totalDaysUsed > 60) riskLevel = "MODERATE"
-    else if (totalDaysUsed > 30) riskLevel = "LOW"
-
-    return {
-      totalDaysUsed,
-      daysRemaining,
-      isCompliant,
-      overstayDays,
-      riskAssessment: {
-        overallRisk: totalDaysUsed,
-        riskLevel,
-        riskFactors: [],
-        recommendations: [],
-      },
-      nextResetDate: null,
     }
+
+    return totalDays
   }, [])
 
-  const calculateSingleEntryCompliance = useCallback((trip: Trip, referenceDate?: string) => {
-    if (!trip.startDate || !trip.endDate) return 0
+  /**
+   * Calculate compliance for all trips
+   */
+  const calculateCompliance = useCallback(
+    (trips: Trip[], referenceDate: Date = new Date()): ComplianceResult => {
+      const validTrips = trips.filter((trip) => {
+        // Basic validation
+        if (!trip.startDate || !trip.endDate || !trip.country) return false
+        if (trip.startDate > trip.endDate) return false
+        return true
+      })
 
-    const today = referenceDate ? new Date(referenceDate) : new Date()
-    const last180Days = subDays(today, 179)
+      const daysUsed = calculateDaysInPeriod(validTrips, referenceDate)
+      const daysRemaining = Math.max(0, MAX_DAYS_IN_PERIOD - daysUsed)
+      const isCompliant = daysUsed <= MAX_DAYS_IN_PERIOD
+      const overstayDays = Math.max(0, daysUsed - MAX_DAYS_IN_PERIOD)
 
-    // Calculate overlap with last 180 days
-    const tripStart = trip.startDate > last180Days ? trip.startDate : last180Days
-    const tripEnd = trip.endDate < today ? trip.endDate : today
-
-    if (tripStart <= tripEnd) {
-      return differenceInDays(tripEnd, tripStart) + 1
-    }
-    return 0
-  }, [])
-
-  const calculateMaximumStay = useCallback(
-    (startDate: string, trips: Trip[]) => {
-      const compliance = calculateCompliance(trips, startDate)
       return {
-        maxConsecutiveDays: Math.min(compliance.daysRemaining, 90),
-        immediatelyAvailable: compliance.daysRemaining,
+        totalDaysUsed: daysUsed,
+        daysRemaining,
+        isCompliant,
+        overstayDays,
       }
     },
-    [calculateCompliance],
+    [calculateDaysInPeriod],
   )
+
+  /**
+   * Calculate compliance for a single trip (how many days it contributes to the 180-day period)
+   */
+  const calculateSingleEntryCompliance = useCallback((trip: Trip, referenceDate: Date = new Date()): number => {
+    if (!trip.startDate || !trip.endDate || !trip.country) return 0
+
+    const normalizedRefDate = startOfDay(referenceDate)
+    const periodStart = subDays(normalizedRefDate, ROLLING_PERIOD_DAYS - 1)
+
+    const tripStart = startOfDay(trip.startDate)
+    const tripEnd = startOfDay(trip.endDate)
+
+    // Calculate overlap with the 180-day period
+    const overlapStart = isAfter(tripStart, periodStart) ? tripStart : periodStart
+    const overlapEnd = isBefore(tripEnd, normalizedRefDate) ? tripEnd : normalizedRefDate
+
+    if (overlapStart <= overlapEnd) {
+      return differenceInDays(overlapEnd, overlapStart) + 1
+    }
+
+    return 0
+  }, [])
 
   return {
     calculateCompliance,
     calculateSingleEntryCompliance,
-    calculateMaximumStay,
-    isEnhancedCalculatorAvailable: false, // Set to false since we removed it
+    isEnhancedCalculatorAvailable: useEnhanced,
   }
 }

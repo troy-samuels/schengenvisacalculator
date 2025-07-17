@@ -137,12 +137,21 @@ export default function DashboardPage() {
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const supabase = createClient()
-  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator()
+  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator(false)
 
   const [entries, setEntries] = useState<VisaEntryLocal[]>([])
   const [countries, setCountries] = useState<Country[]>([])
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({})
+
+  const setPopoverOpen = (entryId: string, open: boolean) => {
+    setOpenPopovers((prev) => ({ ...prev, [entryId]: open }))
+  }
+
+  const isPopoverOpen = (entryId: string) => {
+    return openPopovers[entryId] || false
+  }
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -216,7 +225,7 @@ export default function DashboardPage() {
         })
       }
 
-      updateAllEntries(localEntries)
+      setEntries(recalculateEntries(localEntries))
     } catch (error) {
       console.error("Error loading user data:", error)
     } finally {
@@ -249,13 +258,34 @@ export default function DashboardPage() {
     }
   }
 
-  const updateAllEntries = (updatedEntries: VisaEntryLocal[]) => {
-    // Calculate overall compliance
-    const compliance = calculateCompliance(updatedEntries)
+  // Recalculate all entries whenever entries change
+  const recalculateEntries = (updatedEntries: VisaEntryLocal[]) => {
+    // Convert entries to Trip format for the calculator
+    const tripsForCalculation = updatedEntries
+      .filter((entry) => entry.country && entry.startDate && entry.endDate)
+      .map((entry) => ({
+        id: entry.id,
+        country: entry.country,
+        startDate: entry.startDate!,
+        endDate: entry.endDate!,
+        days: entry.days,
+      }))
 
-    const entriesWithRemaining = updatedEntries.map((entry) => {
-      // Calculate individual entry days
-      const entryDaysUsed = calculateSingleEntryCompliance(entry)
+    // Calculate overall compliance using all valid trips
+    const compliance = calculateCompliance(tripsForCalculation)
+
+    const entriesWithCalculations = updatedEntries.map((entry) => {
+      // Calculate individual entry days in last 180 days
+      const entryDaysInLast180 =
+        entry.country && entry.startDate && entry.endDate
+          ? calculateSingleEntryCompliance({
+              id: entry.id,
+              country: entry.country,
+              startDate: entry.startDate,
+              endDate: entry.endDate,
+              days: entry.days,
+            })
+          : 0
 
       let activeColumn: VisaEntryLocal["activeColumn"] = "country"
       if (entry.country && !entry.startDate) {
@@ -268,13 +298,13 @@ export default function DashboardPage() {
 
       return {
         ...entry,
-        daysInLast180: entryDaysUsed,
-        daysRemaining: compliance.daysRemaining,
+        daysInLast180: entryDaysInLast180,
+        daysRemaining: compliance.daysRemaining, // This should now update correctly
         activeColumn,
       }
     })
 
-    setEntries(entriesWithRemaining)
+    return entriesWithCalculations
   }
 
   const addEntry = () => {
@@ -288,7 +318,8 @@ export default function DashboardPage() {
       daysRemaining: 90,
       activeColumn: "country",
     }
-    updateAllEntries([...entries, newEntry])
+    const updatedEntries = [...entries, newEntry]
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const updateEntry = (id: string, field: keyof VisaEntryLocal, value: any) => {
@@ -300,6 +331,8 @@ export default function DashboardPage() {
         if (field === "startDate" || field === "endDate") {
           if (updatedEntry.startDate && updatedEntry.endDate) {
             updatedEntry.days = differenceInDays(updatedEntry.endDate, updatedEntry.startDate) + 1
+          } else {
+            updatedEntry.days = 0
           }
         }
 
@@ -313,7 +346,7 @@ export default function DashboardPage() {
       return entry
     })
 
-    updateAllEntries(updatedEntries)
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const updateDateRange = (id: string, dateRange: DateRange | undefined) => {
@@ -342,7 +375,7 @@ export default function DashboardPage() {
       return entry
     })
 
-    updateAllEntries(updatedEntries)
+    setEntries(recalculateEntries(updatedEntries))
   }
 
   const handleProfileComplete = async (updatedProfile: Partial<Profile>) => {
@@ -412,9 +445,21 @@ export default function DashboardPage() {
     }
   }
 
+  // Calculate totals for display - use the same logic as recalculateEntries
+  const tripsForCalculation = entries
+    .filter((entry) => entry.country && entry.startDate && entry.endDate)
+    .map((entry) => ({
+      id: entry.id,
+      country: entry.country,
+      startDate: entry.startDate!,
+      endDate: entry.endDate!,
+      days: entry.days,
+    }))
+
   const totalDays = entries.reduce((sum, entry) => sum + entry.days, 0)
-  const totalDaysInLast180 = entries.reduce((sum, entry) => sum + entry.daysInLast180, 0)
-  const totalDaysRemaining = Math.max(0, 90 - totalDaysInLast180)
+  const compliance = calculateCompliance(tripsForCalculation)
+  const totalDaysInLast180 = compliance.totalDaysUsed
+  const totalDaysRemaining = compliance.daysRemaining
 
   // Show loading state
   if (authLoading || loading) {
@@ -573,7 +618,7 @@ export default function DashboardPage() {
                     <div
                       className={`${getColumnStyles(entry, "dates")} rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}
                     >
-                      <Popover>
+                      <Popover open={isPopoverOpen(entry.id)} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -643,7 +688,14 @@ export default function DashboardPage() {
                               >
                                 Clear
                               </Button>
-                              <Button className="flex-1 bg-slate-800 hover:bg-slate-700 text-white">Done</Button>
+                              <Button
+                                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
+                                onClick={() => {
+                                  setPopoverOpen(entry.id, false)
+                                }}
+                              >
+                                Done
+                              </Button>
                             </div>
                           </div>
                         </PopoverContent>
@@ -699,12 +751,11 @@ export default function DashboardPage() {
       </section>
 
       {/* Profile Completion Modal */}
-      {showProfileModal && profile && (
+      {showProfileModal && (
         <ProfileCompletionModal
-          profile={profile}
-          countries={countries}
           onComplete={handleProfileComplete}
-          onSkip={() => setShowProfileModal(false)}
+          onClose={() => setShowProfileModal(false)}
+          countries={countries}
         />
       )}
 
@@ -712,9 +763,11 @@ export default function DashboardPage() {
       <footer className="text-gray-900 py-12" style={{ backgroundColor: "#F4F2ED" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col space-y-8">
+            {/* Top section with logo and links */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-6 md:space-y-0">
               <img src="/images/visa-calculator-logo.png" alt="Visa Calculator" className="h-8 w-auto" />
 
+              {/* Legal Links */}
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6 text-sm">
                 <a
                   href="/legal-disclaimer"
@@ -734,6 +787,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Bottom section with copyright */}
             <div className="border-t border-gray-300 pt-6">
               <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                 <div className="text-sm text-gray-600">© 2024 Schengen Visa Calculator. All rights reserved.</div>
