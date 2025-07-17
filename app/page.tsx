@@ -186,7 +186,7 @@ export default function SchengenVisaCalculator() {
     }
   }, [user, authLoading, router])
 
-  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator(false)
+  const { calculateCompliance, calculateSingleEntryCompliance, calculateDaysRemainingWithFuture } = useSchengenCalculator(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({})
 
@@ -214,14 +214,14 @@ export default function SchengenVisaCalculator() {
           days: e.days,
         }))
 
-      // Calculate cumulative compliance for trips up to this row
+      // Calculate cumulative compliance for trips up to this row (for "Days of Stay in last 180 days")
       const cumulativeCompliance = calculateCompliance(tripsUpToThisRow)
       
-      // Calculate cumulative days in last 180 days
+      // Calculate cumulative days in last 180 days (only past trips within rolling window)
       const cumulativeDaysInLast180 = cumulativeCompliance.totalDaysUsed
       
-      // Calculate remaining days (90 - cumulative days, but not less than 0)
-      const cumulativeDaysRemaining = Math.max(0, 90 - cumulativeDaysInLast180)
+      // Calculate remaining days INCLUDING future planning (considers both past and future trips)
+      const cumulativeDaysRemaining = calculateDaysRemainingWithFuture(tripsUpToThisRow)
 
       // Determine active column based on completion state
       let activeColumn: VisaEntry["activeColumn"] = "country"

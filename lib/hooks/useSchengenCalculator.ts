@@ -53,6 +53,43 @@ export function useSchengenCalculator(useEnhanced = false) {
   }, [])
 
   /**
+   * Calculate days remaining including future planned trips for better planning
+   * This considers both past trips (within 180-day window) AND future planned trips
+   */
+  const calculateDaysRemainingWithFuture = useCallback((trips: Trip[], referenceDate: Date = new Date()): number => {
+    const today = startOfDay(new Date())
+    let totalDaysUsed = 0
+
+    for (const trip of trips) {
+      if (!trip.startDate || !trip.endDate || !trip.country) continue
+
+      const tripStart = startOfDay(trip.startDate)
+      const tripEnd = startOfDay(trip.endDate)
+
+      // For past trips: only count days within the 180-day rolling window from today
+      if (tripEnd <= today) {
+        const periodStart = subDays(today, ROLLING_PERIOD_DAYS - 1)
+        const overlapStart = isAfter(tripStart, periodStart) ? tripStart : periodStart
+        const overlapEnd = isBefore(tripEnd, today) ? tripEnd : today
+
+        if (overlapStart <= overlapEnd) {
+          totalDaysUsed += differenceInDays(overlapEnd, overlapStart) + 1
+        }
+      }
+      // For future trips: count all days as they will impact the 90-day limit
+      else if (tripStart > today) {
+        totalDaysUsed += differenceInDays(tripEnd, tripStart) + 1
+      }
+      // For ongoing trips (start in past, end in future): count the full trip
+      else {
+        totalDaysUsed += differenceInDays(tripEnd, tripStart) + 1
+      }
+    }
+
+    return Math.max(0, MAX_DAYS_IN_PERIOD - totalDaysUsed)
+  }, [])
+
+  /**
    * Calculate compliance for all trips
    */
   const calculateCompliance = useCallback(
@@ -105,6 +142,7 @@ export function useSchengenCalculator(useEnhanced = false) {
   return {
     calculateCompliance,
     calculateSingleEntryCompliance,
+    calculateDaysRemainingWithFuture,
     isEnhancedCalculatorAvailable: useEnhanced,
   }
 }
