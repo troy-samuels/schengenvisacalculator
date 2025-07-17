@@ -137,7 +137,7 @@ export default function DashboardPage() {
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const supabase = createClient()
-  const { calculateCompliance, calculateSingleEntryCompliance, calculateDaysRemainingWithFuture } = useSchengenCalculator(false)
+  const { calculateCompliance, calculateSingleEntryCompliance, calculateDaysUsedInRollingPeriod, calculateDaysRemainingWithRollingPeriod } = useSchengenCalculator(false)
 
   const [entries, setEntries] = useState<VisaEntryLocal[]>([])
   const [countries, setCountries] = useState<Country[]>([])
@@ -274,14 +274,11 @@ export default function DashboardPage() {
           days: e.days,
         }))
 
-      // Calculate cumulative compliance for trips up to this row (for "Days of Stay in last 180 days")
-      const cumulativeCompliance = calculateCompliance(tripsUpToThisRow)
+      // Calculate days in rolling 180-day window for this specific trip (for "Days of Stay in last 180 days")
+      const cumulativeDaysInLast180 = calculateDaysUsedInRollingPeriod(tripsUpToThisRow)
       
-      // Calculate cumulative days in last 180 days (only past trips within rolling window)
-      const cumulativeDaysInLast180 = cumulativeCompliance.totalDaysUsed
-      
-      // Calculate remaining days INCLUDING future planning (considers both past and future trips)
-      const cumulativeDaysRemaining = calculateDaysRemainingWithFuture(tripsUpToThisRow)
+      // Calculate remaining days using proper rolling 180-day period from first trip
+      const cumulativeDaysRemaining = calculateDaysRemainingWithRollingPeriod(tripsUpToThisRow)
 
       let activeColumn: VisaEntryLocal["activeColumn"] = "country"
       if (entry.country && !entry.startDate) {
