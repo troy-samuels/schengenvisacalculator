@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, CalendarIcon } from "lucide-react"
+import { Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
@@ -8,12 +8,12 @@ import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
 interface EnhancedCalendarPopoverProps {
-  dateRange?: DateRange
+  dateRange: DateRange | undefined
   onDateRangeChange: (range: DateRange | undefined) => void
   disabled?: boolean
   placeholder?: string
-  isOpen?: boolean
-  onOpenChange?: (open: boolean) => void
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function EnhancedCalendarPopover({
@@ -21,29 +21,13 @@ export function EnhancedCalendarPopover({
   onDateRangeChange,
   disabled = false,
   placeholder = "Select dates",
-  isOpen = false,
+  isOpen,
   onOpenChange,
 }: EnhancedCalendarPopoverProps) {
-  const handleClear = () => {
-    onDateRangeChange(undefined)
-  }
-
-  const handleDone = () => {
-    onOpenChange?.(false)
-  }
-
   const formatDateRange = () => {
     if (!dateRange?.from) return placeholder
-    
-    if (dateRange.from && dateRange.to) {
-      return `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd")}`
-    }
-    
-    if (dateRange.from) {
-      return `${format(dateRange.from, "MMM dd")} - End date`
-    }
-    
-    return placeholder
+    if (!dateRange.to) return `${format(dateRange.from, "MMM dd")} - End date`
+    return `${format(dateRange.from, "MMM dd")} - ${format(dateRange.to, "MMM dd")}`
   }
 
   return (
@@ -54,10 +38,8 @@ export function EnhancedCalendarPopover({
           className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={disabled}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
-          <span className="truncate">
-            {formatDateRange()}
-          </span>
+          <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{formatDateRange()}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
@@ -94,7 +76,7 @@ export function EnhancedCalendarPopover({
               day_outside: "text-gray-400 opacity-50",
               day_disabled: "text-gray-400 opacity-50",
               day_range_middle:
-                "aria-selected:bg-slate-100 aria-selected:text-slate-900 hover:bg-slate-100",
+                "aria-selected:bg-slate-100 aria-selected:text-slate-900 hover:bg-slate-100 rounded-none",
               day_hidden: "invisible",
             }}
           />
@@ -102,14 +84,11 @@ export function EnhancedCalendarPopover({
             <Button
               variant="outline"
               className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
-              onClick={handleClear}
+              onClick={() => onDateRangeChange(undefined)}
             >
               Clear
             </Button>
-            <Button
-              className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
-              onClick={handleDone}
-            >
+            <Button className="flex-1 bg-slate-800 hover:bg-slate-700 text-white" onClick={() => onOpenChange(false)}>
               Done
             </Button>
           </div>
@@ -117,4 +96,4 @@ export function EnhancedCalendarPopover({
       </PopoverContent>
     </Popover>
   )
-} 
+}

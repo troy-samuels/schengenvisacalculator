@@ -137,7 +137,7 @@ export default function DashboardPage() {
   const { user, profile, loading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const supabase = createClient()
-  const { calculateCompliance, calculateSingleEntryCompliance, calculateDaysUsedInRollingPeriod, calculateDaysRemainingWithRollingPeriod } = useSchengenCalculator(false)
+  const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator(false)
 
   const [entries, setEntries] = useState<VisaEntryLocal[]>([])
   const [countries, setCountries] = useState<Country[]>([])
@@ -260,25 +260,32 @@ export default function DashboardPage() {
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntryLocal[]) => {
-    // Update each entry with cumulative calculated values
-    const entriesWithCalculations = updatedEntries.map((entry, index) => {
-      // Get all completed trips up to and including current row
-      const tripsUpToThisRow = updatedEntries
-        .slice(0, index + 1)
-        .filter((e) => e.country && e.startDate && e.endDate)
-        .map((e) => ({
-          id: e.id,
-          country: e.country,
-          startDate: e.startDate!,
-          endDate: e.endDate!,
-          days: e.days,
-        }))
+    // Convert entries to Trip format for the calculator
+    const tripsForCalculation = updatedEntries
+      .filter((entry) => entry.country && entry.startDate && entry.endDate)
+      .map((entry) => ({
+        id: entry.id,
+        country: entry.country,
+        startDate: entry.startDate!,
+        endDate: entry.endDate!,
+        days: entry.days,
+      }))
 
-      // Calculate days in rolling 180-day window for this specific trip (for "Days of Stay in last 180 days")
-      const cumulativeDaysInLast180 = calculateDaysUsedInRollingPeriod(tripsUpToThisRow)
-      
-      // Calculate remaining days using proper rolling 180-day period from first trip
-      const cumulativeDaysRemaining = calculateDaysRemainingWithRollingPeriod(tripsUpToThisRow)
+    // Calculate overall compliance using all valid trips
+    const compliance = calculateCompliance(tripsForCalculation)
+
+    const entriesWithCalculations = updatedEntries.map((entry) => {
+      // Calculate individual entry days in last 180 days
+      const entryDaysInLast180 =
+        entry.country && entry.startDate && entry.endDate
+          ? calculateSingleEntryCompliance({
+              id: entry.id,
+              country: entry.country,
+              startDate: entry.startDate,
+              endDate: entry.endDate,
+              days: entry.days,
+            })
+          : 0
 
       let activeColumn: VisaEntryLocal["activeColumn"] = "country"
       if (entry.country && !entry.startDate) {
@@ -291,8 +298,8 @@ export default function DashboardPage() {
 
       return {
         ...entry,
-        daysInLast180: cumulativeDaysInLast180,
-        daysRemaining: cumulativeDaysRemaining,
+        daysInLast180: entryDaysInLast180,
+        daysRemaining: compliance.daysRemaining, // This should now update correctly
         activeColumn,
       }
     })
@@ -720,7 +727,7 @@ export default function DashboardPage() {
                     {/* Days Remaining with Progress Circle */}
                     <div className={`${getColumnStyles(entry, "results")} rounded-lg p-2`}>
                       <div className="flex items-center justify-center h-20">
-                        <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
+                        <ProgressCircle daysRemaining={totalDaysRemaining} size={80} />
                       </div>
                     </div>
                   </div>
