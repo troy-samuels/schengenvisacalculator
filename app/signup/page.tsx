@@ -80,9 +80,9 @@ export default function SignUpPage() {
           type: "success",
           text: "Account created successfully! Please check your email to verify your account.",
         })
-        // Redirect to home page after successful signup
+        // Redirect to dashboard after successful signup
         setTimeout(() => {
-          router.push("/")
+          router.push("/dashboard")
         }, 2000)
       }
     } catch (error) {

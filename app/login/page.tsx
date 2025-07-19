@@ -40,7 +40,7 @@ export default function LoginPage() {
         setMessage({ type: "error", text: error.message })
       } else {
         setMessage({ type: "success", text: "Signed in successfully!" })
-        router.push("/")
+        router.push("/dashboard")
       }
     } catch (error) {
       setMessage({ type: "error", text: "An unexpected error occurred" })
