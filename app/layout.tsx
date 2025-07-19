@@ -2,9 +2,21 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Schengen Visa Calculator - 90/180 Day Rule Tracker',
+  description: 'Calculate your Schengen visa compliance with our rolling 180-day period tracker. Plan your European travel and avoid overstaying with accurate 90/180 rule calculations.',
+  keywords: 'Schengen visa, 90/180 rule, Europe travel, visa calculator, travel planning',
+  openGraph: {
+    title: 'Schengen Visa Calculator - 90/180 Day Rule Tracker',
+    description: 'Calculate your Schengen visa compliance with our rolling 180-day period tracker. Plan your European travel and avoid overstaying.',
+    url: 'https://www.schengenvisacalculator.com',
+    siteName: 'Schengen Visa Calculator',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Schengen Visa Calculator - 90/180 Day Rule Tracker',
+    description: 'Calculate your Schengen visa compliance with our rolling 180-day period tracker. Plan your European travel and avoid overstaying.',
+  },
 }
 
 export default function RootLayout({
