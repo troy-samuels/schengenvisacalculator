@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, ChevronRight, ChevronDown, ChevronUp } from "lucide-react"
+import { Plus, ChevronRight, ChevronDown, ChevronUp, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { EnhancedCalendarPopover } from "@/components/enhanced-calendar-popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
@@ -113,65 +113,164 @@ export function MobileOptimizedCalculator({
         </CardContent>
       </Card>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div
-            className="grid gap-4 p-6 bg-gray-50 border-b"
-            style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
-          >
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900">Country</h3>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900">Date Range</h3>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900">Days of Stay</h3>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900 text-sm">Days in Last 180</h3>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-gray-900">Days Remaining</h3>
-            </div>
+      {/* Desktop Calculator */}
+      <div className="hidden lg:block bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        {/* Column Headers */}
+        <div
+          className="grid gap-4 p-6 bg-gray-50 border-b"
+          style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
+        >
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900">Country</h3>
           </div>
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900">Date Range</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900">Days of Stay</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900 text-sm">Days of Stay in the last 180 days</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900">Days Remaining</h3>
+          </div>
+        </div>
 
-          <div className="p-6 space-y-8">
-            {entries.map((entry) => (
-              <div key={entry.id} className="relative">
-                <div className="flex items-center justify-center mb-4 space-x-2">
-                  <div
-                    className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                      entry.activeColumn === "country" ? "bg-blue-500" : entry.country ? "bg-green-500" : "bg-gray-300"
-                    }`}
-                  />
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                  <div
-                    className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                      entry.activeColumn === "dates"
-                        ? "bg-blue-500"
-                        : entry.startDate && entry.endDate
-                          ? "bg-green-500"
-                          : entry.country
-                            ? "bg-orange-400"
-                            : "bg-gray-300"
-                    }`}
-                  />
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                  <div
-                    className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                      entry.activeColumn === "complete" ? "bg-green-500" : "bg-gray-300"
-                    }`}
-                  />
+        {/* Calculator Rows */}
+        <div className="p-6 space-y-8">
+          {entries.map((entry) => (
+            <div key={entry.id} className="relative">
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-center mb-4 space-x-2 relative z-20">
+                <div
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                    entry.activeColumn === "country"
+                      ? "bg-blue-500"
+                      : entry.country
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                  }`}
+                />
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                    entry.activeColumn === "dates"
+                      ? "bg-blue-500"
+                      : (entry.startDate && entry.endDate)
+                        ? "bg-green-500"
+                        : entry.country
+                          ? "bg-orange-400"
+                          : "bg-gray-300"
+                  }`}
+                />
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <div
+                  className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                    entry.activeColumn === "complete" ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                />
+              </div>
+
+              <div className="grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}>
+                {/* Country Selection */}
+                <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
+                  <Select value={entry.country} onValueChange={(value) => onUpdateEntry(entry.id, "country", value)}>
+                    <SelectTrigger className="w-full bg-white text-center h-12 border-0 shadow-sm">
+                      <SelectValue placeholder="🇪🇺" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg">{country.flag}</span>
+                            <span>{country.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}>
-                  {/* Desktop content - same as before */}
+                {/* Date Range */}
+                <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
+                  <Popover open={openPopovers[entry.id]} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!entry.country}
+                      >
+                        <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">
+                          {!entry.country
+                            ? "Select country first"
+                            : entry.startDate && entry.endDate
+                              ? `${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`
+                              : entry.startDate
+                                ? `${format(entry.startDate, "MMM dd")} - End date`
+                                : "Select dates"}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
+                      <div className="p-6">
+                        <CalendarComponent
+                          mode="range"
+                          selected={{
+                            from: entry.startDate || undefined,
+                            to: entry.endDate || undefined,
+                          }}
+                          onSelect={(range) => onUpdateDateRange(entry.id, range)}
+                          numberOfMonths={2}
+                          className="rounded-none border-0"
+                        />
+                        <div className="flex gap-3 mt-6 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
+                            onClick={() => {
+                              onUpdateDateRange(entry.id, undefined)
+                            }}
+                          >
+                            Clear
+                          </Button>
+                          <Button
+                            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
+                            onClick={() => {
+                              setPopoverOpen(entry.id, false)
+                            }}
+                          >
+                            Done
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* Results Columns */}
+                <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
+                  <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center">
+                    {entry.days > 0 ? `${entry.days} days` : "—"}
+                  </div>
+                </div>
+
+                <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
+                  <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center">
+                    {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
+                  </div>
+                </div>
+
+                {/* Days Remaining with Progress Circle */}
+                <div className="rounded-lg p-2">
+                  <div className="flex items-center justify-center h-20">
+                    <MobileProgressCircle daysRemaining={entry.daysRemaining} size={80} />
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -179,43 +278,43 @@ export function MobileOptimizedCalculator({
       <div className="lg:hidden space-y-4">
         {entries.map((entry, index) => (
           <Card key={entry.id} className="overflow-hidden">
-            <Collapsible
-              open={expandedEntries[entry.id] ?? index === 0}
-              onOpenChange={() => toggleEntryExpanded(entry.id)}
+            <div
+              className={`transition-all duration-300 ${
+                expandedEntries[entry.id] ?? index === 0 ? "" : "cursor-pointer"
+              }`}
+              onClick={() => toggleEntryExpanded(entry.id)}
             >
-              <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">
-                        {entry.country ? countries.find((c) => c.code === entry.country)?.flag || "🇪🇺" : "🇪🇺"}
-                      </div>
-                      <div>
-                        <CardTitle className="text-base">
-                          {entry.country
-                            ? countries.find((c) => c.code === entry.country)?.name || "Select Country"
-                            : "Select Country"}
-                        </CardTitle>
-                        {entry.startDate && entry.endDate && (
-                          <p className="text-sm text-gray-600">
-                            {format(entry.startDate, "MMM dd")} - {format(entry.endDate, "MMM dd")} ({entry.days} days)
-                          </p>
-                        )}
-                      </div>
+              <CardHeader className="hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-2xl">
+                      {entry.country ? countries.find((c) => c.code === entry.country)?.flag || "🇪🇺" : "🇪🇺"}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {entry.days > 0 && <MobileProgressCircle daysRemaining={entry.daysRemaining} size={40} />}
-                      {(expandedEntries[entry.id] ?? index === 0) ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <CardTitle className="text-base">
+                        {entry.country
+                          ? countries.find((c) => c.code === entry.country)?.name || "Select Country"
+                          : "Select Country"}
+                      </CardTitle>
+                      {entry.startDate && entry.endDate && (
+                        <p className="text-sm text-gray-600">
+                          {format(entry.startDate, "MMM dd")} - {format(entry.endDate, "MMM dd")} ({entry.days} days)
+                        </p>
                       )}
                     </div>
                   </div>
-                </CardHeader>
-              </CollapsibleTrigger>
+                  <div className="flex items-center space-x-2">
+                    {entry.days > 0 && <MobileProgressCircle daysRemaining={entry.daysRemaining} size={40} />}
+                    {(expandedEntries[entry.id] ?? index === 0) ? (
+                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
 
-              <CollapsibleContent>
+              {(expandedEntries[entry.id] ?? index === 0) && (
                 <CardContent className="pt-0 space-y-4">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-center space-x-2 py-2">
@@ -271,17 +370,55 @@ export function MobileOptimizedCalculator({
                   {/* Date Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Travel Dates</label>
-                    <EnhancedCalendarPopover
-                      dateRange={{
-                        from: entry.startDate || undefined,
-                        to: entry.endDate || undefined,
-                      }}
-                      onDateRangeChange={(range) => onUpdateDateRange(entry.id, range)}
-                      disabled={!entry.country}
-                      placeholder={!entry.country ? "Select country first" : "Select dates"}
-                      isOpen={openPopovers[entry.id] || false}
-                      onOpenChange={(open) => setPopoverOpen(entry.id, open)}
-                    />
+                    <Popover open={openPopovers[entry.id]} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={!entry.country}
+                        >
+                          <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">
+                            {!entry.country
+                              ? "Select country first"
+                              : entry.startDate && entry.endDate
+                                ? `${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`
+                                : entry.startDate
+                                  ? `${format(entry.startDate, "MMM dd")} - End date`
+                                  : "Select dates"}
+                          </span>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
+                        <div className="p-6">
+                          <CalendarComponent
+                            mode="range"
+                            selected={{
+                              from: entry.startDate || undefined,
+                              to: entry.endDate || undefined,
+                            }}
+                            onSelect={(range) => onUpdateDateRange(entry.id, range)}
+                            numberOfMonths={1}
+                            className="rounded-none border-0"
+                          />
+                          <div className="flex gap-3 mt-6 pt-4 border-t">
+                            <Button
+                              variant="outline"
+                              className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
+                              onClick={() => onUpdateDateRange(entry.id, undefined)}
+                            >
+                              Clear
+                            </Button>
+                            <Button
+                              className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
+                              onClick={() => setPopoverOpen(entry.id, false)}
+                            >
+                              Done
+                            </Button>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Results */}
@@ -302,8 +439,8 @@ export function MobileOptimizedCalculator({
                     </div>
                   )}
                 </CardContent>
-              </CollapsibleContent>
-            </Collapsible>
+              )}
+            </div>
           </Card>
         ))}
       </div>
