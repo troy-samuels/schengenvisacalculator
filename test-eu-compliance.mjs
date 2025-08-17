@@ -296,7 +296,9 @@ if (validationResult.failed === 0) {
   console.log('\n✅ All EU official test cases passed!')
   console.log('✅ Implementation is compliant with European Commission standards')
   console.log('✅ Ready for production deployment')
+  process.exit(0)
 } else {
   console.log('\n❌ Some EU test cases failed')
   console.log('❌ Review implementation against EU standards')
+  process.exit(1)
 }

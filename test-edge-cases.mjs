@@ -100,12 +100,14 @@ class EdgeCaseTestSuite {
       console.log('\\n✅ ALL EDGE CASES HANDLED CORRECTLY!')
       console.log('✅ Calculator is robust against edge cases')
       console.log('✅ Leap years, timezones, and boundaries handled properly')
+      process.exit(0)
     } else {
       console.log('\\n❌ Some edge cases failed')
       const failedTests = results.filter(r => !r.passed)
       failedTests.forEach(test => {
         console.log(`   - ${test.testName}: ${test.error || 'Validation failed'}`)
       })
+      process.exit(1)
     }
     
     return { totalTests: results.length, passed, failed, passRate, results }

@@ -266,8 +266,10 @@ if (totalFailed === 0) {
   console.log('✅ Boundary conditions tested')
   console.log('✅ Real-world scenarios validated')
   console.log('\\n🚀 Schengen calculator is production-ready!')
+  process.exit(0)
 } else {
   console.log('\\n⚠️  Some tests failed - review implementation')
+  process.exit(1)
 }
 
 console.log('\\n📈 Test Coverage Areas:')
