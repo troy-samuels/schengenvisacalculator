@@ -50,6 +50,7 @@ export function EnhancedCalendarPopover({
             onSelect={onDateRangeChange}
             numberOfMonths={2}
             className="rounded-none border-0"
+            disabled={false} // Allow all dates for flexible planning
             classNames={{
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",

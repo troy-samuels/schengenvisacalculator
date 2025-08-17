@@ -10,6 +10,17 @@ import { useAuth } from "@/lib/hooks/useAuth"
 import { SaveProgressModal } from "@/components/save-progress-modal"
 import { useSchengenCalculator } from "@/lib/hooks/useSchengenCalculator"
 import { MobileOptimizedCalculator } from "@/components/mobile-optimized-calculator"
+import { useToast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface VisaEntry {
   id: string
@@ -81,25 +92,28 @@ export default function SchengenVisaCalculator() {
 
   const { calculateCompliance, calculateSingleEntryCompliance } = useSchengenCalculator(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null)
+  const { toast } = useToast()
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntry[]) => {
-    // Convert entries to Trip format for the calculator
-    const tripsForCalculation = updatedEntries
-      .filter((entry) => entry.country && entry.startDate && entry.endDate)
-      .map((entry) => ({
-        id: entry.id,
-        country: entry.country,
-        startDate: entry.startDate!,
-        endDate: entry.endDate!,
-        days: entry.days,
-      }))
-
-    // Calculate overall compliance using all valid trips
-    const compliance = calculateCompliance(tripsForCalculation)
-
     // Update each entry with calculated values
-    const entriesWithCalculations = updatedEntries.map((entry) => {
+    const entriesWithCalculations = updatedEntries.map((entry, currentIndex) => {
+      // Get trips up to and including the current index for cumulative calculation
+      const tripsUpToHere = updatedEntries
+        .slice(0, currentIndex + 1)
+        .filter((e) => e.country && e.startDate && e.endDate)
+        .map((e) => ({
+          id: e.id,
+          country: e.country,
+          startDate: e.startDate!,
+          endDate: e.endDate!,
+          days: e.days,
+        }))
+
+      // Calculate cumulative compliance up to this row
+      const cumulativeCompliance = calculateCompliance(tripsUpToHere)
+
       // Calculate individual entry days in last 180 days
       const entryDaysInLast180 =
         entry.country && entry.startDate && entry.endDate
@@ -125,7 +139,7 @@ export default function SchengenVisaCalculator() {
       return {
         ...entry,
         daysInLast180: entryDaysInLast180,
-        daysRemaining: compliance.daysRemaining, // This should now update correctly
+        daysRemaining: cumulativeCompliance.daysRemaining, // Cumulative remaining days
         activeColumn,
       }
     })
@@ -194,21 +208,39 @@ export default function SchengenVisaCalculator() {
     setEntries(recalculateEntries(updatedEntries))
   }
 
+  const confirmDeleteEntry = (id: string) => {
+    // Prevent deleting the last entry
+    if (entries.length === 1) {
+      toast({
+        title: "Cannot delete entry",
+        description: "You must have at least one trip entry.",
+        variant: "destructive",
+      })
+      return
+    }
+    setEntryToDelete(id)
+  }
+
+  const deleteEntry = (id: string) => {
+    if (!id) return
+    
+    const updatedEntries = entries.filter((entry) => entry.id !== id)
+    setEntries(recalculateEntries(updatedEntries))
+    
+    toast({
+      title: "Trip deleted",
+      description: "Your trip has been removed.",
+    })
+    
+    setEntryToDelete(null)
+  }
+
 
   // Calculate totals for display - use the same logic as recalculateEntries
-  const tripsForCalculation = entries
-    .filter((entry) => entry.country && entry.startDate && entry.endDate)
-    .map((entry) => ({
-      id: entry.id,
-      country: entry.country,
-      startDate: entry.startDate!,
-      endDate: entry.endDate!,
-      days: entry.days,
-    }))
-
   const totalDays = entries.reduce((sum, entry) => sum + entry.days, 0)
-  const compliance = calculateCompliance(tripsForCalculation)
-  const totalDaysRemaining = compliance.daysRemaining
+  // Use the days remaining from the last entry (which represents cumulative calculation)
+  const lastEntry = entries[entries.length - 1]
+  const totalDaysRemaining = lastEntry?.daysRemaining ?? 90
 
   return (
     <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
@@ -216,11 +248,11 @@ export default function SchengenVisaCalculator() {
       <header className="shadow-sm border-b border-gray-200" style={{ backgroundColor: "#F4F2ED" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <img src="/images/visa-calculator-logo.png" alt="Visa Calculator" className="h-8 w-auto mr-3" />
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Schengen Visa Calculator</h1>
+            <div className="flex items-center min-w-0 flex-1">
+              <img src="/images/visa-calculator-logo.png" alt="Visa Calculator" className="h-6 sm:h-8 w-auto mr-2 sm:mr-3 flex-shrink-0" />
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">Schengen Visa Calculator</h1>
             </div>
-            <div className="hidden sm:flex items-center space-x-4">
+            <div className="hidden sm:flex items-center space-x-4 ml-4">
               <Link href="/login">
                 <Button className="bg-black hover:bg-gray-800 text-white transition-colors duration-200 px-6 sm:px-8 py-2 rounded-full">
                   Login
@@ -235,17 +267,17 @@ export default function SchengenVisaCalculator() {
                 </Button>
               </Link>
             </div>
-            {/* Mobile menu button */}
-            <div className="sm:hidden">
+            {/* Mobile menu */}
+            <div className="sm:hidden flex items-center space-x-2 ml-4">
               <Link href="/login">
-                <Button size="sm" className="bg-black hover:bg-gray-800 text-white mr-2">
+                <Button size="sm" className="bg-black hover:bg-gray-800 text-white px-3 py-1 text-xs rounded-full">
                   Login
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button
                   size="sm"
-                  className="text-white hover:opacity-90"
+                  className="text-white hover:opacity-90 px-3 py-1 text-xs rounded-full"
                   style={{ backgroundColor: "#FA9937" }}
                 >
                   Sign Up
@@ -257,17 +289,17 @@ export default function SchengenVisaCalculator() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
               Plan Smarter
               <br />
               Travel Easier
             </h1>
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
+            <h2 className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
               Know Where You Can Go — Instantly See Visa Rules, Book Trips, and Travel Confidently.
             </h2>
           </div>
@@ -283,6 +315,7 @@ export default function SchengenVisaCalculator() {
             onUpdateEntry={updateEntry}
             onUpdateDateRange={updateDateRange}
             onAddEntry={addEntry}
+            onConfirmDelete={confirmDeleteEntry}
             totalDaysRemaining={totalDaysRemaining}
           />
           
@@ -303,6 +336,27 @@ export default function SchengenVisaCalculator() {
 
       {/* Save Progress Modal */}
       {showSaveModal && <SaveProgressModal onClose={() => setShowSaveModal(false)} entries={entries} />}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!entryToDelete} onOpenChange={() => setEntryToDelete(null)}>
+        <AlertDialogContent className="sm:max-w-[425px] mx-4">
+          <AlertDialogHeader className="space-y-3">
+            <AlertDialogTitle className="text-lg sm:text-xl">Delete Trip</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-base leading-relaxed">
+              Are you sure you want to delete this trip? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto order-2 sm:order-1">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => entryToDelete && deleteEntry(entryToDelete)}
+              className="bg-red-600 hover:bg-red-700 w-full sm:w-auto order-1 sm:order-2"
+            >
+              Delete Trip
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Footer */}
       <footer className="text-gray-900 py-12" style={{ backgroundColor: "#F4F2ED" }}>

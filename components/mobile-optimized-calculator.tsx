@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, ChevronRight, ChevronDown, ChevronUp, Calendar } from "lucide-react"
+import { Plus, ChevronRight, ChevronDown, ChevronUp, Trash2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { EnhancedDateRangePicker } from "@/components/enhanced-date-range-picker"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
@@ -27,6 +26,9 @@ interface MobileOptimizedCalculatorProps {
   onUpdateEntry: (id: string, field: keyof VisaEntry, value: any) => void
   onUpdateDateRange: (id: string, dateRange: DateRange | undefined) => void
   onAddEntry: () => void
+  onDeleteEntry?: (id: string) => void
+  onConfirmDelete?: (id: string) => void
+  deletingEntryId?: string | null
   totalDaysRemaining: number
 }
 
@@ -78,36 +80,36 @@ export function MobileOptimizedCalculator({
   onUpdateEntry,
   onUpdateDateRange,
   onAddEntry,
+  onDeleteEntry,
+  onConfirmDelete,
+  deletingEntryId,
   totalDaysRemaining,
 }: MobileOptimizedCalculatorProps) {
-  const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({})
   const [expandedEntries, setExpandedEntries] = useState<Record<string, boolean>>({})
-
-  const setPopoverOpen = (entryId: string, open: boolean) => {
-    setOpenPopovers((prev) => ({ ...prev, [entryId]: open }))
-  }
 
   const toggleEntryExpanded = (entryId: string) => {
     setExpandedEntries((prev) => ({ ...prev, [entryId]: !prev[entryId] }))
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       {/* Mobile Summary Card */}
       <Card className="lg:hidden">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-center text-lg">Visa Status</CardTitle>
+        <CardHeader className="pb-4 pt-5">
+          <CardTitle className="text-center text-lg sm:text-xl">Visa Status</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{totalDaysRemaining}</div>
-              <div className="text-xs text-gray-600">Days Remaining</div>
+        <CardContent className="pb-5">
+          <div className="flex items-center justify-between px-2">
+            <div className="text-center flex-1">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600">{totalDaysRemaining}</div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-1">Days Remaining</div>
             </div>
-            <MobileProgressCircle daysRemaining={totalDaysRemaining} />
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{90 - totalDaysRemaining}</div>
-              <div className="text-xs text-gray-600">Days Used</div>
+            <div className="mx-4 sm:mx-6">
+              <MobileProgressCircle daysRemaining={totalDaysRemaining} size={70} />
+            </div>
+            <div className="text-center flex-1">
+              <div className="text-2xl sm:text-3xl font-bold text-orange-600">{90 - totalDaysRemaining}</div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-1">Days Used</div>
             </div>
           </div>
         </CardContent>
@@ -118,7 +120,7 @@ export function MobileOptimizedCalculator({
         {/* Column Headers */}
         <div
           className="grid gap-4 p-6 bg-gray-50 border-b"
-          style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
+          style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr 80px" }}
         >
           <div className="text-center">
             <h3 className="font-semibold text-gray-900">Country</h3>
@@ -134,6 +136,9 @@ export function MobileOptimizedCalculator({
           </div>
           <div className="text-center">
             <h3 className="font-semibold text-gray-900">Days Remaining</h3>
+          </div>
+          <div className="text-center">
+            <h3 className="font-semibold text-gray-900">Actions</h3>
           </div>
         </div>
 
@@ -172,7 +177,7 @@ export function MobileOptimizedCalculator({
                 />
               </div>
 
-              <div className="grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}>
+              <div className="grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr 80px" }}>
                 {/* Country Selection */}
                 <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
                   <Select value={entry.country} onValueChange={(value) => onUpdateEntry(entry.id, "country", value)}>
@@ -194,59 +199,16 @@ export function MobileOptimizedCalculator({
 
                 {/* Date Range */}
                 <div className="rounded-lg p-4 border border-gray-200 bg-gray-50">
-                  <Popover open={openPopovers[entry.id]} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!entry.country}
-                      >
-                        <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">
-                          {!entry.country
-                            ? "Select country first"
-                            : entry.startDate && entry.endDate
-                              ? `${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`
-                              : entry.startDate
-                                ? `${format(entry.startDate, "MMM dd")} - End date`
-                                : "Select dates"}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
-                      <div className="p-6">
-                        <CalendarComponent
-                          mode="range"
-                          selected={{
-                            from: entry.startDate || undefined,
-                            to: entry.endDate || undefined,
-                          }}
-                          onSelect={(range) => onUpdateDateRange(entry.id, range)}
-                          numberOfMonths={2}
-                          className="rounded-none border-0"
-                        />
-                        <div className="flex gap-3 mt-6 pt-4 border-t">
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
-                            onClick={() => {
-                              onUpdateDateRange(entry.id, undefined)
-                            }}
-                          >
-                            Clear
-                          </Button>
-                          <Button
-                            className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
-                            onClick={() => {
-                              setPopoverOpen(entry.id, false)
-                            }}
-                          >
-                            Done
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                  <EnhancedDateRangePicker
+                    dateRange={{
+                      from: entry.startDate || undefined,
+                      to: entry.endDate || undefined,
+                    }}
+                    onDateRangeChange={(range) => onUpdateDateRange(entry.id, range)}
+                    disabled={!entry.country}
+                    placeholder={!entry.country ? "Select country first" : "Select travel dates"}
+                    maxStayDays={90}
+                  />
                 </div>
 
                 {/* Results Columns */}
@@ -268,6 +230,25 @@ export function MobileOptimizedCalculator({
                     <MobileProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                   </div>
                 </div>
+
+                {/* Actions Column */}
+                <div className="flex items-center justify-center">
+                  {(onDeleteEntry || onConfirmDelete) && entries.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => (onConfirmDelete || onDeleteEntry)?.(entry.id)}
+                      disabled={deletingEntryId === entry.id}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {deletingEntryId === entry.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -275,7 +256,7 @@ export function MobileOptimizedCalculator({
       </div>
 
       {/* Mobile Card View */}
-      <div className="lg:hidden space-y-4">
+      <div className="lg:hidden space-y-4 sm:space-y-6">
         {entries.map((entry, index) => (
           <Card key={entry.id} className="overflow-hidden">
             <div
@@ -283,39 +264,69 @@ export function MobileOptimizedCalculator({
                 expandedEntries[entry.id] ?? index === 0 ? "" : "cursor-pointer"
               }`}
               onClick={() => toggleEntryExpanded(entry.id)}
+              role="button"
+              tabIndex={0}
+              aria-expanded={expandedEntries[entry.id] ?? index === 0}
+              aria-label={`Trip ${index + 1}: ${entry.country ? countries.find((c) => c.code === entry.country)?.name || "Country not selected" : "Country not selected"}. Click to ${(expandedEntries[entry.id] ?? index === 0) ? "collapse" : "expand"} details.`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  toggleEntryExpanded(entry.id)
+                }
+              }}
             >
-              <CardHeader className="hover:bg-gray-50 transition-colors">
+              <CardHeader className="hover:bg-gray-50 transition-colors py-4 sm:py-5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-2xl">
+                  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                    <div className="text-2xl sm:text-3xl flex-shrink-0">
                       {entry.country ? countries.find((c) => c.code === entry.country)?.flag || "🇪🇺" : "🇪🇺"}
                     </div>
-                    <div>
-                      <CardTitle className="text-base">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-base sm:text-lg truncate">
                         {entry.country
                           ? countries.find((c) => c.code === entry.country)?.name || "Select Country"
                           : "Select Country"}
                       </CardTitle>
                       {entry.startDate && entry.endDate && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm sm:text-base text-gray-600 mt-1">
                           {format(entry.startDate, "MMM dd")} - {format(entry.endDate, "MMM dd")} ({entry.days} days)
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {entry.days > 0 && <MobileProgressCircle daysRemaining={entry.daysRemaining} size={40} />}
+                  <div className="flex items-center space-x-2 sm:space-x-3 ml-2">
+                    {entry.days > 0 && <MobileProgressCircle daysRemaining={entry.daysRemaining} size={44} />}
+                    {(onDeleteEntry || onConfirmDelete) && entries.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          ;(onConfirmDelete || onDeleteEntry)?.(entry.id)
+                        }}
+                        disabled={deletingEntryId === entry.id}
+                        className="h-10 w-10 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50 rounded-full"
+                        aria-label={`Delete trip ${index + 1}`}
+                        title="Delete this trip"
+                      >
+                        {deletingEntryId === entry.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                     {(expandedEntries[entry.id] ?? index === 0) ? (
-                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                      <ChevronUp className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                     ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                      <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                     )}
                   </div>
                 </div>
               </CardHeader>
 
               {(expandedEntries[entry.id] ?? index === 0) && (
-                <CardContent className="pt-0 space-y-4">
+                <CardContent className="pt-0 space-y-4 sm:space-y-6 px-4 sm:px-6 pb-5 sm:pb-6">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-center space-x-2 py-2">
                     <div
@@ -349,9 +360,12 @@ export function MobileOptimizedCalculator({
 
                   {/* Country Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Country</label>
                     <Select value={entry.country} onValueChange={(value) => onUpdateEntry(entry.id, "country", value)}>
-                      <SelectTrigger className="w-full h-12">
+                      <SelectTrigger 
+                        className="w-full h-12 sm:h-14 text-base"
+                        aria-label="Select country for trip"
+                      >
                         <SelectValue placeholder="Select a country" />
                       </SelectTrigger>
                       <SelectContent>
@@ -369,72 +383,33 @@ export function MobileOptimizedCalculator({
 
                   {/* Date Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Travel Dates</label>
-                    <Popover open={openPopovers[entry.id]} onOpenChange={(open) => setPopoverOpen(entry.id, open)}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-center text-center font-normal bg-white h-12 text-sm px-4 border shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={!entry.country}
-                        >
-                          <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">
-                            {!entry.country
-                              ? "Select country first"
-                              : entry.startDate && entry.endDate
-                                ? `${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`
-                                : entry.startDate
-                                  ? `${format(entry.startDate, "MMM dd")} - End date`
-                                  : "Select dates"}
-                          </span>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-white rounded-2xl shadow-xl border-0" align="start">
-                        <div className="p-6">
-                          <CalendarComponent
-                            mode="range"
-                            selected={{
-                              from: entry.startDate || undefined,
-                              to: entry.endDate || undefined,
-                            }}
-                            onSelect={(range) => onUpdateDateRange(entry.id, range)}
-                            numberOfMonths={1}
-                            className="rounded-none border-0"
-                          />
-                          <div className="flex gap-3 mt-6 pt-4 border-t">
-                            <Button
-                              variant="outline"
-                              className="flex-1 border-slate-300 text-slate-700 hover:bg-gray-50 bg-transparent"
-                              onClick={() => onUpdateDateRange(entry.id, undefined)}
-                            >
-                              Clear
-                            </Button>
-                            <Button
-                              className="flex-1 bg-slate-800 hover:bg-slate-700 text-white"
-                              onClick={() => setPopoverOpen(entry.id, false)}
-                            >
-                              Done
-                            </Button>
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Travel Dates</label>
+                    <EnhancedDateRangePicker
+                      dateRange={{
+                        from: entry.startDate || undefined,
+                        to: entry.endDate || undefined,
+                      }}
+                      onDateRangeChange={(range) => onUpdateDateRange(entry.id, range)}
+                      disabled={!entry.country}
+                      placeholder={!entry.country ? "Select country first" : "Select travel dates"}
+                      maxStayDays={90}
+                    />
                   </div>
 
                   {/* Results */}
                   {entry.days > 0 && (
-                    <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                    <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-4 sm:pt-6 border-t">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-blue-600">{entry.days}</div>
-                        <div className="text-xs text-gray-600">Days of Stay</div>
+                        <div className="text-lg sm:text-xl font-bold text-blue-600">{entry.days}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1">Days of Stay</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-orange-600">{entry.daysInLast180}</div>
-                        <div className="text-xs text-gray-600">In Last 180</div>
+                        <div className="text-lg sm:text-xl font-bold text-orange-600">{entry.daysInLast180}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1">In Last 180</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-green-600">{entry.daysRemaining}</div>
-                        <div className="text-xs text-gray-600">Remaining</div>
+                        <div className="text-lg sm:text-xl font-bold text-green-600">{entry.daysRemaining}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1">Remaining</div>
                       </div>
                     </div>
                   )}
@@ -446,13 +421,15 @@ export function MobileOptimizedCalculator({
       </div>
 
       {/* Add Entry Button */}
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center pt-6 sm:pt-8">
         <Button
           onClick={onAddEntry}
           variant="outline"
-          className="flex items-center space-x-2 hover:bg-gray-50 transition-colors duration-200 bg-transparent rounded-full px-6"
+          size="lg"
+          className="flex items-center space-x-2 sm:space-x-3 hover:bg-gray-50 transition-colors duration-200 bg-transparent rounded-full px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-medium shadow-sm"
+          aria-label="Add another trip entry to calculate more visa days"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
           <span>Add Another Trip</span>
         </Button>
       </div>
