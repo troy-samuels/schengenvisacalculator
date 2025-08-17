@@ -25,13 +25,18 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        cache: 'pnpm'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run fast test suite
-      run: npm run test
+      run: pnpm run test
       
     - name: Upload fast test results
       uses: actions/upload-artifact@v4
@@ -42,7 +47,7 @@ jobs:
         
     - name: Run full test suite
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: npm run test:full
+      run: pnpm run test:full
       
     - name: Upload full test results
       uses: actions/upload-artifact@v4
@@ -63,14 +68,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
+        cache: 'pnpm'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run EU compliance validation
       run: |
-        npm run test:eu > eu-compliance-report.txt
+        pnpm run test:eu > eu-compliance-report.txt
         cat eu-compliance-report.txt
         
     - name: Check EU compliance status
@@ -100,14 +110,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
+        cache: 'pnpm'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run edge case tests
       run: |
-        npm run test:edge > edge-case-report.txt
+        pnpm run test:edge > edge-case-report.txt
         cat edge-case-report.txt
         
     - name: Check edge case status
@@ -137,14 +152,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
+        cache: 'pnpm'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run performance benchmarks
       run: |
-        npm run benchmark 2>&1 | tee performance-log.txt
+        pnpm run benchmark 2>&1 | tee performance-log.txt
         
     - name: Analyze performance results
       run: |
@@ -172,15 +192,20 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
+        cache: 'pnpm'
+        
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 8
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install --frozen-lockfile
       
     - name: Run regression tests
       run: |
         echo "Running regression tests against main branch..."
-        npm run test:comprehensive > regression-results.txt
+        pnpm run test:comprehensive > regression-results.txt
         
     - name: Compare with baseline
       run: |
