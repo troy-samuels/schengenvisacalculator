@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { EnhancedDateRangePicker } from "@/components/enhanced-date-range-picker"
+import { TripTimeline } from "@/components/trip-timeline"
+import { HelpTooltip } from "@/components/help-tooltip"
+import { 
+  Rule90180Help, 
+  DayCountingHelp, 
+  SchengenCountriesHelp, 
+  CalculationResultsHelp,
+  PlanningHelp 
+} from "@/components/schengen-help-content"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 
@@ -96,20 +105,42 @@ export function MobileOptimizedCalculator({
       {/* Mobile Summary Card */}
       <Card className="lg:hidden">
         <CardHeader className="pb-4 pt-5">
-          <CardTitle className="text-center text-lg sm:text-xl">Visa Status</CardTitle>
+          <CardTitle className="text-center text-lg sm:text-xl flex items-center justify-center space-x-2">
+            <span>Visa Status</span>
+            <HelpTooltip 
+              title="90/180-Day Rule"
+              content={<Rule90180Help />}
+              position="bottom"
+              size="lg"
+            />
+          </CardTitle>
         </CardHeader>
         <CardContent className="pb-5">
           <div className="flex items-center justify-between px-2">
             <div className="text-center flex-1">
               <div className="text-2xl sm:text-3xl font-bold text-blue-600">{totalDaysRemaining}</div>
-              <div className="text-xs sm:text-sm text-gray-600 mt-1">Days Remaining</div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center justify-center space-x-1">
+                <span>Days Remaining</span>
+                <HelpTooltip 
+                  title="Calculation Results"
+                  content={<CalculationResultsHelp daysUsed={90 - totalDaysRemaining} daysRemaining={totalDaysRemaining} />}
+                  size="lg"
+                />
+              </div>
             </div>
             <div className="mx-4 sm:mx-6">
               <MobileProgressCircle daysRemaining={totalDaysRemaining} size={70} />
             </div>
             <div className="text-center flex-1">
               <div className="text-2xl sm:text-3xl font-bold text-orange-600">{90 - totalDaysRemaining}</div>
-              <div className="text-xs sm:text-sm text-gray-600 mt-1">Days Used</div>
+              <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center justify-center space-x-1">
+                <span>Days Used</span>
+                <HelpTooltip 
+                  title="Day Counting"
+                  content={<DayCountingHelp />}
+                  size="lg"
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -123,19 +154,47 @@ export function MobileOptimizedCalculator({
           style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr 80px" }}
         >
           <div className="text-center">
-            <h3 className="font-semibold text-gray-900">Country</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center justify-center space-x-1">
+              <span>Country</span>
+              <HelpTooltip 
+                title="Schengen Countries"
+                content={<SchengenCountriesHelp />}
+                size="lg"
+              />
+            </h3>
           </div>
           <div className="text-center">
             <h3 className="font-semibold text-gray-900">Date Range</h3>
           </div>
           <div className="text-center">
-            <h3 className="font-semibold text-gray-900">Days of Stay</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center justify-center space-x-1">
+              <span>Days of Stay</span>
+              <HelpTooltip 
+                title="Day Counting"
+                content={<DayCountingHelp />}
+                size="lg"
+              />
+            </h3>
           </div>
           <div className="text-center">
-            <h3 className="font-semibold text-gray-900 text-sm">Days of Stay in the last 180 days</h3>
+            <h3 className="font-semibold text-gray-900 text-sm flex items-center justify-center space-x-1">
+              <span>Days of Stay in the last 180 days</span>
+              <HelpTooltip 
+                title="180-Day Rolling Window"
+                content={<Rule90180Help />}
+                size="lg"
+              />
+            </h3>
           </div>
           <div className="text-center">
-            <h3 className="font-semibold text-gray-900">Days Remaining</h3>
+            <h3 className="font-semibold text-gray-900 flex items-center justify-center space-x-1">
+              <span>Days Remaining</span>
+              <HelpTooltip 
+                title="Calculation Results"
+                content={<CalculationResultsHelp daysUsed={90 - totalDaysRemaining} daysRemaining={totalDaysRemaining} />}
+                size="lg"
+              />
+            </h3>
           </div>
           <div className="text-center">
             <h3 className="font-semibold text-gray-900">Actions</h3>
@@ -360,7 +419,14 @@ export function MobileOptimizedCalculator({
 
                   {/* Country Selection */}
                   <div>
-                    <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3">Country</label>
+                    <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2 sm:mb-3 flex items-center space-x-1">
+                      <span>Country</span>
+                      <HelpTooltip 
+                        title="Schengen Countries"
+                        content={<SchengenCountriesHelp />}
+                        size="lg"
+                      />
+                    </label>
                     <Select value={entry.country} onValueChange={(value) => onUpdateEntry(entry.id, "country", value)}>
                       <SelectTrigger 
                         className="w-full h-12 sm:h-14 text-base"
@@ -401,15 +467,36 @@ export function MobileOptimizedCalculator({
                     <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-4 sm:pt-6 border-t">
                       <div className="text-center">
                         <div className="text-lg sm:text-xl font-bold text-blue-600">{entry.days}</div>
-                        <div className="text-xs sm:text-sm text-gray-600 mt-1">Days of Stay</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center justify-center space-x-1">
+                          <span>Days of Stay</span>
+                          <HelpTooltip 
+                            title="Day Counting"
+                            content={<DayCountingHelp />}
+                            size="md"
+                          />
+                        </div>
                       </div>
                       <div className="text-center">
                         <div className="text-lg sm:text-xl font-bold text-orange-600">{entry.daysInLast180}</div>
-                        <div className="text-xs sm:text-sm text-gray-600 mt-1">In Last 180</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center justify-center space-x-1">
+                          <span>In Last 180</span>
+                          <HelpTooltip 
+                            title="180-Day Window"
+                            content={<Rule90180Help />}
+                            size="md"
+                          />
+                        </div>
                       </div>
                       <div className="text-center">
                         <div className="text-lg sm:text-xl font-bold text-green-600">{entry.daysRemaining}</div>
-                        <div className="text-xs sm:text-sm text-gray-600 mt-1">Remaining</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center justify-center space-x-1">
+                          <span>Remaining</span>
+                          <HelpTooltip 
+                            title="Your Status"
+                            content={<CalculationResultsHelp daysUsed={entry.daysInLast180} daysRemaining={entry.daysRemaining} />}
+                            size="md"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -421,7 +508,7 @@ export function MobileOptimizedCalculator({
       </div>
 
       {/* Add Entry Button */}
-      <div className="flex justify-center pt-6 sm:pt-8">
+      <div className="flex flex-col items-center pt-6 sm:pt-8 space-y-3">
         <Button
           onClick={onAddEntry}
           variant="outline"
@@ -432,7 +519,18 @@ export function MobileOptimizedCalculator({
           <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
           <span>Add Another Trip</span>
         </Button>
+        <div className="flex items-center space-x-1 text-xs text-gray-500">
+          <span>Need help planning future trips?</span>
+          <HelpTooltip 
+            title="Trip Planning"
+            content={<PlanningHelp />}
+            size="lg"
+          />
+        </div>
       </div>
+
+      {/* Trip Timeline */}
+      <TripTimeline entries={entries} countries={countries} />
     </div>
   )
 }
