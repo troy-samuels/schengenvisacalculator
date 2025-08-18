@@ -89,10 +89,15 @@ jobs:
         fi
       
     - name: Run EU compliance validation
+      run: npm run compliance:eu
+      
+    - name: Verify compliance report exists
       run: |
-        # Run EU compliance tests and save logs
-        npm run test:eu 2>&1 | tee eu-compliance-report.txt
-        exit ${PIPESTATUS[0]}
+        if [ ! -f eu-compliance-report.txt ]; then
+          echo "Error: eu-compliance-report.txt not found"
+          exit 1
+        fi
+        echo "EU compliance report file created successfully"
         
     - name: Check EU compliance status
       run: |
