@@ -1,0 +1,44 @@
+{
+  "name": "schengen-visa-calculator",
+  "version": "1.0.0",
+  "description": "Schengen visa 90/180-day rule calculator with automated testing",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test/test-accuracy.js",
+    "test:eu": "node test/eu-compliance-check.js",
+    "test:edge": "node test/edge-case-validation.js",
+    "benchmark": "node test/performance-benchmark.js",
+    "test:all": "npm run test && npm run test:eu && npm run test:edge && npm run benchmark",
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "validate": "npm run test:all"
+  },
+  "keywords": [
+    "schengen",
+    "visa",
+    "calculator",
+    "travel",
+    "90-180-rule",
+    "europe"
+  ],
+  "author": "Schengen Calculator Team",
+  "license": "MIT",
+  "dependencies": {
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/troy-samuels/schengenvisacalculator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/troy-samuels/schengenvisacalculator/issues"
+  },
+  "homepage": "https://github.com/troy-samuels/schengenvisacalculator#readme"
+}

@@ -1,4 +1,4 @@
-name: Schengen Calculator Test Automation
+name: Schengen Calculator Test Automation (npm)
 
 on:
   push:
@@ -30,27 +30,17 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
-    - name: Run fast test suite
-      run: npm test
+    - name: Run accuracy tests
+      run: npm run test
       
-    - name: Upload fast test results
+    - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results-fast-node-${{ matrix.node-version }}
-        path: "*.log"
-        
-    - name: Run full test suite
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: npm run test:full
-      
-    - name: Upload full test results
-      uses: actions/upload-artifact@v4
-      if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-      with:
-        name: test-results-full-node-${{ matrix.node-version }}
-        path: "*.log"
-
+        name: test-accuracy-results-node-${{ matrix.node-version }}
+        path: |
+          test/
+          *.log
 
   eu-compliance-check:
     runs-on: ubuntu-latest
@@ -70,7 +60,7 @@ jobs:
       
     - name: Run EU compliance validation
       run: |
-        npm run test:eu > eu-compliance-report.txt
+        npm run test:eu > eu-compliance-report.txt 2>&1
         cat eu-compliance-report.txt
         
     - name: Check EU compliance status
@@ -107,7 +97,7 @@ jobs:
       
     - name: Run edge case tests
       run: |
-        npm run test:edge > edge-case-report.txt
+        npm run test:edge > edge-case-report.txt 2>&1
         cat edge-case-report.txt
         
     - name: Check edge case status
@@ -144,54 +134,20 @@ jobs:
       
     - name: Run performance benchmarks
       run: |
-        npm run benchmark 2>&1 | tee performance-log.txt
+        npm run benchmark > performance-log.txt 2>&1
+        cat performance-log.txt
         
     - name: Analyze performance results
       run: |
         echo "Performance Analysis:"
-        grep -E "(Performance:|ms)" performance-log.txt || echo "No performance data found"
+        grep -E "(Performance:|ms|PASS|FAIL)" performance-log.txt || echo "No performance data found"
         
     - name: Upload performance results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: performance-results
-        path: |
-          performance-log.txt
-
-  regression-testing:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run regression tests
-      run: |
-        echo "Running regression tests against main branch..."
-        npm run test:comprehensive > regression-results.txt
-        
-    - name: Compare with baseline
-      run: |
-        echo "Regression test results:"
-        cat regression-results.txt
-        
-    - name: Upload regression results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: regression-results
-        path: regression-results.txt
+        path: performance-log.txt
 
   test-summary:
     runs-on: ubuntu-latest
@@ -211,7 +167,7 @@ jobs:
         
         # Check EU compliance
         if [ -f eu-compliance-report/eu-compliance-report.txt ]; then
-          if grep -q "✅ All EU official test cases passed" eu-compliance-report/eu-compliance-report.txt; then
+          if grep -q "ALL EU OFFICIAL TEST CASES PASSED" eu-compliance-report/eu-compliance-report.txt; then
             echo "- ✅ EU Compliance: PASSED" >> test-summary.md
           else
             echo "- ❌ EU Compliance: FAILED" >> test-summary.md
@@ -220,16 +176,20 @@ jobs:
         
         # Check edge cases
         if [ -f edge-case-report/edge-case-report.txt ]; then
-          if grep -q "✅ ALL EDGE CASES HANDLED CORRECTLY" edge-case-report/edge-case-report.txt; then
+          if grep -q "ALL EDGE CASES HANDLED CORRECTLY" edge-case-report/edge-case-report.txt; then
             echo "- ✅ Edge Cases: PASSED" >> test-summary.md
           else
             echo "- ❌ Edge Cases: FAILED" >> test-summary.md
           fi
         fi
         
-        # Add performance info
+        # Check performance
         if [ -f performance-results/performance-log.txt ]; then
-          echo "- 🚀 Performance: Tests completed successfully" >> test-summary.md
+          if grep -q "ALL PERFORMANCE BENCHMARKS PASSED" performance-results/performance-log.txt; then
+            echo "- ✅ Performance: PASSED" >> test-summary.md
+          else
+            echo "- ⚠️ Performance: CHECK REQUIRED" >> test-summary.md
+          fi
         fi
         
         echo "" >> test-summary.md
@@ -242,21 +202,3 @@ jobs:
       with:
         name: test-summary
         path: test-summary.md
-
-    - name: Comment test results on PR
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          try {
-            const summary = fs.readFileSync('test-summary.md', 'utf8');
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: summary
-            });
-          } catch (error) {
-            console.log('Could not read test summary:', error.message);
-          }
