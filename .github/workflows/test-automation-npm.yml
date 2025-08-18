@@ -35,22 +35,37 @@ jobs:
           npm install
         fi
       
-    - name: Run accuracy tests
-      run: |
-        # Run tests and save logs
-        npm run test 2>&1 | tee test-accuracy-${{ matrix.node-version }}.log
-        # Ensure we exit with the correct status
-        exit ${PIPESTATUS[0]}
+    - name: Run fast tests
+      run: npm run test:fast
       
-    - name: Upload test results
+    - name: Run full tests
+      run: npm run test:full
+      
+    - name: Verify log files exist
+      run: |
+        if [ ! -f fast-tests.log ]; then
+          echo "Error: fast-tests.log not found"
+          exit 1
+        fi
+        if [ ! -f full-tests.log ]; then
+          echo "Error: full-tests.log not found"
+          exit 1
+        fi
+        echo "Both log files created successfully"
+      
+    - name: Upload fast test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-accuracy-results-node-${{ matrix.node-version }}
-        path: |
-          test/
-          *.log
-          test-accuracy-${{ matrix.node-version }}.log
+        name: test-results-fast-node-${{ matrix.node-version }}
+        path: fast-tests.log
+        
+    - name: Upload full test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-full-node-${{ matrix.node-version }}
+        path: full-tests.log
 
   eu-compliance-check:
     runs-on: ubuntu-latest
