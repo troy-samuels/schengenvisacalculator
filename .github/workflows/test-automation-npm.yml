@@ -60,6 +60,7 @@ jobs:
       with:
         name: test-results-fast-node-${{ matrix.node-version }}
         path: fast-tests.log
+        if-no-files-found: error
         
     - name: Upload full test results
       uses: actions/upload-artifact@v4
@@ -67,6 +68,7 @@ jobs:
       with:
         name: test-results-full-node-${{ matrix.node-version }}
         path: full-tests.log
+        if-no-files-found: error
 
   eu-compliance-check:
     runs-on: ubuntu-latest
@@ -118,6 +120,7 @@ jobs:
       with:
         name: eu-compliance-report
         path: eu-compliance-report.txt
+        if-no-files-found: error
 
   edge-case-validation:
     runs-on: ubuntu-latest
@@ -164,6 +167,7 @@ jobs:
       with:
         name: edge-case-report
         path: edge-case-report.txt
+        if-no-files-found: error
 
   performance-benchmark:
     runs-on: ubuntu-latest
@@ -210,6 +214,7 @@ jobs:
       with:
         name: performance-results
         path: performance-log.txt
+        if-no-files-found: error
 
   test-summary:
     runs-on: ubuntu-latest
@@ -348,3 +353,4 @@ jobs:
       with:
         name: test-summary
         path: test-summary.md
+        if-no-files-found: error
