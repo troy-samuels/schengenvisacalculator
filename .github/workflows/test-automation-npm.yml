@@ -181,14 +181,21 @@ jobs:
         fi
       
     - name: Run performance benchmarks
+      run: npm run benchmark
+      
+    - name: Verify performance log exists
       run: |
-        # Run performance benchmarks and save logs
-        npm run benchmark 2>&1 | tee performance-log.txt
-        exit ${PIPESTATUS[0]}
+        if [ ! -f performance-log.txt ]; then
+          echo "Error: performance-log.txt not found"
+          exit 1
+        fi
+        echo "Performance log file created successfully"
         
     - name: Analyze performance results
       run: |
         echo "Performance Analysis:"
+        cat performance-log.txt
+        echo ""
         grep -E "(Performance:|ms|PASS|FAIL)" performance-log.txt || echo "No performance data found"
         
     - name: Upload performance results
