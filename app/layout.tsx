@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 import { OfflineStatus } from '@/components/offline-status'
+import { MobileInstallPrompt } from '@/components/mobile-install-prompt'
 
 export const metadata: Metadata = {
   title: 'Schengen Visa Calculator - 90/180 Day Rule Tracker',
@@ -42,15 +43,25 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="theme-color" content="#3b82f6" />
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3b82f6" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1e40af" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Schengen Calculator" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#3b82f6" />
+        <meta name="msapplication-config" content="none" />
+        <meta name="application-name" content="Schengen Calculator" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/images/visa-calculator-logo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/visa-calculator-logo.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/visa-calculator-logo.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/visa-calculator-logo.png" />
+        <link rel="mask-icon" href="/images/visa-calculator-logo.png" color="#3b82f6" />
       </head>
       <body>
         <OfflineStatus />
+        <MobileInstallPrompt />
         {children}
         <Toaster />
         <script
