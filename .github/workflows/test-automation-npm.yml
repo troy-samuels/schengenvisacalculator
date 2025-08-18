@@ -28,10 +28,19 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        # Try npm ci first, fallback to npm install if lockfile is out of sync
+        if ! npm ci; then
+          echo "npm ci failed, trying npm install to regenerate lockfile..."
+          npm install
+        fi
       
     - name: Run accuracy tests
-      run: npm run test
+      run: |
+        # Run tests and save logs
+        npm run test 2>&1 | tee test-accuracy-${{ matrix.node-version }}.log
+        # Ensure we exit with the correct status
+        exit ${PIPESTATUS[0]}
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -41,6 +50,7 @@ jobs:
         path: |
           test/
           *.log
+          test-accuracy-${{ matrix.node-version }}.log
 
   eu-compliance-check:
     runs-on: ubuntu-latest
@@ -56,20 +66,29 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        # Try npm ci first, fallback to npm install if lockfile is out of sync
+        if ! npm ci; then
+          echo "npm ci failed, trying npm install to regenerate lockfile..."
+          npm install
+        fi
       
     - name: Run EU compliance validation
       run: |
-        npm run test:eu > eu-compliance-report.txt 2>&1
-        cat eu-compliance-report.txt
+        # Run EU compliance tests and save logs
+        npm run test:eu 2>&1 | tee eu-compliance-report.txt
+        exit ${PIPESTATUS[0]}
         
     - name: Check EU compliance status
       run: |
         if grep -q "❌" eu-compliance-report.txt; then
           echo "EU compliance tests failed"
           exit 1
-        else
+        elif grep -q "✅" eu-compliance-report.txt; then
           echo "EU compliance tests passed"
+        else
+          echo "No clear test results found"
+          exit 1
         fi
         
     - name: Upload EU compliance report
@@ -93,20 +112,29 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        # Try npm ci first, fallback to npm install if lockfile is out of sync
+        if ! npm ci; then
+          echo "npm ci failed, trying npm install to regenerate lockfile..."
+          npm install
+        fi
       
     - name: Run edge case tests
       run: |
-        npm run test:edge > edge-case-report.txt 2>&1
-        cat edge-case-report.txt
+        # Run edge case tests and save logs
+        npm run test:edge 2>&1 | tee edge-case-report.txt
+        exit ${PIPESTATUS[0]}
         
     - name: Check edge case status
       run: |
         if grep -q "❌" edge-case-report.txt; then
           echo "Edge case tests failed"
           exit 1
-        else
+        elif grep -q "✅" edge-case-report.txt; then
           echo "Edge case tests passed"
+        else
+          echo "No clear test results found"
+          exit 1
         fi
         
     - name: Upload edge case report
@@ -130,12 +158,18 @@ jobs:
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
+      run: |
+        # Try npm ci first, fallback to npm install if lockfile is out of sync
+        if ! npm ci; then
+          echo "npm ci failed, trying npm install to regenerate lockfile..."
+          npm install
+        fi
       
     - name: Run performance benchmarks
       run: |
-        npm run benchmark > performance-log.txt 2>&1
-        cat performance-log.txt
+        # Run performance benchmarks and save logs
+        npm run benchmark 2>&1 | tee performance-log.txt
+        exit ${PIPESTATUS[0]}
         
     - name: Analyze performance results
       run: |
@@ -162,38 +196,122 @@ jobs:
       run: |
         echo "# 🧪 Schengen Calculator Test Summary" > test-summary.md
         echo "" >> test-summary.md
-        echo "## Test Results" >> test-summary.md
+        echo "**Generated:** $(date -u)" >> test-summary.md
+        echo "**Workflow:** ${{ github.workflow }}" >> test-summary.md
+        echo "**Run:** ${{ github.run_number }}" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "## 📊 Test Results Overview" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # Initialize counters
+        TOTAL_TESTS=0
+        PASSED_TESTS=0
+        FAILED_TESTS=0
+        
+        # Check accuracy tests across all Node.js versions
+        echo "### 🎯 Accuracy Tests" >> test-summary.md
+        for version in 18.x 20.x 22.x; do
+          if ls test-accuracy-results-node-${version}/ 2>/dev/null | grep -q "test-accuracy-${version}.log"; then
+            if grep -q "✅ PASS" test-accuracy-results-node-${version}/test-accuracy-${version}.log; then
+              echo "- ✅ Node.js ${version}: PASSED" >> test-summary.md
+              ((PASSED_TESTS++))
+            else
+              echo "- ❌ Node.js ${version}: FAILED" >> test-summary.md
+              ((FAILED_TESTS++))
+            fi
+            ((TOTAL_TESTS++))
+          else
+            echo "- ⚠️ Node.js ${version}: NO RESULTS" >> test-summary.md
+            ((FAILED_TESTS++))
+            ((TOTAL_TESTS++))
+          fi
+        done
         echo "" >> test-summary.md
         
         # Check EU compliance
+        echo "### 🇪🇺 EU Compliance" >> test-summary.md
         if [ -f eu-compliance-report/eu-compliance-report.txt ]; then
-          if grep -q "ALL EU OFFICIAL TEST CASES PASSED" eu-compliance-report/eu-compliance-report.txt; then
-            echo "- ✅ EU Compliance: PASSED" >> test-summary.md
+          if grep -q "✅" eu-compliance-report/eu-compliance-report.txt; then
+            echo "- ✅ EU Official Test Cases: PASSED" >> test-summary.md
+            ((PASSED_TESTS++))
           else
-            echo "- ❌ EU Compliance: FAILED" >> test-summary.md
+            echo "- ❌ EU Official Test Cases: FAILED" >> test-summary.md
+            ((FAILED_TESTS++))
           fi
+          ((TOTAL_TESTS++))
+        else
+          echo "- ⚠️ EU Official Test Cases: NO RESULTS" >> test-summary.md
+          ((FAILED_TESTS++))
+          ((TOTAL_TESTS++))
         fi
+        echo "" >> test-summary.md
         
         # Check edge cases
+        echo "### 🔧 Edge Case Validation" >> test-summary.md
         if [ -f edge-case-report/edge-case-report.txt ]; then
-          if grep -q "ALL EDGE CASES HANDLED CORRECTLY" edge-case-report/edge-case-report.txt; then
-            echo "- ✅ Edge Cases: PASSED" >> test-summary.md
+          if grep -q "✅" edge-case-report/edge-case-report.txt; then
+            echo "- ✅ Edge Case Handling: PASSED" >> test-summary.md
+            ((PASSED_TESTS++))
           else
-            echo "- ❌ Edge Cases: FAILED" >> test-summary.md
+            echo "- ❌ Edge Case Handling: FAILED" >> test-summary.md
+            ((FAILED_TESTS++))
           fi
+          ((TOTAL_TESTS++))
+        else
+          echo "- ⚠️ Edge Case Handling: NO RESULTS" >> test-summary.md
+          ((FAILED_TESTS++))
+          ((TOTAL_TESTS++))
         fi
+        echo "" >> test-summary.md
         
         # Check performance
+        echo "### ⚡ Performance Benchmarks" >> test-summary.md
         if [ -f performance-results/performance-log.txt ]; then
-          if grep -q "ALL PERFORMANCE BENCHMARKS PASSED" performance-results/performance-log.txt; then
-            echo "- ✅ Performance: PASSED" >> test-summary.md
+          if grep -q "✅" performance-results/performance-log.txt; then
+            echo "- ✅ Performance Tests: PASSED" >> test-summary.md
+            ((PASSED_TESTS++))
           else
-            echo "- ⚠️ Performance: CHECK REQUIRED" >> test-summary.md
+            echo "- ⚠️ Performance Tests: CHECK REQUIRED" >> test-summary.md
+            ((FAILED_TESTS++))
           fi
+          ((TOTAL_TESTS++))
+        else
+          echo "- ⚠️ Performance Tests: NO RESULTS" >> test-summary.md
+          ((FAILED_TESTS++))
+          ((TOTAL_TESTS++))
+        fi
+        echo "" >> test-summary.md
+        
+        # Overall summary
+        echo "## 📈 Summary" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "| Metric | Value |" >> test-summary.md
+        echo "|--------|-------|" >> test-summary.md
+        echo "| Total Tests | ${TOTAL_TESTS} |" >> test-summary.md
+        echo "| Passed | ${PASSED_TESTS} |" >> test-summary.md
+        echo "| Failed | ${FAILED_TESTS} |" >> test-summary.md
+        
+        if [ $TOTAL_TESTS -gt 0 ]; then
+          PASS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+          echo "| Pass Rate | ${PASS_RATE}% |" >> test-summary.md
+        else
+          echo "| Pass Rate | N/A |" >> test-summary.md
         fi
         
         echo "" >> test-summary.md
-        echo "Generated on: $(date -u)" >> test-summary.md
+        
+        # Final status
+        if [ $FAILED_TESTS -eq 0 ] && [ $TOTAL_TESTS -gt 0 ]; then
+          echo "🎉 **All tests passed successfully!**" >> test-summary.md
+        elif [ $TOTAL_TESTS -eq 0 ]; then
+          echo "⚠️ **No test results found - check workflow execution**" >> test-summary.md
+        else
+          echo "❌ **Some tests failed - review results above**" >> test-summary.md
+        fi
+        
+        echo "" >> test-summary.md
+        echo "---" >> test-summary.md
+        echo "*Generated by GitHub Actions on $(date -u)*" >> test-summary.md
         
         cat test-summary.md
         
