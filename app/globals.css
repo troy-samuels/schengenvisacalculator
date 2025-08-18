@@ -162,3 +162,109 @@
 [data-state="closed"] {
   animation: slideOutToTop 0.15s ease-in;
 }
+
+/* PWA and Offline Support Styles */
+@media (display-mode: standalone) {
+  body.standalone-mode {
+    /* Add safe area insets for devices with notches */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Hide browser UI elements when in standalone mode */
+  .browser-only {
+    display: none !important;
+  }
+}
+
+/* Offline indicator */
+.offline-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ef4444;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 14px;
+  z-index: 9999;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.offline-indicator.show {
+  transform: translateY(0);
+}
+
+.offline-indicator.online {
+  background: #22c55e;
+}
+
+/* Install prompt button styles */
+.install-prompt {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.install-prompt:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading states for offline content */
+.offline-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid hsl(var(--primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Offline content placeholder */
+.offline-content {
+  text-align: center;
+  padding: 40px 20px;
+  color: hsl(var(--muted-foreground));
+}
+
+.offline-content h2 {
+  margin-bottom: 16px;
+  color: hsl(var(--foreground));
+}
+
+.offline-content p {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* Enhanced focus states for keyboard navigation in PWA */
+@media (display-mode: standalone) {
+  button:focus,
+  a:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+}

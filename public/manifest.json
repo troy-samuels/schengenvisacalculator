@@ -1,0 +1,72 @@
+{
+  "name": "Schengen Visa Calculator",
+  "short_name": "Schengen Calc",
+  "description": "Calculate your Schengen visa compliance and track your 90/180 day stays across European countries",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["travel", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/images/visa-calculator-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/images/visa-calculator-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/visa-calculator-logo.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Schengen calculator on mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calculate Visa",
+      "short_name": "Calculate",
+      "description": "Go directly to visa calculation",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/images/visa-calculator-logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Legal Info",
+      "short_name": "Legal",
+      "description": "View legal disclaimer",
+      "url": "/legal-disclaimer",
+      "icons": [
+        {
+          "src": "/images/visa-calculator-logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate"
+}
