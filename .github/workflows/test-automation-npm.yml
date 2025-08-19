@@ -225,9 +225,41 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       
-    - name: Generate test summary
+    - name: Debug - List downloaded artifacts
       run: |
-        echo "# 🧪 Schengen Calculator Test Summary" > test-summary.md
+        echo "=== Current directory structure ==="
+        pwd
+        ls -la
+        echo ""
+        echo "=== All downloaded artifacts ==="
+        find . -type f -name "*.log" -o -name "*.txt" 2>/dev/null || echo "No log/txt files found"
+        echo ""
+        echo "=== Directory tree ==="
+        ls -R || echo "Failed to list directory tree"
+      
+    - name: Generate test summary
+      shell: bash
+      run: |
+        set -e  # Exit on error
+        set -o pipefail  # Fail on pipe errors
+        
+        # Debug information
+        echo "=== Starting test summary generation ==="
+        echo "Current directory: $(pwd)"
+        echo "Shell: $SHELL"
+        echo "User: $(whoami)"
+        echo ""
+        
+        # Create the summary file with error handling
+        echo "Creating test-summary.md file..."
+        echo "# 🧪 Schengen Calculator Test Summary" > test-summary.md || {
+          echo "ERROR: Failed to create test-summary.md"
+          echo "Checking permissions..."
+          ls -la .
+          echo "Trying with explicit path..."
+          touch ./test-summary.md || echo "Touch failed"
+          exit 1
+        }
         echo "" >> test-summary.md
         echo "**Generated:** $(date -u)" >> test-summary.md
         echo "**Workflow:** ${{ github.workflow }}" >> test-summary.md
@@ -236,27 +268,51 @@ jobs:
         echo "## 📊 Test Results Overview" >> test-summary.md
         echo "" >> test-summary.md
         
-        # Initialize counters
-        TOTAL_TESTS=0
-        PASSED_TESTS=0
-        FAILED_TESTS=0
+        # Initialize counters (use declare for bash arithmetic)
+        declare -i TOTAL_TESTS=0
+        declare -i PASSED_TESTS=0
+        declare -i FAILED_TESTS=0
         
         # Check accuracy tests across all Node.js versions
         echo "### 🎯 Accuracy Tests" >> test-summary.md
         for version in 18.x 20.x 22.x; do
-          if ls test-accuracy-results-node-${version}/ 2>/dev/null | grep -q "test-accuracy-${version}.log"; then
-            if grep -q "✅ PASS" test-accuracy-results-node-${version}/test-accuracy-${version}.log; then
+          version_clean=$(echo $version | tr '.' '-')
+          
+          # Check for fast test results
+          fast_dir="test-results-fast-node-${version}"
+          full_dir="test-results-full-node-${version}"
+          
+          echo "Checking for artifacts in ${fast_dir} and ${full_dir}..." >&2
+          
+          if [ -f "${fast_dir}/fast-tests.log" ] || [ -f "${full_dir}/full-tests.log" ]; then
+            test_passed=true
+            
+            # Check fast tests
+            if [ -f "${fast_dir}/fast-tests.log" ]; then
+              if ! grep -q "✅ PASS\|All tests passed" "${fast_dir}/fast-tests.log"; then
+                test_passed=false
+              fi
+            fi
+            
+            # Check full tests
+            if [ -f "${full_dir}/full-tests.log" ]; then
+              if ! grep -q "✅ PASS\|All tests passed" "${full_dir}/full-tests.log"; then
+                test_passed=false
+              fi
+            fi
+            
+            if [ "$test_passed" = true ]; then
               echo "- ✅ Node.js ${version}: PASSED" >> test-summary.md
-              ((PASSED_TESTS++))
+              PASSED_TESTS=$((PASSED_TESTS + 1))
             else
               echo "- ❌ Node.js ${version}: FAILED" >> test-summary.md
-              ((FAILED_TESTS++))
+              FAILED_TESTS=$((FAILED_TESTS + 1))
             fi
-            ((TOTAL_TESTS++))
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
           else
             echo "- ⚠️ Node.js ${version}: NO RESULTS" >> test-summary.md
-            ((FAILED_TESTS++))
-            ((TOTAL_TESTS++))
+            FAILED_TESTS=$((FAILED_TESTS + 1))
+            TOTAL_TESTS=$((TOTAL_TESTS + 1))
           fi
         done
         echo "" >> test-summary.md
@@ -266,16 +322,16 @@ jobs:
         if [ -f eu-compliance-report/eu-compliance-report.txt ]; then
           if grep -q "✅" eu-compliance-report/eu-compliance-report.txt; then
             echo "- ✅ EU Official Test Cases: PASSED" >> test-summary.md
-            ((PASSED_TESTS++))
+            PASSED_TESTS=$((PASSED_TESTS + 1))
           else
             echo "- ❌ EU Official Test Cases: FAILED" >> test-summary.md
-            ((FAILED_TESTS++))
+            FAILED_TESTS=$((FAILED_TESTS + 1))
           fi
-          ((TOTAL_TESTS++))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         else
           echo "- ⚠️ EU Official Test Cases: NO RESULTS" >> test-summary.md
-          ((FAILED_TESTS++))
-          ((TOTAL_TESTS++))
+          FAILED_TESTS=$((FAILED_TESTS + 1))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         fi
         echo "" >> test-summary.md
         
@@ -284,16 +340,16 @@ jobs:
         if [ -f edge-case-report/edge-case-report.txt ]; then
           if grep -q "✅" edge-case-report/edge-case-report.txt; then
             echo "- ✅ Edge Case Handling: PASSED" >> test-summary.md
-            ((PASSED_TESTS++))
+            PASSED_TESTS=$((PASSED_TESTS + 1))
           else
             echo "- ❌ Edge Case Handling: FAILED" >> test-summary.md
-            ((FAILED_TESTS++))
+            FAILED_TESTS=$((FAILED_TESTS + 1))
           fi
-          ((TOTAL_TESTS++))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         else
           echo "- ⚠️ Edge Case Handling: NO RESULTS" >> test-summary.md
-          ((FAILED_TESTS++))
-          ((TOTAL_TESTS++))
+          FAILED_TESTS=$((FAILED_TESTS + 1))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         fi
         echo "" >> test-summary.md
         
@@ -302,16 +358,16 @@ jobs:
         if [ -f performance-results/performance-log.txt ]; then
           if grep -q "✅" performance-results/performance-log.txt; then
             echo "- ✅ Performance Tests: PASSED" >> test-summary.md
-            ((PASSED_TESTS++))
+            PASSED_TESTS=$((PASSED_TESTS + 1))
           else
             echo "- ⚠️ Performance Tests: CHECK REQUIRED" >> test-summary.md
-            ((FAILED_TESTS++))
+            FAILED_TESTS=$((FAILED_TESTS + 1))
           fi
-          ((TOTAL_TESTS++))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         else
           echo "- ⚠️ Performance Tests: NO RESULTS" >> test-summary.md
-          ((FAILED_TESTS++))
-          ((TOTAL_TESTS++))
+          FAILED_TESTS=$((FAILED_TESTS + 1))
+          TOTAL_TESTS=$((TOTAL_TESTS + 1))
         fi
         echo "" >> test-summary.md
         
@@ -346,7 +402,37 @@ jobs:
         echo "---" >> test-summary.md
         echo "*Generated by GitHub Actions on $(date -u)*" >> test-summary.md
         
+        # Validate the file was created
+        echo ""
+        echo "=== Validating test-summary.md ==="
+        if [ ! -f test-summary.md ]; then
+          echo "ERROR: test-summary.md was not created!"
+          exit 1
+        fi
+        
+        file_size=$(stat -c%s test-summary.md 2>/dev/null || stat -f%z test-summary.md 2>/dev/null || echo "0")
+        echo "File size: ${file_size} bytes"
+        
+        if [ "$file_size" -eq "0" ]; then
+          echo "ERROR: test-summary.md is empty!"
+          exit 1
+        fi
+        
+        echo "SUCCESS: test-summary.md created successfully"
+        echo ""
+        echo "=== Test Summary Content ==="
         cat test-summary.md
+        
+    - name: Validate summary file before upload
+      run: |
+        if [ ! -f test-summary.md ]; then
+          echo "ERROR: test-summary.md does not exist!"
+          ls -la
+          exit 1
+        fi
+        echo "test-summary.md exists and is ready for upload"
+        echo "File info:"
+        ls -la test-summary.md
         
     - name: Upload test summary
       uses: actions/upload-artifact@v4
