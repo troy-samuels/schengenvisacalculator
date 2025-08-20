@@ -1,0 +1,19 @@
+{
+  "crons": [
+    {
+      "path": "/api/blog-scheduler/cron",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/blog-scheduler/cron/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/content/generate/route.ts": {
+      "maxDuration": 300
+    }
+  },
+  "env": {
+    "CRON_SECRET": "@cron_secret"
+  }
+}

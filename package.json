@@ -22,7 +22,19 @@
     "compliance:eu": "node test-eu-compliance.mjs > eu-compliance-report.txt",
     "edge:validate": "node test-edge-cases.mjs > edge-case-report.txt",
     "validate": "npm run test:eu && npm run test:edge && npm run test:comprehensive",
-    "validate:all": "node validate-all-tests.mjs"
+    "validate:all": "node validate-all-tests.mjs",
+    "content:generate": "node scripts/generate-content.mjs",
+    "content:generate:all": "node scripts/generate-content.mjs --type all",
+    "content:generate:countries": "node scripts/generate-content.mjs --type country-to-schengen",
+    "content:generate:nomad": "node scripts/generate-content.mjs --type digital-nomad",
+    "content:generate:comparisons": "node scripts/generate-content.mjs --type visa-comparison",
+    "content:generate:faq": "node scripts/generate-content.mjs --type faq-pages",
+    "content:dry-run": "node scripts/generate-content.mjs --type all --dry-run",
+    "blog:setup": "node scripts/setup-blog-scheduler.mjs",
+    "blog:setup:custom": "node scripts/setup-blog-scheduler.mjs --target 500 --posts-per-week 2",
+    "blog:schedule": "node scripts/setup-blog-scheduler.mjs --weeks 8",
+    "blog:publish": "curl -X POST http://localhost:3000/api/blog-scheduler/publish -H 'Content-Type: application/json' -d '{\"manual\": true}'",
+    "blog:status": "curl http://localhost:3000/api/blog-scheduler/cron"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
