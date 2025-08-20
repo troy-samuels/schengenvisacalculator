@@ -18,9 +18,37 @@ import {
   RotateCcw,
   Download,
   Upload,
-  Plane
+  Plane,
+  CalendarDays,
+  Search,
+  Check,
+  ChevronsUpDown
 } from 'lucide-react'
 import { format, addDays, differenceInDays } from 'date-fns'
+
+// UI Components
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { 
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
+import { useIsMobile } from '@/components/ui/use-mobile'
+import { cn } from '@/lib/utils'
 
 interface Trip {
   id: string
@@ -409,7 +437,7 @@ export function TripManager({ className = '' }: TripManagerProps) {
   )
 }
 
-// Trip Edit Modal Component
+// Mobile-Friendly Trip Edit Component
 interface TripEditModalProps {
   trip: Trip
   onSave: (trip: Trip) => void
@@ -417,26 +445,71 @@ interface TripEditModalProps {
 }
 
 function TripEditModal({ trip, onSave, onCancel }: TripEditModalProps) {
+  const isMobile = useIsMobile()
+  
+  if (isMobile) {
+    return <TripEditDrawer trip={trip} onSave={onSave} onCancel={onCancel} />
+  }
+  
+  return <TripEditDialog trip={trip} onSave={onSave} onCancel={onCancel} />
+}
+
+// Desktop Dialog Version
+function TripEditDialog({ trip, onSave, onCancel }: TripEditModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <TripEditForm trip={trip} onSave={onSave} onCancel={onCancel} />
+      </div>
+    </div>
+  )
+}
+
+// Mobile Drawer Version
+function TripEditDrawer({ trip, onSave, onCancel }: TripEditModalProps) {
+  const [open, setOpen] = useState(true)
+  
+  const handleClose = () => {
+    setOpen(false)
+    onCancel()
+  }
+  
+  return (
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="text-left pb-4">
+          <DrawerTitle className="text-xl">Edit Trip</DrawerTitle>
+          <DrawerDescription>
+            Update your trip details below
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="px-4 pb-4 overflow-y-auto">
+          <TripEditForm trip={trip} onSave={onSave} onCancel={handleClose} />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+// Shared Form Component
+function TripEditForm({ trip, onSave, onCancel }: TripEditModalProps) {
   const [formData, setFormData] = useState({
     country: trip.country,
-    startDate: format(trip.startDate, 'yyyy-MM-dd'),
-    endDate: format(trip.endDate, 'yyyy-MM-dd'),
+    startDate: trip.startDate,
+    endDate: trip.endDate,
     purpose: trip.purpose,
     notes: trip.notes || ''
   })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    const startDate = new Date(formData.startDate)
-    const endDate = new Date(formData.endDate)
-    const duration = differenceInDays(endDate, startDate) + 1
+    const duration = differenceInDays(formData.endDate, formData.startDate) + 1
 
     onSave({
       ...trip,
       country: formData.country,
-      startDate,
-      endDate,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
       duration,
       purpose: formData.purpose,
       notes: formData.notes
@@ -444,113 +517,204 @@ function TripEditModal({ trip, onSave, onCancel }: TripEditModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Edit Trip
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Country
-            </label>
-            <select
-              value={formData.country.code}
-              onChange={(e) => {
-                const country = countries.find(c => c.code === e.target.value)!
-                setFormData(prev => ({ ...prev, country }))
-              }}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              {countries.map(country => (
-                <option key={country.code} value={country.code}>
-                  {country.flag} {country.name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 md:hidden">
+        Edit Trip
+      </h3>
+      
+      {/* Country Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="country">Country</Label>
+        <CountrySelector 
+          value={formData.country}
+          onValueChange={(country) => setFormData(prev => ({ ...prev, country }))}
+        />
+      </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                           focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                           focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-          </div>
+      {/* Date Selection */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="start-date">Start Date</Label>
+          <DatePicker
+            date={formData.startDate}
+            onDateChange={(date) => date && setFormData(prev => ({ ...prev, startDate: date }))}
+            placeholder="Select start date"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="end-date">End Date</Label>
+          <DatePicker
+            date={formData.endDate}
+            onDateChange={(date) => date && setFormData(prev => ({ ...prev, endDate: date }))}
+            placeholder="Select end date"
+            minDate={formData.startDate}
+          />
+        </div>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Purpose
-            </label>
-            <select
-              value={formData.purpose}
-              onChange={(e) => setFormData(prev => ({ ...prev, purpose: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="Tourism">Tourism</option>
-              <option value="Business">Business</option>
-              <option value="Study">Study</option>
-              <option value="Work">Work</option>
-              <option value="Family Visit">Family Visit</option>
-              <option value="Transit">Transit</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+      {/* Purpose Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="purpose">Purpose of Visit</Label>
+        <Select value={formData.purpose} onValueChange={(value) => setFormData(prev => ({ ...prev, purpose: value }))}>
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Select purpose" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Tourism">🏖️ Tourism</SelectItem>
+            <SelectItem value="Business">💼 Business</SelectItem>
+            <SelectItem value="Study">📚 Study</SelectItem>
+            <SelectItem value="Work">👔 Work</SelectItem>
+            <SelectItem value="Family Visit">👨‍👩‍👧‍👦 Family Visit</SelectItem>
+            <SelectItem value="Transit">✈️ Transit</SelectItem>
+            <SelectItem value="Other">📝 Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Notes (Optional)
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-              placeholder="Additional details about your trip..."
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (Optional)</Label>
+        <Textarea
+          id="notes"
+          value={formData.notes}
+          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+          placeholder="Additional details about your trip..."
+          className="min-h-[80px] resize-none"
+        />
+      </div>
+
+      {/* Form Actions */}
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 space-y-reverse sm:space-y-0 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} className="h-11">
+          Cancel
+        </Button>
+        <Button type="submit" className="h-11">
+          Save Changes
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+// Country Selector Component
+interface CountrySelectorProps {
+  value: Country
+  onValueChange: (country: Country) => void
+}
+
+function CountrySelector({ value, onValueChange }: CountrySelectorProps) {
+  const [open, setOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredCountries = countries.filter(country =>
+    country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    country.code.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between h-11"
+        >
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">{value.flag}</span>
+            <span>{value.name}</span>
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0" align="start">
+        <div className="p-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search countries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8"
             />
           </div>
+        </div>
+        <div className="max-h-60 overflow-y-auto">
+          {filteredCountries.length === 0 ? (
+            <div className="p-4 text-center text-sm text-muted-foreground">
+              No countries found
+            </div>
+          ) : (
+            filteredCountries.map((country) => (
+              <div
+                key={country.code}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-2 cursor-pointer hover:bg-accent",
+                  value.code === country.code && "bg-accent"
+                )}
+                onClick={() => {
+                  onValueChange(country)
+                  setOpen(false)
+                  setSearchQuery('')
+                }}
+              >
+                <span className="text-lg">{country.flag}</span>
+                <span className="flex-1">{country.name}</span>
+                {value.code === country.code && (
+                  <Check className="h-4 w-4 text-primary" />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
-          <div className="flex items-center space-x-3 pt-4">
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Save Changes
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 
-                         dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+// Date Picker Component
+interface DatePickerProps {
+  date: Date
+  onDateChange: (date: Date | undefined) => void
+  placeholder?: string
+  minDate?: Date
+}
+
+function DatePicker({ date, onDateChange, placeholder = "Pick a date", minDate }: DatePickerProps) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal h-11",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarDays className="mr-2 h-4 w-4" />
+          {date ? format(date, "PPP") : <span>{placeholder}</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <CalendarComponent
+          mode="single"
+          selected={date}
+          onSelect={(date) => {
+            onDateChange(date)
+            setOpen(false)
+          }}
+          disabled={(date) => {
+            if (minDate) {
+              return date < minDate
+            }
+            return date < new Date("1900-01-01")
+          }}
+          className="rounded-md border"
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
   )
 }
