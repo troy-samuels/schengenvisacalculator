@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MobileOptimizedCalculator } from "@/components/mobile-optimized-calculator"
+import { MobileOptimizedCalculatorFixed } from "@/components/mobile-optimized-calculator-fixed"
 
 interface VisaEntryLocal {
   id: string
@@ -550,7 +550,7 @@ export default function DashboardPage() {
       {/* Calculator Section */}
       <section className="pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <MobileOptimizedCalculator
+          <MobileOptimizedCalculatorFixed
             entries={entries.map(entry => ({
               id: entry.id,
               country: entry.country,

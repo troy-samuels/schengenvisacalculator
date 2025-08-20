@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/hooks/useAuth"
 import { SaveProgressModal } from "@/components/save-progress-modal"
 import { useSchengenCalculator } from "@/lib/hooks/useSchengenCalculator"
-import { MobileOptimizedCalculator } from "@/components/mobile-optimized-calculator"
+import { MobileOptimizedCalculatorFixed } from "@/components/mobile-optimized-calculator-fixed"
 import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
@@ -309,7 +309,7 @@ export default function SchengenVisaCalculator() {
       {/* Calculator Section */}
       <section className="pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <MobileOptimizedCalculator
+          <MobileOptimizedCalculatorFixed
             entries={entries}
             countries={schengenCountries}
             onUpdateEntry={updateEntry}
