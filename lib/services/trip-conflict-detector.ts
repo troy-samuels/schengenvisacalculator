@@ -3,6 +3,7 @@ import type { Trip } from "@/lib/types/enhanced-calculator"
 
 export type ConflictType = 
   | "OVERLAPPING_TRIPS"
+  | "DATE_OVERLAP"
   | "INSUFFICIENT_GAP"
   | "EXCEEDS_90_DAYS"
   | "EXCEEDS_180_DAY_PERIOD"
@@ -43,6 +44,7 @@ export class TripConflictDetector {
     
     conflicts.push(...this.detectDateOrderConflicts(trips))
     conflicts.push(...this.detectOverlappingTrips(trips))
+    conflicts.push(...this.detectDateOverlapConflicts(trips))
     conflicts.push(...this.detectInsufficientGaps(trips))
     conflicts.push(...this.detect90DayViolations(trips))
     conflicts.push(...this.detect180DayPeriodViolations(trips))
@@ -108,6 +110,44 @@ export class TripConflictDetector {
               affectedDates: {
                 start: isAfter(trip1.startDate, trip2.startDate) ? trip1.startDate : trip2.startDate,
                 end: isBefore(trip1.endDate, trip2.endDate) ? trip1.endDate : trip2.endDate
+              }
+            })
+          }
+        }
+      }
+    }
+
+    return conflicts
+  }
+
+  private static detectDateOverlapConflicts(trips: Trip[]): TripConflict[] {
+    const conflicts: TripConflict[] = []
+    const validTrips = trips.filter(t => t.startDate && t.endDate)
+
+    for (let i = 0; i < validTrips.length; i++) {
+      for (let j = i + 1; j < validTrips.length; j++) {
+        const trip1 = validTrips[i]
+        const trip2 = validTrips[j]
+
+        if (trip1.startDate && trip1.endDate && trip2.startDate && trip2.endDate) {
+          const interval1 = { start: trip1.startDate, end: trip1.endDate }
+          const interval2 = { start: trip2.startDate, end: trip2.endDate }
+
+          if (areIntervalsOverlapping(interval1, interval2)) {
+            const overlapStart = isAfter(trip1.startDate, trip2.startDate) ? trip1.startDate : trip2.startDate
+            const overlapEnd = isBefore(trip1.endDate, trip2.endDate) ? trip1.endDate : trip2.endDate
+            const overlapDays = differenceInDays(overlapEnd, overlapStart) + 1
+
+            conflicts.push({
+              type: "DATE_OVERLAP",
+              severity: "ERROR",
+              tripIds: [trip1.id, trip2.id],
+              message: `Cannot be in two places at once`,
+              details: `Your trip to ${trip1.country} (${format(trip1.startDate, "MMM d")} - ${format(trip1.endDate, "MMM d, yyyy")}) overlaps with your trip to ${trip2.country} (${format(trip2.startDate, "MMM d")} - ${format(trip2.endDate, "MMM d, yyyy")}) for ${overlapDays} day${overlapDays === 1 ? '' : 's'}.`,
+              suggestedFix: "Adjust travel dates to avoid overlap. You cannot be in two different countries simultaneously.",
+              affectedDates: {
+                start: overlapStart,
+                end: overlapEnd
               }
             })
           }

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Calendar, X, Check, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format, differenceInDays, isAfter, isBefore, addDays, subDays } from "date-fns"
+import { format, differenceInDays, isAfter, isBefore, addDays, subDays, isSameDay } from "date-fns"
 import type { DateRange } from "react-day-picker"
+import type { Trip } from "@/lib/types/enhanced-calculator"
+import { getTripForDate } from "@/lib/utils/date-overlap"
 
 interface EnhancedDateRangePickerProps {
   dateRange: DateRange | undefined
@@ -18,6 +20,9 @@ interface EnhancedDateRangePickerProps {
   minDate?: Date
   maxDate?: Date
   maxStayDays?: number
+  occupiedDates?: Date[]
+  existingTrips?: Trip[]
+  currentTripId?: string
 }
 
 export function EnhancedDateRangePicker({
@@ -29,7 +34,10 @@ export function EnhancedDateRangePicker({
   onOpenChange,
   minDate,
   maxDate,
-  maxStayDays = 90
+  maxStayDays = 90,
+  occupiedDates = [],
+  existingTrips = [],
+  currentTripId
 }: EnhancedDateRangePickerProps) {
   const [tempDateRange, setTempDateRange] = useState<DateRange | undefined>(dateRange)
   const [error, setError] = useState<string>("")
@@ -39,6 +47,29 @@ export function EnhancedDateRangePicker({
   // Use internal state if not controlled externally
   const popoverOpen = isOpen !== undefined ? isOpen : internalOpen
   const setPopoverOpen = onOpenChange || setInternalOpen
+
+  // Memoize occupied dates check for performance
+  const occupiedDatesSet = useMemo(() => {
+    return new Set(occupiedDates.map(date => date.getTime()))
+  }, [occupiedDates])
+
+  // Check if a date is occupied by existing trips
+  const isDateOccupied = useMemo(() => {
+    return (date: Date): boolean => {
+      return occupiedDatesSet.has(date.getTime())
+    }
+  }, [occupiedDatesSet])
+
+  // Get tooltip information for occupied dates
+  const getOccupiedDateTooltip = (date: Date): string => {
+    if (existingTrips.length === 0) return "Date already occupied"
+    
+    const trip = getTripForDate(date, existingTrips)
+    if (trip) {
+      return `Already used by ${trip.country ? `trip to ${trip.country}` : 'another trip'}`
+    }
+    return "Date already occupied"
+  }
 
   // Update temp range when external dateRange changes
   useEffect(() => {
@@ -55,6 +86,20 @@ export function EnhancedDateRangePicker({
     // Check if end date is before start date
     if (isBefore(range.to, range.from)) {
       return "End date cannot be before start date"
+    }
+    
+    // Check for occupied dates (date overlap prevention)
+    const currentDate = new Date(range.from)
+    while (currentDate <= range.to) {
+      if (isDateOccupied(currentDate)) {
+        const trip = getTripForDate(currentDate, existingTrips)
+        const dateStr = format(currentDate, "MMM dd, yyyy")
+        if (trip && trip.country) {
+          return `${dateStr} is already occupied by your trip to ${trip.country}. You cannot be in two places at once.`
+        }
+        return `${dateStr} is already occupied by another trip. You cannot be in two places at once.`
+      }
+      currentDate.setDate(currentDate.getDate() + 1)
     }
     
     // Check if dates are in the future when not allowed (this check is now optional)
@@ -217,6 +262,24 @@ export function EnhancedDateRangePicker({
             </div>
           </div>
 
+          {/* Occupied Dates Warning */}
+          {occupiedDates.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start">
+                <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <div className="ml-2">
+                  <p className="text-sm text-red-700 font-medium">
+                    Date Overlap Prevention Active
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">
+                    Dates already used by other trips are disabled (shown with red strikethrough). 
+                    You cannot be in two places at once.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Calendar */}
           <CalendarComponent
             mode="range"
@@ -228,6 +291,10 @@ export function EnhancedDateRangePicker({
               // Allow both past and future dates for flexible planning
               if (minDate && isBefore(date, minDate)) return true
               if (maxDate && isAfter(date, maxDate)) return true
+              
+              // Disable occupied dates (date overlap prevention)
+              if (isDateOccupied(date)) return true
+              
               return false
             }}
             classNames={{
@@ -250,7 +317,7 @@ export function EnhancedDateRangePicker({
               day_selected: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-700 focus:text-white rounded-lg",
               day_today: "bg-gray-100 text-gray-900 font-semibold",
               day_outside: "text-gray-400 opacity-50",
-              day_disabled: "text-gray-400 opacity-50 cursor-not-allowed",
+              day_disabled: "text-red-400 bg-red-50 opacity-75 cursor-not-allowed line-through",
               day_range_middle: "aria-selected:bg-blue-100 aria-selected:text-blue-900 hover:bg-blue-100 rounded-none",
               day_hidden: "invisible",
             }}

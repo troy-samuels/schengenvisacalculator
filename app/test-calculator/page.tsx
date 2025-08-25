@@ -146,14 +146,7 @@ export default function TestCalculator() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Test Calculator - Debug Mode</h1>
-        
-        <div className="mb-6 p-4 bg-white rounded-lg shadow">
-          <h2 className="font-semibold mb-2">Current State:</h2>
-          <pre className="text-xs overflow-x-auto">
-            {JSON.stringify(entries, null, 2)}
-          </pre>
-        </div>
+        <h1 className="text-2xl font-bold mb-6">Schengen Visa Calculator</h1>
 
         <MobileOptimizedCalculatorFixed
           entries={entries}

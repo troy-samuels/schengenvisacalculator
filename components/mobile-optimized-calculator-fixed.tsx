@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { Plus, ChevronRight, ChevronDown, ChevronUp, Trash2, Loader2, Calendar, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,8 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import type { DateRange } from "react-day-picker"
 import { cn } from "@/lib/utils"
+import { calculateOccupiedDatesCached, isDateOccupied, getTripForDate } from "@/lib/utils/date-overlap"
+import type { Trip } from "@/lib/types/enhanced-calculator"
 
 interface VisaEntry {
   id: string
@@ -173,15 +175,31 @@ function DateRangePicker({
   dateRange,
   onDateRangeChange,
   disabled = false,
-  placeholder = "Select travel dates"
+  placeholder = "Select travel dates",
+  occupiedDates = [],
+  currentEntryId = ""
 }: {
   dateRange: DateRange | undefined
   onDateRangeChange: (range: DateRange | undefined) => void
   disabled?: boolean
   placeholder?: string
+  occupiedDates?: Date[]
+  currentEntryId?: string
 }) {
   const [open, setOpen] = useState(false)
   const [tempRange, setTempRange] = useState<DateRange | undefined>(dateRange)
+  
+  // Memoize occupied dates check for performance
+  const occupiedDatesSet = useMemo(() => {
+    return new Set(occupiedDates.map(date => date.getTime()))
+  }, [occupiedDates])
+
+  // Check if a date is occupied by existing trips
+  const isDateOccupiedMemo = useMemo(() => {
+    return (date: Date): boolean => {
+      return occupiedDatesSet.has(date.getTime())
+    }
+  }, [occupiedDatesSet])
 
   const handleSelect = useCallback((range: DateRange | undefined) => {
     setTempRange(range)
@@ -228,6 +246,14 @@ function DateRangePicker({
             onSelect={handleSelect}
             numberOfMonths={2}
             className="rounded-md"
+            disabled={(date) => {
+              // Disable occupied dates (date overlap prevention)
+              if (isDateOccupiedMemo(date)) return true
+              return false
+            }}
+            classNames={{
+              day_disabled: "text-red-400 bg-red-50 opacity-75 cursor-not-allowed line-through"
+            }}
           />
           <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
             <Button variant="outline" size="sm" onClick={handleClear}>
@@ -259,6 +285,22 @@ export function MobileOptimizedCalculatorFixed({
   totalDaysRemaining,
 }: MobileOptimizedCalculatorProps) {
   const [expandedEntries, setExpandedEntries] = useState<Record<string, boolean>>({})
+
+  // Calculate occupied dates for date overlap prevention
+  const getOccupiedDatesForEntry = useCallback((currentEntryId: string) => {
+    // Convert VisaEntry[] to Trip[] format for our utility functions
+    const otherTrips: Trip[] = entries
+      .filter(entry => entry.id !== currentEntryId && entry.startDate && entry.endDate)
+      .map(entry => ({
+        id: entry.id,
+        country: entry.country,
+        startDate: entry.startDate!,
+        endDate: entry.endDate!,
+        days: entry.days
+      }))
+
+    return calculateOccupiedDatesCached(otherTrips)
+  }, [entries])
 
   const toggleEntryExpanded = (entryId: string, index: number) => {
     setExpandedEntries(prev => {
@@ -429,6 +471,8 @@ export function MobileOptimizedCalculatorFixed({
                     onDateRangeChange={(range) => onUpdateDateRange(entry.id, range)}
                     disabled={!entry.country}
                     placeholder={!entry.country ? "Select country first" : "Select travel dates"}
+                    occupiedDates={getOccupiedDatesForEntry(entry.id)}
+                    currentEntryId={entry.id}
                   />
                 </div>
 
@@ -596,6 +640,8 @@ export function MobileOptimizedCalculatorFixed({
                       onDateRangeChange={(range) => onUpdateDateRange(entry.id, range)}
                       disabled={!entry.country}
                       placeholder={!entry.country ? "Select country first" : "Select travel dates"}
+                      occupiedDates={getOccupiedDatesForEntry(entry.id)}
+                      currentEntryId={entry.id}
                     />
                   </div>
 
