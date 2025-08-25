@@ -1,10 +1,10 @@
 🤖 AUTOMATED SCHENGEN CALCULATOR TEST SUITE
 ==========================================
-Started: 2025-08-18T08:46:06.633Z
+Started: 2025-08-25T15:19:27.882Z
 
 📋 Running Test Suite...
 
-✅ KOM 1.1: Multiple short stays (0.08ms)
+✅ KOM 1.1: Multiple short stays (0.06ms)
 ✅ KOM 1.2: Exact 90-day limit (0.01ms)
 ✅ Single day precision (0.01ms)
 ✅ Leap year February 29th (0.01ms)
@@ -17,8 +17,8 @@ Total Tests: 5
 Passed: 5
 Failed: 0
 Pass Rate: 100.0%
-Execution Time: 0.87ms
-Average Test Time: 0.17ms
+Execution Time: 0.76ms
+Average Test Time: 0.15ms
 
 🎉 All tests passed!
 ✅ Calculator accuracy verified

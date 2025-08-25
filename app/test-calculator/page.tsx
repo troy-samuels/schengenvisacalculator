@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MobileOptimizedCalculator } from '@/components/mobile-optimized-calculator'
+import { MobileOptimizedCalculatorFixed } from '@/components/mobile-optimized-calculator-fixed'
 import { differenceInDays } from 'date-fns'
 import type { DateRange } from 'react-day-picker'
 
@@ -155,7 +155,7 @@ export default function TestCalculator() {
           </pre>
         </div>
 
-        <MobileOptimizedCalculator
+        <MobileOptimizedCalculatorFixed
           entries={entries}
           countries={schengenCountries}
           onUpdateEntry={updateEntry}

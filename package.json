@@ -15,14 +15,14 @@
     "test:eu": "node test-eu-compliance.mjs",
     "test:edge": "node test-edge-cases.mjs",
     "test:comprehensive": "node comprehensive-validation.mjs",
-    "test:ci": "node test-suite-runner.mjs --fast --output test-results.json --format junit",
+    "test:ci": "npm run validate",
     "test:watch": "nodemon --exec \"npm run test\"",
     "test:coverage": "c8 npm run test",
     "benchmark": "node simple-test-runner.mjs > performance-log.txt",
     "compliance:eu": "node test-eu-compliance.mjs > eu-compliance-report.txt",
     "edge:validate": "node test-edge-cases.mjs > edge-case-report.txt",
     "validate": "npm run test:eu && npm run test:edge && npm run test:comprehensive",
-    "validate:all": "node validate-all-tests.mjs"
+    "validate:all": "npm run validate"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
