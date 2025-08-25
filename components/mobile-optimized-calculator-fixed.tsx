@@ -260,8 +260,17 @@ export function MobileOptimizedCalculatorFixed({
 }: MobileOptimizedCalculatorProps) {
   const [expandedEntries, setExpandedEntries] = useState<Record<string, boolean>>({})
 
-  const toggleEntryExpanded = (entryId: string) => {
-    setExpandedEntries((prev) => ({ ...prev, [entryId]: !prev[entryId] }))
+  const toggleEntryExpanded = (entryId: string, index: number) => {
+    setExpandedEntries(prev => {
+      const newState = { ...prev }
+      const currentlyExpanded = entryId in newState ? newState[entryId] : (index === 0)
+      newState[entryId] = !currentlyExpanded
+      return newState
+    })
+  }
+
+  const isEntryExpanded = (entryId: string, index: number): boolean => {
+    return entryId in expandedEntries ? expandedEntries[entryId] : (index === 0)
   }
 
   return (
@@ -472,13 +481,11 @@ export function MobileOptimizedCalculatorFixed({
         {entries.map((entry, index) => (
           <Card key={entry.id} className="overflow-hidden">
             <div
-              className={`transition-all duration-300 ${
-                expandedEntries[entry.id] ?? index === 0 ? "" : "cursor-pointer"
-              }`}
-              onClick={() => toggleEntryExpanded(entry.id)}
+              className="cursor-pointer transition-all duration-300"
+              onClick={() => toggleEntryExpanded(entry.id, index)}
               role="button"
               tabIndex={0}
-              aria-expanded={expandedEntries[entry.id] ?? index === 0}
+              aria-expanded={isEntryExpanded(entry.id, index)}
             >
               <CardHeader className="hover:bg-gray-50 transition-colors py-4 sm:py-5">
                 <div className="flex items-center justify-between">
@@ -519,7 +526,7 @@ export function MobileOptimizedCalculatorFixed({
                         )}
                       </Button>
                     )}
-                    {(expandedEntries[entry.id] ?? index === 0) ? (
+                    {isEntryExpanded(entry.id, index) ? (
                       <ChevronUp className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
                     ) : (
                       <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
@@ -528,7 +535,7 @@ export function MobileOptimizedCalculatorFixed({
                 </div>
               </CardHeader>
 
-              {(expandedEntries[entry.id] ?? index === 0) && (
+              {isEntryExpanded(entry.id, index) && (
                 <CardContent className="pt-0 space-y-4 sm:space-y-6 px-4 sm:px-6 pb-5 sm:pb-6">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-center space-x-2 py-2">
