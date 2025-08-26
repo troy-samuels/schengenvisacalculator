@@ -65,52 +65,59 @@ export function MobileCalendarDrawer({
     }
   }, [isOpen, initialRange])
 
-  // Handle date click - simplified Airbnb-style logic
+  // Handle date click - precise single-date selection
   const handleDateClick = (date: Date) => {
+    // Create a clean date without time for comparison
+    const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    
     // Check if date is disabled
-    if (isDateDisabled(date)) {
-      console.log('Date is disabled:', format(date, 'MMM dd'))
+    if (isDateDisabled(cleanDate)) {
+      console.log('Date is disabled:', format(cleanDate, 'yyyy-MM-dd'))
       return
     }
 
     // Handle occupied date click - show helpful message
-    if (isDateOccupied(date)) {
-      const occupiedInfo = getOccupiedDateInfo(date)
+    if (isDateOccupied(cleanDate)) {
+      const occupiedInfo = getOccupiedDateInfo(cleanDate)
       if (occupiedInfo) {
-        console.log(`Cannot select ${format(date, 'MMM dd')} - already used by ${occupiedInfo.country} trip`)
+        console.log(`Cannot select ${format(cleanDate, 'yyyy-MM-dd')} - already used by ${occupiedInfo.country} trip`)
       }
       return
     }
 
-    console.log('Clicking date:', format(date, 'MMM dd'), 'Current state:', { 
-      startDate: selectedRange.startDate ? format(selectedRange.startDate, 'MMM dd') : null,
-      endDate: selectedRange.endDate ? format(selectedRange.endDate, 'MMM dd') : null,
-      selectingEnd 
+    console.log('Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', { 
+      startDate: selectedRange.startDate ? format(selectedRange.startDate, 'yyyy-MM-dd') : null,
+      endDate: selectedRange.endDate ? format(selectedRange.endDate, 'yyyy-MM-dd') : null
     })
 
-    // Airbnb-style selection: start -> end -> reset
+    // Clean Airbnb-style selection logic
     if (!selectedRange.startDate) {
-      // First click: set start date
-      setSelectedRange({ startDate: date, endDate: null })
+      // First click: set start date (black circle)
+      setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
-      console.log('Set start date:', format(date, 'MMM dd'))
+      console.log('✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'))
     } else if (!selectedRange.endDate) {
-      // Second click: set end date (or reset if before start)
-      if (date >= selectedRange.startDate) {
-        setSelectedRange({ ...selectedRange, endDate: date })
+      // Second click: set end date or reset
+      if (cleanDate.getTime() === selectedRange.startDate.getTime()) {
+        // Clicking same date - do nothing or could deselect
+        console.log('Same date clicked, ignoring')
+        return
+      } else if (cleanDate > selectedRange.startDate) {
+        // Valid end date - show range
+        setSelectedRange({ ...selectedRange, endDate: cleanDate })
         setSelectingEnd(false)
-        console.log('Set end date:', format(date, 'MMM dd'))
+        console.log('✓ End date set:', format(cleanDate, 'yyyy-MM-dd'))
       } else {
-        // Reset if clicking before start date
-        setSelectedRange({ startDate: date, endDate: null })
+        // Before start date - reset with new start
+        setSelectedRange({ startDate: cleanDate, endDate: null })
         setSelectingEnd(true)
-        console.log('Reset with new start date:', format(date, 'MMM dd'))
+        console.log('↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'))
       }
     } else {
-      // Both dates selected: reset with new start
-      setSelectedRange({ startDate: date, endDate: null })
+      // Both dates already selected - reset with new start
+      setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
-      console.log('Reset with new start date:', format(date, 'MMM dd'))
+      console.log('↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'))
     }
   }
 
@@ -192,8 +199,8 @@ export function MobileCalendarDrawer({
 
     return (
       <div className="px-4">
-        {/* Month header - sticky-like appearance but not actually sticky */}
-        <div className="text-left font-bold text-xl mb-6 text-gray-900 pt-6">
+        {/* Month header - centered like Airbnb */}
+        <div className="text-center font-bold text-xl mb-6 text-gray-900 pt-6">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
@@ -222,27 +229,28 @@ export function MobileCalendarDrawer({
 
             return (
               <button
-                key={index}
+                key={`${format(monthDate, 'yyyy-MM')}-${index}`}
                 onClick={() => {
-                  console.log('Button clicked:', format(date, 'MMM dd'), 'isCurrentMonth:', isCurrentMonth, 'disabled:', disabled, 'occupied:', occupied)
+                  // Only allow clicks on current month dates to prevent double selection
                   if (!disabled && isCurrentMonth && !occupied) {
+                    console.log('Selecting date:', format(date, 'yyyy-MM-dd'))
                     handleDateClick(date)
                   }
                 }}
-                disabled={false}
+                disabled={!isCurrentMonth || disabled || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
                   // Airbnb-style: 44px touch targets, clean design
                   "h-11 w-11 text-sm font-medium transition-all duration-150 relative",
-                  "flex items-center justify-center cursor-pointer",
+                  "flex items-center justify-center",
                   {
-                    // Current month styling - clean Airbnb style
-                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black": 
+                    // Current month styling - clickable dates
+                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": 
                       isCurrentMonth && !disabled && !occupied && !inRange,
                     
-                    // Other month styling (lighter, still clickable for seamless experience)
-                    "text-gray-300 hover:bg-gray-50 hover:rounded-full": 
-                      !isCurrentMonth && !disabled && !occupied,
+                    // Other month styling (not clickable, just visual padding)
+                    "text-gray-300 cursor-default": 
+                      !isCurrentMonth,
                     
                     // Disabled styling
                     "text-gray-200 cursor-not-allowed": disabled,
@@ -250,15 +258,15 @@ export function MobileCalendarDrawer({
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
                     "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied,
                     
-                    // Today styling - subtle Airbnb style
-                    "bg-black text-white font-semibold rounded-full": 
-                      today && !inRange && !occupied,
+                    // Remove today auto-highlighting - no special styling for today
                     
-                    // Range styling - true Airbnb colors and design
-                    "bg-gray-100 text-gray-900 rounded-full": 
-                      inRange && !rangeStart && !rangeEnd && !occupied,
+                    // Range start and end styling - clear black circles
                     "bg-black text-white rounded-full font-semibold": 
                       (rangeStart || rangeEnd) && !occupied,
+                    
+                    // Range middle styling - light background
+                    "bg-gray-100 text-gray-900": 
+                      inRange && !rangeStart && !rangeEnd && !occupied,
                   }
                 )}
               >
