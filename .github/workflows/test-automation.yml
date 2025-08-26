@@ -70,7 +70,7 @@ jobs:
       
     - name: Run EU compliance validation
       run: |
-        npm run test:eu > eu-compliance-report.txt
+        npm run test:eu-compliance > eu-compliance-report.txt
         cat eu-compliance-report.txt
         
     - name: Check EU compliance status
@@ -107,7 +107,7 @@ jobs:
       
     - name: Run edge case tests
       run: |
-        npm run test:edge > edge-case-report.txt
+        npm run test:date-overlap > edge-case-report.txt
         cat edge-case-report.txt
         
     - name: Check edge case status
