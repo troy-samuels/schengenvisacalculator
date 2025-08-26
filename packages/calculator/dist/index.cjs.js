@@ -573,7 +573,7 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
  */ class DateOverlapValidator {
     /**
    * Validate if a date range conflicts with existing trips
-   */ validateDateRange(newRange, existingTrips) {
+   */ validateDateSpan(newRange, existingTrips) {
         // Input validation
         if (!this.isValidDateRange(newRange)) {
             return {
@@ -655,7 +655,7 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
     }
     /**
    * Find next available date range of specified length
-   */ findNextAvailableDateRange(preferredStart, lengthInDays, existingTrips, searchLimit = 365) {
+   */ findNextAvailableDateSpan(preferredStart, lengthInDays, existingTrips, searchLimit = 365) {
         let testDate = dateFns.startOfDay(preferredStart);
         const maxSearchDate = new Date(testDate.getTime() + searchLimit * 24 * 60 * 60 * 1000);
         while(testDate <= maxSearchDate){
@@ -663,7 +663,7 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
                 start: testDate,
                 end: new Date(testDate.getTime() + (lengthInDays - 1) * 24 * 60 * 60 * 1000)
             };
-            const validation = this.validateDateRange(testRange, existingTrips);
+            const validation = this.validateDateSpan(testRange, existingTrips);
             if (validation.isValid) {
                 return testRange;
             }
@@ -679,13 +679,13 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
         const duration = lengthInDays || dateFns.differenceInDays(conflictedRange.end, conflictedRange.start) + 1;
         // Try earlier dates
         const earlierDate = new Date(conflictedRange.start.getTime() - 30 * 24 * 60 * 60 * 1000);
-        const earlierRange = this.findNextAvailableDateRange(earlierDate, duration, existingTrips, 60);
+        const earlierRange = this.findNextAvailableDateSpan(earlierDate, duration, existingTrips, 60);
         if (earlierRange && earlierRange.start < conflictedRange.start) {
             suggestions.push(earlierRange);
         }
         // Try later dates
         const laterDate = new Date(conflictedRange.end.getTime() + 24 * 60 * 60 * 1000);
-        const laterRange = this.findNextAvailableDateRange(laterDate, duration, existingTrips, 60);
+        const laterRange = this.findNextAvailableDateSpan(laterDate, duration, existingTrips, 60);
         if (laterRange) {
             suggestions.push(laterRange);
         }
@@ -694,7 +694,7 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
     }
     /**
    * Batch validation for multiple date ranges
-   */ validateMultipleDateRanges(newRanges, existingTrips) {
+   */ validateMultipleDateSpans(newRanges, existingTrips) {
         const results = {};
         // Create a combined list of existing trips plus validated new trips
         let combinedTrips = [
@@ -702,7 +702,7 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
         ];
         newRanges.forEach((range, index)=>{
             // Validate against existing trips and previously validated new trips
-            const result = this.validateDateRange(range, combinedTrips);
+            const result = this.validateDateSpan(range, combinedTrips);
             results[index] = result;
             // If valid, add to combined trips for next validations
             if (result.isValid) {

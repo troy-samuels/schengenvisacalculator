@@ -7,7 +7,6 @@ import { cva } from 'class-variance-authority';
 import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, subMonths, eachDayOfInterval, isToday as isToday$1, endOfDay as endOfDay$1 } from 'date-fns';
 import { createPortal } from 'react-dom';
 import { DateOverlapValidator } from '@schengen/calculator';
-import { SubscriptionTier, checkFeatureAccess, getTierComparison, formatPrice, BillingCycle, calculateYearlySavings, getStripe, TIER_PRICING as TIER_PRICING$1 } from '@schengen/payments';
 
 /**
  * Utility function to merge Tailwind CSS classes with conditional logic
@@ -367,17 +366,29 @@ const Button$1 = /*#__PURE__*/ React.forwardRef(({ className, variant, size, asC
 Button$1.displayName = "Button";
 
 /**
- * @license lucide-react v0.468.0 - ISC
+ * @license lucide-react v0.542.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */ const toKebabCase = (string)=>string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+const toCamelCase = (string)=>string.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2)=>p2 ? p2.toUpperCase() : p1.toLowerCase());
+const toPascalCase = (string)=>{
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+};
 const mergeClasses = (...classes)=>classes.filter((className, index, array)=>{
         return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
     }).join(" ").trim();
+const hasA11yProp = (props)=>{
+    for(const prop in props){
+        if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+            return true;
+        }
+    }
+};
 
 /**
- * @license lucide-react v0.468.0 - ISC
+ * @license lucide-react v0.542.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -393,8 +404,7 @@ const mergeClasses = (...classes)=>classes.filter((className, index, array)=>{
     strokeLinejoin: "round"
 };
 
-const Icon = forwardRef(({ color = "currentColor", size = 24, strokeWidth = 2, absoluteStrokeWidth, className = "", children, iconNode, ...rest }, ref)=>{
-    return createElement("svg", {
+const Icon = forwardRef(({ color = "currentColor", size = 24, strokeWidth = 2, absoluteStrokeWidth, className = "", children, iconNode, ...rest }, ref)=>createElement("svg", {
         ref,
         ...defaultAttributes,
         width: size,
@@ -402,27 +412,29 @@ const Icon = forwardRef(({ color = "currentColor", size = 24, strokeWidth = 2, a
         stroke: color,
         strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
         className: mergeClasses("lucide", className),
+        ...!children && !hasA11yProp(rest) && {
+            "aria-hidden": "true"
+        },
         ...rest
     }, [
         ...iconNode.map(([tag, attrs])=>createElement(tag, attrs)),
         ...Array.isArray(children) ? children : [
             children
         ]
-    ]);
-});
+    ]));
 
 const createLucideIcon = (iconName, iconNode)=>{
     const Component = forwardRef(({ className, ...props }, ref)=>createElement(Icon, {
             ref,
             iconNode,
-            className: mergeClasses(`lucide-${toKebabCase(iconName)}`, className),
+            className: mergeClasses(`lucide-${toKebabCase(toPascalCase(iconName))}`, `lucide-${iconName}`, className),
             ...props
         }));
-    Component.displayName = `${iconName}`;
+    Component.displayName = toPascalCase(iconName);
     return Component;
 };
 
-const ArrowRight = createLucideIcon("ArrowRight", [
+const __iconNode$p = [
     [
         "path",
         {
@@ -437,9 +449,10 @@ const ArrowRight = createLucideIcon("ArrowRight", [
             key: "xquz4c"
         }
     ]
-]);
+];
+const ArrowRight = createLucideIcon("arrow-right", __iconNode$p);
 
-const Building2 = createLucideIcon("Building2", [
+const __iconNode$o = [
     [
         "path",
         {
@@ -489,9 +502,10 @@ const Building2 = createLucideIcon("Building2", [
             key: "1ulq68"
         }
     ]
-]);
+];
+const Building2 = createLucideIcon("building-2", __iconNode$o);
 
-const Calendar$1 = createLucideIcon("Calendar", [
+const __iconNode$n = [
     [
         "path",
         {
@@ -524,9 +538,10 @@ const Calendar$1 = createLucideIcon("Calendar", [
             key: "8toen8"
         }
     ]
-]);
+];
+const Calendar$1 = createLucideIcon("calendar", __iconNode$n);
 
-const Check = createLucideIcon("Check", [
+const __iconNode$m = [
     [
         "path",
         {
@@ -534,9 +549,10 @@ const Check = createLucideIcon("Check", [
             key: "1gmf2c"
         }
     ]
-]);
+];
+const Check = createLucideIcon("check", __iconNode$m);
 
-const ChevronDown = createLucideIcon("ChevronDown", [
+const __iconNode$l = [
     [
         "path",
         {
@@ -544,9 +560,10 @@ const ChevronDown = createLucideIcon("ChevronDown", [
             key: "qrunsl"
         }
     ]
-]);
+];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$l);
 
-const ChevronLeft = createLucideIcon("ChevronLeft", [
+const __iconNode$k = [
     [
         "path",
         {
@@ -554,9 +571,10 @@ const ChevronLeft = createLucideIcon("ChevronLeft", [
             key: "1wnfg3"
         }
     ]
-]);
+];
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$k);
 
-const ChevronRight = createLucideIcon("ChevronRight", [
+const __iconNode$j = [
     [
         "path",
         {
@@ -564,9 +582,10 @@ const ChevronRight = createLucideIcon("ChevronRight", [
             key: "mthhwq"
         }
     ]
-]);
+];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$j);
 
-const CircleAlert = createLucideIcon("CircleAlert", [
+const __iconNode$i = [
     [
         "circle",
         {
@@ -596,9 +615,10 @@ const CircleAlert = createLucideIcon("CircleAlert", [
             key: "4dfq90"
         }
     ]
-]);
+];
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$i);
 
-const CircleCheckBig = createLucideIcon("CircleCheckBig", [
+const __iconNode$h = [
     [
         "path",
         {
@@ -613,9 +633,17 @@ const CircleCheckBig = createLucideIcon("CircleCheckBig", [
             key: "1pflzl"
         }
     ]
-]);
+];
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$h);
 
-const Clock = createLucideIcon("Clock", [
+const __iconNode$g = [
+    [
+        "path",
+        {
+            d: "M12 6v6l4 2",
+            key: "mmk7yg"
+        }
+    ],
     [
         "circle",
         {
@@ -624,17 +652,11 @@ const Clock = createLucideIcon("Clock", [
             r: "10",
             key: "1mglay"
         }
-    ],
-    [
-        "polyline",
-        {
-            points: "12 6 12 12 16 14",
-            key: "68esgv"
-        }
     ]
-]);
+];
+const Clock = createLucideIcon("clock", __iconNode$g);
 
-const CreditCard = createLucideIcon("CreditCard", [
+const __iconNode$f = [
     [
         "rect",
         {
@@ -656,9 +678,10 @@ const CreditCard = createLucideIcon("CreditCard", [
             key: "1b3vmo"
         }
     ]
-]);
+];
+const CreditCard = createLucideIcon("credit-card", __iconNode$f);
 
-const Crown = createLucideIcon("Crown", [
+const __iconNode$e = [
     [
         "path",
         {
@@ -673,9 +696,10 @@ const Crown = createLucideIcon("Crown", [
             key: "11awu3"
         }
     ]
-]);
+];
+const Crown = createLucideIcon("crown", __iconNode$e);
 
-const Headphones = createLucideIcon("Headphones", [
+const __iconNode$d = [
     [
         "path",
         {
@@ -683,9 +707,10 @@ const Headphones = createLucideIcon("Headphones", [
             key: "1xhozi"
         }
     ]
-]);
+];
+const Headphones = createLucideIcon("headphones", __iconNode$d);
 
-const Info = createLucideIcon("Info", [
+const __iconNode$c = [
     [
         "circle",
         {
@@ -709,9 +734,10 @@ const Info = createLucideIcon("Info", [
             key: "e9boi3"
         }
     ]
-]);
+];
+const Info = createLucideIcon("info", __iconNode$c);
 
-const LoaderCircle = createLucideIcon("LoaderCircle", [
+const __iconNode$b = [
     [
         "path",
         {
@@ -719,9 +745,10 @@ const LoaderCircle = createLucideIcon("LoaderCircle", [
             key: "13zald"
         }
     ]
-]);
+];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$b);
 
-const MapPin = createLucideIcon("MapPin", [
+const __iconNode$a = [
     [
         "path",
         {
@@ -738,26 +765,28 @@ const MapPin = createLucideIcon("MapPin", [
             key: "ilqhr7"
         }
     ]
-]);
+];
+const MapPin = createLucideIcon("map-pin", __iconNode$a);
 
-const PenLine = createLucideIcon("PenLine", [
+const __iconNode$9 = [
     [
         "path",
         {
-            d: "M12 20h9",
-            key: "t2du7b"
+            d: "M13 21h8",
+            key: "1jsn5i"
         }
     ],
     [
         "path",
         {
-            d: "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
-            key: "1ykcvy"
+            d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+            key: "1a8usu"
         }
     ]
-]);
+];
+const PenLine = createLucideIcon("pen-line", __iconNode$9);
 
-const Shield = createLucideIcon("Shield", [
+const __iconNode$8 = [
     [
         "path",
         {
@@ -765,9 +794,10 @@ const Shield = createLucideIcon("Shield", [
             key: "oel41y"
         }
     ]
-]);
+];
+const Shield = createLucideIcon("shield", __iconNode$8);
 
-const Star = createLucideIcon("Star", [
+const __iconNode$7 = [
     [
         "path",
         {
@@ -775,9 +805,31 @@ const Star = createLucideIcon("Star", [
             key: "r04s7s"
         }
     ]
-]);
+];
+const Star = createLucideIcon("star", __iconNode$7);
 
-const Trash2 = createLucideIcon("Trash2", [
+const __iconNode$6 = [
+    [
+        "path",
+        {
+            d: "M10 11v6",
+            key: "nco0om"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M14 11v6",
+            key: "outv1u"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6",
+            key: "miytrc"
+        }
+    ],
     [
         "path",
         {
@@ -788,40 +840,14 @@ const Trash2 = createLucideIcon("Trash2", [
     [
         "path",
         {
-            d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",
-            key: "4alrt4"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",
-            key: "v07s0e"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "10",
-            x2: "10",
-            y1: "11",
-            y2: "17",
-            key: "1uufr5"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "14",
-            x2: "14",
-            y1: "11",
-            y2: "17",
-            key: "xtxkd"
+            d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+            key: "e791ji"
         }
     ]
-]);
+];
+const Trash2 = createLucideIcon("trash-2", __iconNode$6);
 
-const TriangleAlert = createLucideIcon("TriangleAlert", [
+const __iconNode$5 = [
     [
         "path",
         {
@@ -843,9 +869,10 @@ const TriangleAlert = createLucideIcon("TriangleAlert", [
             key: "p32p05"
         }
     ]
-]);
+];
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$5);
 
-const UserPlus = createLucideIcon("UserPlus", [
+const __iconNode$4 = [
     [
         "path",
         {
@@ -882,9 +909,10 @@ const UserPlus = createLucideIcon("UserPlus", [
             key: "1shjgl"
         }
     ]
-]);
+];
+const UserPlus = createLucideIcon("user-plus", __iconNode$4);
 
-const User = createLucideIcon("User", [
+const __iconNode$3 = [
     [
         "path",
         {
@@ -901,9 +929,10 @@ const User = createLucideIcon("User", [
             key: "17ys0d"
         }
     ]
-]);
+];
+const User = createLucideIcon("user", __iconNode$3);
 
-const Users = createLucideIcon("Users", [
+const __iconNode$2 = [
     [
         "path",
         {
@@ -912,12 +941,10 @@ const Users = createLucideIcon("Users", [
         }
     ],
     [
-        "circle",
+        "path",
         {
-            cx: "9",
-            cy: "7",
-            r: "4",
-            key: "nufk8"
+            d: "M16 3.128a4 4 0 0 1 0 7.744",
+            key: "16gr8j"
         }
     ],
     [
@@ -928,15 +955,18 @@ const Users = createLucideIcon("Users", [
         }
     ],
     [
-        "path",
+        "circle",
         {
-            d: "M16 3.13a4 4 0 0 1 0 7.75",
-            key: "1da9ce"
+            cx: "9",
+            cy: "7",
+            r: "4",
+            key: "nufk8"
         }
     ]
-]);
+];
+const Users = createLucideIcon("users", __iconNode$2);
 
-const X = createLucideIcon("X", [
+const __iconNode$1 = [
     [
         "path",
         {
@@ -951,9 +981,10 @@ const X = createLucideIcon("X", [
             key: "d8bk6v"
         }
     ]
-]);
+];
+const X = createLucideIcon("x", __iconNode$1);
 
-const Zap = createLucideIcon("Zap", [
+const __iconNode = [
     [
         "path",
         {
@@ -961,7 +992,8 @@ const Zap = createLucideIcon("Zap", [
             key: "1xq2db"
         }
     ]
-]);
+];
+const Zap = createLucideIcon("zap", __iconNode);
 
 /**
  * Time zone name format.
@@ -6540,6 +6572,91 @@ function TripCard({ trip, showEdit = false, showDelete = false, onEdit, onDelete
 }
 TripCard.displayName = "TripCard";
 
+// Payments module
+const SUBSCRIPTION_TIERS = [
+    {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        features: [
+            'basic_calculator'
+        ]
+    },
+    {
+        id: 'premium',
+        name: 'Premium',
+        price: 9.99,
+        features: [
+            'basic_calculator',
+            'unlimited_lists',
+            'pdf_export'
+        ]
+    },
+    {
+        id: 'pro',
+        name: 'Pro',
+        price: 19.99,
+        features: [
+            'basic_calculator',
+            'unlimited_lists',
+            'pdf_export',
+            'api_access'
+        ]
+    }
+];
+function checkFeatureAccess(userTier, feature) {
+    const tier = SUBSCRIPTION_TIERS.find((t)=>t.id === userTier);
+    return tier ? tier.features.includes(feature) : false;
+}
+function getTierComparison(currentTier, targetTier) {
+    const current = SUBSCRIPTION_TIERS.find((t)=>t.id === currentTier);
+    const target = SUBSCRIPTION_TIERS.find((t)=>t.id === targetTier);
+    if (!current || !target) return null;
+    return {
+        current,
+        target,
+        savings: target.price - current.price,
+        newFeatures: target.features.filter((f)=>!current.features.includes(f))
+    };
+}
+function formatPrice(price) {
+    return price === 0 ? 'Free' : `$${price}/month`;
+}
+// Additional types and functions for payment modal
+var BillingCycle = /*#__PURE__*/ function(BillingCycle) {
+    BillingCycle["MONTHLY"] = "monthly";
+    BillingCycle["YEARLY"] = "yearly";
+    return BillingCycle;
+}({});
+function calculateYearlySavings(monthlyPrice) {
+    const yearlyPrice = monthlyPrice * 10 // 20% discount
+    ;
+    const monthlyCost = monthlyPrice * 12;
+    return monthlyCost - yearlyPrice;
+}
+function getStripe() {
+    // Stripe instance placeholder
+    return null;
+}
+const TIER_PRICING$1 = {
+    free: {
+        monthly: 0,
+        yearly: 0
+    },
+    premium: {
+        monthly: 9.99,
+        yearly: 99
+    },
+    pro: {
+        monthly: 19.99,
+        yearly: 199
+    },
+    business: {
+        monthly: 49.99,
+        yearly: 499
+    }
+};
+
 const TIER_ICONS = {
     [SubscriptionTier.FREE]: null,
     [SubscriptionTier.PREMIUM]: /*#__PURE__*/ React__default.createElement(Crown, {
@@ -6580,7 +6697,7 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
     const [selectedTier, setSelectedTier] = useState(null);
     const [showDetails, setShowDetails] = useState(false);
     // Check feature access
-    const accessResult = checkFeatureAccess(currentTier, feature, userUsage);
+    const accessResult = checkFeatureAccess(currentTier, feature);
     // If user already has access, don't show the gate
     if (accessResult.allowed) {
         return null;
@@ -6764,7 +6881,7 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
 // Hook for easy subscription gating
 function useSubscriptionGate(feature, currentTier, userUsage) {
     const [showGate, setShowGate] = useState(false);
-    const accessResult = checkFeatureAccess(currentTier, feature, userUsage);
+    const accessResult = checkFeatureAccess(currentTier, feature);
     const requireFeature = ()=>{
         if (!accessResult.allowed) {
             setShowGate(true);

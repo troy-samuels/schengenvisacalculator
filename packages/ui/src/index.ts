@@ -26,11 +26,3 @@ export * from "./components/trip-card"
 export * from "./components/subscription-gate"
 export * from "./components/payment-modal" 
 export * from "./components/pricing-cards"
-
-// Re-export calculator types and utilities for convenience
-export type { 
-  Trip, 
-  ValidationResult, 
-  ConflictDetail, 
-  OverlapPreventionConfig 
-} from "@schengen/calculator"

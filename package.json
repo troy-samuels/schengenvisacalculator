@@ -7,7 +7,6 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "build:dependencies": "turbo build --filter=@schengen/calculator --filter=@schengen/ui --filter=@schengen/payments",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",

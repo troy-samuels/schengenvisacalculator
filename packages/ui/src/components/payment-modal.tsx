@@ -7,12 +7,12 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
 import { 
-  SubscriptionTier, 
   BillingCycle, 
   formatPrice, 
   calculateYearlySavings,
   getStripe 
 } from '@schengen/payments'
+import type { SubscriptionTier } from '@schengen/payments'
 
 export interface PaymentModalProps {
   // Modal state

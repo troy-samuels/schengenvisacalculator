@@ -8,7 +8,6 @@ var classVarianceAuthority = require('class-variance-authority');
 var dateFns = require('date-fns');
 var ReactDOM = require('react-dom');
 var calculator = require('@schengen/calculator');
-var payments = require('@schengen/payments');
 
 function _interopNamespaceDefault(e) {
   var n = Object.create(null);
@@ -415,17 +414,29 @@ const Button$1 = /*#__PURE__*/ React__namespace.forwardRef(({ className, variant
 Button$1.displayName = "Button";
 
 /**
- * @license lucide-react v0.468.0 - ISC
+ * @license lucide-react v0.542.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */ const toKebabCase = (string)=>string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+const toCamelCase = (string)=>string.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2)=>p2 ? p2.toUpperCase() : p1.toLowerCase());
+const toPascalCase = (string)=>{
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+};
 const mergeClasses = (...classes)=>classes.filter((className, index, array)=>{
         return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
     }).join(" ").trim();
+const hasA11yProp = (props)=>{
+    for(const prop in props){
+        if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+            return true;
+        }
+    }
+};
 
 /**
- * @license lucide-react v0.468.0 - ISC
+ * @license lucide-react v0.542.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -441,8 +452,7 @@ const mergeClasses = (...classes)=>classes.filter((className, index, array)=>{
     strokeLinejoin: "round"
 };
 
-const Icon = React.forwardRef(({ color = "currentColor", size = 24, strokeWidth = 2, absoluteStrokeWidth, className = "", children, iconNode, ...rest }, ref)=>{
-    return React.createElement("svg", {
+const Icon = React.forwardRef(({ color = "currentColor", size = 24, strokeWidth = 2, absoluteStrokeWidth, className = "", children, iconNode, ...rest }, ref)=>React.createElement("svg", {
         ref,
         ...defaultAttributes,
         width: size,
@@ -450,27 +460,29 @@ const Icon = React.forwardRef(({ color = "currentColor", size = 24, strokeWidth 
         stroke: color,
         strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
         className: mergeClasses("lucide", className),
+        ...!children && !hasA11yProp(rest) && {
+            "aria-hidden": "true"
+        },
         ...rest
     }, [
         ...iconNode.map(([tag, attrs])=>React.createElement(tag, attrs)),
         ...Array.isArray(children) ? children : [
             children
         ]
-    ]);
-});
+    ]));
 
 const createLucideIcon = (iconName, iconNode)=>{
     const Component = React.forwardRef(({ className, ...props }, ref)=>React.createElement(Icon, {
             ref,
             iconNode,
-            className: mergeClasses(`lucide-${toKebabCase(iconName)}`, className),
+            className: mergeClasses(`lucide-${toKebabCase(toPascalCase(iconName))}`, `lucide-${iconName}`, className),
             ...props
         }));
-    Component.displayName = `${iconName}`;
+    Component.displayName = toPascalCase(iconName);
     return Component;
 };
 
-const ArrowRight = createLucideIcon("ArrowRight", [
+const __iconNode$p = [
     [
         "path",
         {
@@ -485,9 +497,10 @@ const ArrowRight = createLucideIcon("ArrowRight", [
             key: "xquz4c"
         }
     ]
-]);
+];
+const ArrowRight = createLucideIcon("arrow-right", __iconNode$p);
 
-const Building2 = createLucideIcon("Building2", [
+const __iconNode$o = [
     [
         "path",
         {
@@ -537,9 +550,10 @@ const Building2 = createLucideIcon("Building2", [
             key: "1ulq68"
         }
     ]
-]);
+];
+const Building2 = createLucideIcon("building-2", __iconNode$o);
 
-const Calendar$1 = createLucideIcon("Calendar", [
+const __iconNode$n = [
     [
         "path",
         {
@@ -572,9 +586,10 @@ const Calendar$1 = createLucideIcon("Calendar", [
             key: "8toen8"
         }
     ]
-]);
+];
+const Calendar$1 = createLucideIcon("calendar", __iconNode$n);
 
-const Check = createLucideIcon("Check", [
+const __iconNode$m = [
     [
         "path",
         {
@@ -582,9 +597,10 @@ const Check = createLucideIcon("Check", [
             key: "1gmf2c"
         }
     ]
-]);
+];
+const Check = createLucideIcon("check", __iconNode$m);
 
-const ChevronDown = createLucideIcon("ChevronDown", [
+const __iconNode$l = [
     [
         "path",
         {
@@ -592,9 +608,10 @@ const ChevronDown = createLucideIcon("ChevronDown", [
             key: "qrunsl"
         }
     ]
-]);
+];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$l);
 
-const ChevronLeft = createLucideIcon("ChevronLeft", [
+const __iconNode$k = [
     [
         "path",
         {
@@ -602,9 +619,10 @@ const ChevronLeft = createLucideIcon("ChevronLeft", [
             key: "1wnfg3"
         }
     ]
-]);
+];
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$k);
 
-const ChevronRight = createLucideIcon("ChevronRight", [
+const __iconNode$j = [
     [
         "path",
         {
@@ -612,9 +630,10 @@ const ChevronRight = createLucideIcon("ChevronRight", [
             key: "mthhwq"
         }
     ]
-]);
+];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$j);
 
-const CircleAlert = createLucideIcon("CircleAlert", [
+const __iconNode$i = [
     [
         "circle",
         {
@@ -644,9 +663,10 @@ const CircleAlert = createLucideIcon("CircleAlert", [
             key: "4dfq90"
         }
     ]
-]);
+];
+const CircleAlert = createLucideIcon("circle-alert", __iconNode$i);
 
-const CircleCheckBig = createLucideIcon("CircleCheckBig", [
+const __iconNode$h = [
     [
         "path",
         {
@@ -661,9 +681,17 @@ const CircleCheckBig = createLucideIcon("CircleCheckBig", [
             key: "1pflzl"
         }
     ]
-]);
+];
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$h);
 
-const Clock = createLucideIcon("Clock", [
+const __iconNode$g = [
+    [
+        "path",
+        {
+            d: "M12 6v6l4 2",
+            key: "mmk7yg"
+        }
+    ],
     [
         "circle",
         {
@@ -672,17 +700,11 @@ const Clock = createLucideIcon("Clock", [
             r: "10",
             key: "1mglay"
         }
-    ],
-    [
-        "polyline",
-        {
-            points: "12 6 12 12 16 14",
-            key: "68esgv"
-        }
     ]
-]);
+];
+const Clock = createLucideIcon("clock", __iconNode$g);
 
-const CreditCard = createLucideIcon("CreditCard", [
+const __iconNode$f = [
     [
         "rect",
         {
@@ -704,9 +726,10 @@ const CreditCard = createLucideIcon("CreditCard", [
             key: "1b3vmo"
         }
     ]
-]);
+];
+const CreditCard = createLucideIcon("credit-card", __iconNode$f);
 
-const Crown = createLucideIcon("Crown", [
+const __iconNode$e = [
     [
         "path",
         {
@@ -721,9 +744,10 @@ const Crown = createLucideIcon("Crown", [
             key: "11awu3"
         }
     ]
-]);
+];
+const Crown = createLucideIcon("crown", __iconNode$e);
 
-const Headphones = createLucideIcon("Headphones", [
+const __iconNode$d = [
     [
         "path",
         {
@@ -731,9 +755,10 @@ const Headphones = createLucideIcon("Headphones", [
             key: "1xhozi"
         }
     ]
-]);
+];
+const Headphones = createLucideIcon("headphones", __iconNode$d);
 
-const Info = createLucideIcon("Info", [
+const __iconNode$c = [
     [
         "circle",
         {
@@ -757,9 +782,10 @@ const Info = createLucideIcon("Info", [
             key: "e9boi3"
         }
     ]
-]);
+];
+const Info = createLucideIcon("info", __iconNode$c);
 
-const LoaderCircle = createLucideIcon("LoaderCircle", [
+const __iconNode$b = [
     [
         "path",
         {
@@ -767,9 +793,10 @@ const LoaderCircle = createLucideIcon("LoaderCircle", [
             key: "13zald"
         }
     ]
-]);
+];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$b);
 
-const MapPin = createLucideIcon("MapPin", [
+const __iconNode$a = [
     [
         "path",
         {
@@ -786,26 +813,28 @@ const MapPin = createLucideIcon("MapPin", [
             key: "ilqhr7"
         }
     ]
-]);
+];
+const MapPin = createLucideIcon("map-pin", __iconNode$a);
 
-const PenLine = createLucideIcon("PenLine", [
+const __iconNode$9 = [
     [
         "path",
         {
-            d: "M12 20h9",
-            key: "t2du7b"
+            d: "M13 21h8",
+            key: "1jsn5i"
         }
     ],
     [
         "path",
         {
-            d: "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
-            key: "1ykcvy"
+            d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+            key: "1a8usu"
         }
     ]
-]);
+];
+const PenLine = createLucideIcon("pen-line", __iconNode$9);
 
-const Shield = createLucideIcon("Shield", [
+const __iconNode$8 = [
     [
         "path",
         {
@@ -813,9 +842,10 @@ const Shield = createLucideIcon("Shield", [
             key: "oel41y"
         }
     ]
-]);
+];
+const Shield = createLucideIcon("shield", __iconNode$8);
 
-const Star = createLucideIcon("Star", [
+const __iconNode$7 = [
     [
         "path",
         {
@@ -823,9 +853,31 @@ const Star = createLucideIcon("Star", [
             key: "r04s7s"
         }
     ]
-]);
+];
+const Star = createLucideIcon("star", __iconNode$7);
 
-const Trash2 = createLucideIcon("Trash2", [
+const __iconNode$6 = [
+    [
+        "path",
+        {
+            d: "M10 11v6",
+            key: "nco0om"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M14 11v6",
+            key: "outv1u"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6",
+            key: "miytrc"
+        }
+    ],
     [
         "path",
         {
@@ -836,40 +888,14 @@ const Trash2 = createLucideIcon("Trash2", [
     [
         "path",
         {
-            d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",
-            key: "4alrt4"
-        }
-    ],
-    [
-        "path",
-        {
-            d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",
-            key: "v07s0e"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "10",
-            x2: "10",
-            y1: "11",
-            y2: "17",
-            key: "1uufr5"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "14",
-            x2: "14",
-            y1: "11",
-            y2: "17",
-            key: "xtxkd"
+            d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+            key: "e791ji"
         }
     ]
-]);
+];
+const Trash2 = createLucideIcon("trash-2", __iconNode$6);
 
-const TriangleAlert = createLucideIcon("TriangleAlert", [
+const __iconNode$5 = [
     [
         "path",
         {
@@ -891,9 +917,10 @@ const TriangleAlert = createLucideIcon("TriangleAlert", [
             key: "p32p05"
         }
     ]
-]);
+];
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$5);
 
-const UserPlus = createLucideIcon("UserPlus", [
+const __iconNode$4 = [
     [
         "path",
         {
@@ -930,9 +957,10 @@ const UserPlus = createLucideIcon("UserPlus", [
             key: "1shjgl"
         }
     ]
-]);
+];
+const UserPlus = createLucideIcon("user-plus", __iconNode$4);
 
-const User = createLucideIcon("User", [
+const __iconNode$3 = [
     [
         "path",
         {
@@ -949,9 +977,10 @@ const User = createLucideIcon("User", [
             key: "17ys0d"
         }
     ]
-]);
+];
+const User = createLucideIcon("user", __iconNode$3);
 
-const Users = createLucideIcon("Users", [
+const __iconNode$2 = [
     [
         "path",
         {
@@ -960,12 +989,10 @@ const Users = createLucideIcon("Users", [
         }
     ],
     [
-        "circle",
+        "path",
         {
-            cx: "9",
-            cy: "7",
-            r: "4",
-            key: "nufk8"
+            d: "M16 3.128a4 4 0 0 1 0 7.744",
+            key: "16gr8j"
         }
     ],
     [
@@ -976,15 +1003,18 @@ const Users = createLucideIcon("Users", [
         }
     ],
     [
-        "path",
+        "circle",
         {
-            d: "M16 3.13a4 4 0 0 1 0 7.75",
-            key: "1da9ce"
+            cx: "9",
+            cy: "7",
+            r: "4",
+            key: "nufk8"
         }
     ]
-]);
+];
+const Users = createLucideIcon("users", __iconNode$2);
 
-const X = createLucideIcon("X", [
+const __iconNode$1 = [
     [
         "path",
         {
@@ -999,9 +1029,10 @@ const X = createLucideIcon("X", [
             key: "d8bk6v"
         }
     ]
-]);
+];
+const X = createLucideIcon("x", __iconNode$1);
 
-const Zap = createLucideIcon("Zap", [
+const __iconNode = [
     [
         "path",
         {
@@ -1009,7 +1040,8 @@ const Zap = createLucideIcon("Zap", [
             key: "1xq2db"
         }
     ]
-]);
+];
+const Zap = createLucideIcon("zap", __iconNode);
 
 /**
  * Time zone name format.
@@ -6588,23 +6620,108 @@ function TripCard({ trip, showEdit = false, showDelete = false, onEdit, onDelete
 }
 TripCard.displayName = "TripCard";
 
+// Payments module
+const SUBSCRIPTION_TIERS = [
+    {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        features: [
+            'basic_calculator'
+        ]
+    },
+    {
+        id: 'premium',
+        name: 'Premium',
+        price: 9.99,
+        features: [
+            'basic_calculator',
+            'unlimited_lists',
+            'pdf_export'
+        ]
+    },
+    {
+        id: 'pro',
+        name: 'Pro',
+        price: 19.99,
+        features: [
+            'basic_calculator',
+            'unlimited_lists',
+            'pdf_export',
+            'api_access'
+        ]
+    }
+];
+function checkFeatureAccess(userTier, feature) {
+    const tier = SUBSCRIPTION_TIERS.find((t)=>t.id === userTier);
+    return tier ? tier.features.includes(feature) : false;
+}
+function getTierComparison(currentTier, targetTier) {
+    const current = SUBSCRIPTION_TIERS.find((t)=>t.id === currentTier);
+    const target = SUBSCRIPTION_TIERS.find((t)=>t.id === targetTier);
+    if (!current || !target) return null;
+    return {
+        current,
+        target,
+        savings: target.price - current.price,
+        newFeatures: target.features.filter((f)=>!current.features.includes(f))
+    };
+}
+function formatPrice(price) {
+    return price === 0 ? 'Free' : `$${price}/month`;
+}
+// Additional types and functions for payment modal
+var BillingCycle = /*#__PURE__*/ function(BillingCycle) {
+    BillingCycle["MONTHLY"] = "monthly";
+    BillingCycle["YEARLY"] = "yearly";
+    return BillingCycle;
+}({});
+function calculateYearlySavings(monthlyPrice) {
+    const yearlyPrice = monthlyPrice * 10 // 20% discount
+    ;
+    const monthlyCost = monthlyPrice * 12;
+    return monthlyCost - yearlyPrice;
+}
+function getStripe() {
+    // Stripe instance placeholder
+    return null;
+}
+const TIER_PRICING$1 = {
+    free: {
+        monthly: 0,
+        yearly: 0
+    },
+    premium: {
+        monthly: 9.99,
+        yearly: 99
+    },
+    pro: {
+        monthly: 19.99,
+        yearly: 199
+    },
+    business: {
+        monthly: 49.99,
+        yearly: 499
+    }
+};
+
 const TIER_ICONS = {
-    [payments.SubscriptionTier.FREE]: null,
-    [payments.SubscriptionTier.PREMIUM]: /*#__PURE__*/ React.createElement(Crown, {
+    [SubscriptionTier.FREE]: null,
+    [SubscriptionTier.PREMIUM]: /*#__PURE__*/ React.createElement(Crown, {
         className: "w-5 h-5"
     }),
-    [payments.SubscriptionTier.PRO]: /*#__PURE__*/ React.createElement(Zap, {
+    [SubscriptionTier.PRO]: /*#__PURE__*/ React.createElement(Zap, {
         className: "w-5 h-5"
     }),
-    [payments.SubscriptionTier.BUSINESS]: /*#__PURE__*/ React.createElement(Building2, {
+    [SubscriptionTier.BUSINESS]: /*#__PURE__*/ React.createElement(Building2, {
         className: "w-5 h-5"
     })
 };
 const TIER_COLORS = {
-    [payments.SubscriptionTier.FREE]: 'bg-gray-50 border-gray-200 text-gray-700',
-    [payments.SubscriptionTier.PREMIUM]: 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 text-yellow-800',
-    [payments.SubscriptionTier.PRO]: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 text-blue-800',
-    [payments.SubscriptionTier.BUSINESS]: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 text-purple-800'
+    [SubscriptionTier.FREE]: 'bg-gray-50 border-gray-200 text-gray-700',
+    [SubscriptionTier.PREMIUM]: 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 text-yellow-800',
+    [SubscriptionTier.PRO]: 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 text-blue-800',
+    [SubscriptionTier.BUSINESS]: 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 text-purple-800'
 };
 const FEATURE_DESCRIPTIONS = {
     'smart_alerts': 'Get notified when you\'re approaching your 90-day limit',
@@ -6628,25 +6745,25 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
     const [selectedTier, setSelectedTier] = React.useState(null);
     const [showDetails, setShowDetails] = React.useState(false);
     // Check feature access
-    const accessResult = payments.checkFeatureAccess(currentTier, feature, userUsage);
+    const accessResult = checkFeatureAccess(currentTier, feature);
     // If user already has access, don't show the gate
     if (accessResult.allowed) {
         return null;
     }
-    const tierComparison = payments.getTierComparison();
-    const recommendedTier = accessResult.recommendedTier || payments.SubscriptionTier.PREMIUM;
+    const tierComparison = getTierComparison();
+    const recommendedTier = accessResult.recommendedTier || SubscriptionTier.PREMIUM;
     const featureDescription = FEATURE_DESCRIPTIONS[feature] || 'Upgrade to unlock this premium feature';
     // Pricing information
     const tierPricing = {
-        [payments.SubscriptionTier.PREMIUM]: {
+        [SubscriptionTier.PREMIUM]: {
             monthly: 999,
             yearly: 9999
         },
-        [payments.SubscriptionTier.PRO]: {
+        [SubscriptionTier.PRO]: {
             monthly: 1999,
             yearly: 19999
         },
-        [payments.SubscriptionTier.BUSINESS]: {
+        [SubscriptionTier.BUSINESS]: {
             monthly: 4999,
             yearly: 49999
         }
@@ -6655,10 +6772,10 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
         onUpgrade?.(tier);
     };
     const renderTierCard = (tier, isRecommended = false)=>{
-        if (tier === payments.SubscriptionTier.FREE) return null;
+        if (tier === SubscriptionTier.FREE) return null;
         const pricing = tierPricing[tier];
-        const monthlyPrice = payments.formatPrice(pricing.monthly);
-        const yearlyPrice = payments.formatPrice(pricing.yearly);
+        const monthlyPrice = formatPrice(pricing.monthly);
+        const yearlyPrice = formatPrice(pricing.yearly);
         const tierInfo = tierComparison[tier];
         return /*#__PURE__*/ React.createElement(Card, {
             key: tier,
@@ -6763,10 +6880,10 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
         }, customMessage || `${featureDescription}. Choose a subscription plan to unlock this feature and many more.`)), /*#__PURE__*/ React.createElement(CardContent, null, showComparison && /*#__PURE__*/ React.createElement("div", {
             className: "grid md:grid-cols-3 gap-6 mb-6"
         }, [
-            payments.SubscriptionTier.PREMIUM,
-            payments.SubscriptionTier.PRO,
-            payments.SubscriptionTier.BUSINESS
-        ].map((tier)=>renderTierCard(tier, tier === recommendedTier))), currentTier === payments.SubscriptionTier.FREE && userUsage && /*#__PURE__*/ React.createElement("div", {
+            SubscriptionTier.PREMIUM,
+            SubscriptionTier.PRO,
+            SubscriptionTier.BUSINESS
+        ].map((tier)=>renderTierCard(tier, tier === recommendedTier))), currentTier === SubscriptionTier.FREE && userUsage && /*#__PURE__*/ React.createElement("div", {
             className: "bg-gray-50 rounded-lg p-4 mb-6"
         }, /*#__PURE__*/ React.createElement("h4", {
             className: "font-medium text-gray-800 mb-3"
@@ -6812,7 +6929,7 @@ function SubscriptionGate({ feature, currentTier, userUsage = {}, mode = 'modal'
 // Hook for easy subscription gating
 function useSubscriptionGate(feature, currentTier, userUsage) {
     const [showGate, setShowGate] = React.useState(false);
-    const accessResult = payments.checkFeatureAccess(currentTier, feature, userUsage);
+    const accessResult = checkFeatureAccess(currentTier, feature);
     const requireFeature = ()=>{
         if (!accessResult.allowed) {
             setShowGate(true);
@@ -6831,7 +6948,7 @@ function useSubscriptionGate(feature, currentTier, userUsage) {
 }
 
 const TIER_FEATURES = {
-    [payments.SubscriptionTier.PREMIUM]: [
+    [SubscriptionTier.PREMIUM]: [
         'Smart alerts for compliance tracking',
         'Unlimited trip lists',
         'PDF export functionality',
@@ -6839,7 +6956,7 @@ const TIER_FEATURES = {
         'Ad-free experience',
         'Email reports and summaries'
     ],
-    [payments.SubscriptionTier.PRO]: [
+    [SubscriptionTier.PRO]: [
         'Everything in Premium',
         'AI-powered trip optimization',
         'Secure document vault',
@@ -6847,7 +6964,7 @@ const TIER_FEATURES = {
         'Basic API access',
         'Priority email support'
     ],
-    [payments.SubscriptionTier.BUSINESS]: [
+    [SubscriptionTier.BUSINESS]: [
         'Everything in Pro',
         'Team management dashboard',
         'White-label customization',
@@ -6857,28 +6974,28 @@ const TIER_FEATURES = {
     ]
 };
 const TIER_PRICING = {
-    [payments.SubscriptionTier.PREMIUM]: {
+    [SubscriptionTier.PREMIUM]: {
         monthly: 999,
         yearly: 9999
     },
-    [payments.SubscriptionTier.PRO]: {
+    [SubscriptionTier.PRO]: {
         monthly: 1999,
         yearly: 19999
     },
-    [payments.SubscriptionTier.BUSINESS]: {
+    [SubscriptionTier.BUSINESS]: {
         monthly: 4999,
         yearly: 49999
     }
 };
-function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.BillingCycle.MONTHLY, userId, userEmail, currentTier = payments.SubscriptionTier.FREE, title, subtitle, showFeatureComparison = true, showSecurityBadges = true, onSuccess, onError, onCancel, stripePublishableKey, priceId, className }) {
+function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = BillingCycle.MONTHLY, userId, userEmail, currentTier = SubscriptionTier.FREE, title, subtitle, showFeatureComparison = true, showSecurityBadges = true, onSuccess, onError, onCancel, stripePublishableKey, priceId, className }) {
     const [isProcessing, setIsProcessing] = React.useState(false);
     const [selectedBilling, setSelectedBilling] = React.useState(billingCycle);
     const [step, setStep] = React.useState('plan');
     if (!isOpen) return null;
     const pricing = TIER_PRICING[selectedTier];
-    const monthlyPrice = payments.formatPrice(pricing.monthly);
-    const yearlyPrice = payments.formatPrice(pricing.yearly);
-    const savings = payments.calculateYearlySavings(pricing.monthly, pricing.yearly);
+    const monthlyPrice = formatPrice(pricing.monthly);
+    const yearlyPrice = formatPrice(pricing.yearly);
+    const savings = calculateYearlySavings(pricing.monthly, pricing.yearly);
     const features = TIER_FEATURES[selectedTier] || [];
     // Handle Stripe checkout
     const handleCheckout = async ()=>{
@@ -6886,7 +7003,7 @@ function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.B
         setStep('processing');
         try {
             // Initialize Stripe
-            const stripe = await payments.getStripe();
+            const stripe = await getStripe();
             if (!stripe) {
                 throw new Error('Stripe failed to initialize');
             }
@@ -6933,11 +7050,11 @@ function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.B
         }, /*#__PURE__*/ React.createElement("div", {
             className: "bg-gray-100 p-1 rounded-lg flex"
         }, /*#__PURE__*/ React.createElement("button", {
-            onClick: ()=>setSelectedBilling(payments.BillingCycle.MONTHLY),
-            className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors", selectedBilling === payments.BillingCycle.MONTHLY ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900")
+            onClick: ()=>setSelectedBilling(BillingCycle.MONTHLY),
+            className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors", selectedBilling === BillingCycle.MONTHLY ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900")
         }, "Monthly"), /*#__PURE__*/ React.createElement("button", {
-            onClick: ()=>setSelectedBilling(payments.BillingCycle.YEARLY),
-            className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative", selectedBilling === payments.BillingCycle.YEARLY ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900")
+            onClick: ()=>setSelectedBilling(BillingCycle.YEARLY),
+            className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative", selectedBilling === BillingCycle.YEARLY ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900")
         }, "Yearly", /*#__PURE__*/ React.createElement(Badge, {
             className: "absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1.5 py-0.5"
         }, "Save ", savings.savingsPercentage, "%")))), /*#__PURE__*/ React.createElement(Card, {
@@ -6954,11 +7071,11 @@ function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.B
             className: "space-y-1"
         }, /*#__PURE__*/ React.createElement("div", {
             className: "text-3xl font-bold text-primary"
-        }, selectedBilling === payments.BillingCycle.YEARLY ? yearlyPrice : monthlyPrice, /*#__PURE__*/ React.createElement("span", {
+        }, selectedBilling === BillingCycle.YEARLY ? yearlyPrice : monthlyPrice, /*#__PURE__*/ React.createElement("span", {
             className: "text-lg font-normal text-gray-600"
-        }, "/", selectedBilling === payments.BillingCycle.YEARLY ? 'year' : 'month')), selectedBilling === payments.BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
+        }, "/", selectedBilling === BillingCycle.YEARLY ? 'year' : 'month')), selectedBilling === BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
             className: "text-sm text-green-600 font-medium"
-        }, "Save ", payments.formatPrice(savings.savingsAmount), " compared to monthly"))), showFeatureComparison && /*#__PURE__*/ React.createElement(CardContent, null, /*#__PURE__*/ React.createElement("div", {
+        }, "Save ", formatPrice(savings.savingsAmount), " compared to monthly"))), showFeatureComparison && /*#__PURE__*/ React.createElement(CardContent, null, /*#__PURE__*/ React.createElement("div", {
             className: "space-y-3"
         }, /*#__PURE__*/ React.createElement("h4", {
             className: "font-medium text-gray-900"
@@ -7010,11 +7127,11 @@ function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.B
             className: "flex justify-between"
         }, /*#__PURE__*/ React.createElement("span", null, selectedTier, " Plan (", selectedBilling, ")"), /*#__PURE__*/ React.createElement("span", {
             className: "font-medium"
-        }, selectedBilling === payments.BillingCycle.YEARLY ? yearlyPrice : monthlyPrice)), selectedBilling === payments.BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
+        }, selectedBilling === BillingCycle.YEARLY ? yearlyPrice : monthlyPrice)), selectedBilling === BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
             className: "flex justify-between text-green-600"
-        }, /*#__PURE__*/ React.createElement("span", null, "Annual discount"), /*#__PURE__*/ React.createElement("span", null, "-", payments.formatPrice(savings.savingsAmount))), /*#__PURE__*/ React.createElement("div", {
+        }, /*#__PURE__*/ React.createElement("span", null, "Annual discount"), /*#__PURE__*/ React.createElement("span", null, "-", formatPrice(savings.savingsAmount))), /*#__PURE__*/ React.createElement("div", {
             className: "border-t pt-2 flex justify-between font-medium"
-        }, /*#__PURE__*/ React.createElement("span", null, "Total"), /*#__PURE__*/ React.createElement("span", null, selectedBilling === payments.BillingCycle.YEARLY ? yearlyPrice : monthlyPrice)))), /*#__PURE__*/ React.createElement(Card, null, /*#__PURE__*/ React.createElement(CardHeader, null, /*#__PURE__*/ React.createElement(CardTitle, {
+        }, /*#__PURE__*/ React.createElement("span", null, "Total"), /*#__PURE__*/ React.createElement("span", null, selectedBilling === BillingCycle.YEARLY ? yearlyPrice : monthlyPrice)))), /*#__PURE__*/ React.createElement(Card, null, /*#__PURE__*/ React.createElement(CardHeader, null, /*#__PURE__*/ React.createElement(CardTitle, {
             className: "text-lg"
         }, "Payment Information")), /*#__PURE__*/ React.createElement(CardContent, null, /*#__PURE__*/ React.createElement("div", {
             className: "text-center text-gray-600 mb-4"
@@ -7075,9 +7192,9 @@ function PaymentModal({ isOpen, onClose, selectedTier, billingCycle = payments.B
 // Hook for payment modal management
 function usePaymentModal() {
     const [isOpen, setIsOpen] = React.useState(false);
-    const [selectedTier, setSelectedTier] = React.useState(payments.SubscriptionTier.PREMIUM);
-    const [billingCycle, setBillingCycle] = React.useState(payments.BillingCycle.MONTHLY);
-    const openModal = (tier, cycle = payments.BillingCycle.MONTHLY)=>{
+    const [selectedTier, setSelectedTier] = React.useState(SubscriptionTier.PREMIUM);
+    const [billingCycle, setBillingCycle] = React.useState(BillingCycle.MONTHLY);
+    const openModal = (tier, cycle = BillingCycle.MONTHLY)=>{
         setSelectedTier(tier);
         setBillingCycle(cycle);
         setIsOpen(true);
@@ -7097,7 +7214,7 @@ function usePaymentModal() {
 }
 
 const TIER_CONFIG = {
-    [payments.SubscriptionTier.FREE]: {
+    [SubscriptionTier.FREE]: {
         name: 'Free',
         icon: null,
         description: 'Perfect for trying out basic Schengen calculations',
@@ -7112,7 +7229,7 @@ const TIER_CONFIG = {
             'Ads enabled'
         ]
     },
-    [payments.SubscriptionTier.PREMIUM]: {
+    [SubscriptionTier.PREMIUM]: {
         name: 'Premium',
         icon: /*#__PURE__*/ React.createElement(Crown, {
             className: "w-5 h-5"
@@ -7132,7 +7249,7 @@ const TIER_CONFIG = {
             'Priority calculation queue'
         ]
     },
-    [payments.SubscriptionTier.PRO]: {
+    [SubscriptionTier.PRO]: {
         name: 'Pro',
         icon: /*#__PURE__*/ React.createElement(Zap, {
             className: "w-5 h-5"
@@ -7152,7 +7269,7 @@ const TIER_CONFIG = {
             'Excel/CSV export formats'
         ]
     },
-    [payments.SubscriptionTier.BUSINESS]: {
+    [SubscriptionTier.BUSINESS]: {
         name: 'Business',
         icon: /*#__PURE__*/ React.createElement(Building2, {
             className: "w-5 h-5"
@@ -7173,8 +7290,8 @@ const TIER_CONFIG = {
         ]
     }
 };
-function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsage = {}, showComparison = true, showPopularBadge = true, showAnnualToggle = true, highlightTier, compact = false, onSelectPlan, onStartTrial, title = "Choose Your Plan", subtitle = "Upgrade anytime. Cancel anytime. Start your journey to smarter travel planning.", className }) {
-    const [billingCycle, setBillingCycle] = React.useState(payments.BillingCycle.MONTHLY);
+function PricingCards({ currentTier = SubscriptionTier.FREE, currentUsage = {}, showComparison = true, showPopularBadge = true, showAnnualToggle = true, highlightTier, compact = false, onSelectPlan, onStartTrial, title = "Choose Your Plan", subtitle = "Upgrade anytime. Cancel anytime. Start your journey to smarter travel planning.", className }) {
+    const [billingCycle, setBillingCycle] = React.useState(BillingCycle.MONTHLY);
     const [hoveredTier, setHoveredTier] = React.useState(null);
     const handleSelectPlan = (tier)=>{
         onSelectPlan?.(tier, billingCycle);
@@ -7183,7 +7300,7 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
         onStartTrial?.(tier);
     };
     const renderUsageLimits = ()=>{
-        if (currentTier !== payments.SubscriptionTier.FREE || !Object.keys(currentUsage).length) return null;
+        if (currentTier !== SubscriptionTier.FREE || !Object.keys(currentUsage).length) return null;
         return /*#__PURE__*/ React.createElement("div", {
             className: "mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg"
         }, /*#__PURE__*/ React.createElement("h3", {
@@ -7228,21 +7345,21 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
     };
     const renderPricingCard = (tier)=>{
         const config = TIER_CONFIG[tier];
-        const pricing = payments.TIER_PRICING[tier];
+        const pricing = TIER_PRICING$1[tier];
         const isCurrentTier = tier === currentTier;
-        const isHighlighted = tier === (highlightTier || payments.SubscriptionTier.PREMIUM);
+        const isHighlighted = tier === (highlightTier || SubscriptionTier.PREMIUM);
         const isHovered = tier === hoveredTier;
         // Calculate pricing
         let displayPrice = "Free";
         let billingText = "";
         let savings = null;
-        if (tier !== payments.SubscriptionTier.FREE) {
-            const monthlyPrice = payments.formatPrice(pricing.monthly);
-            const yearlyPrice = payments.formatPrice(pricing.yearly);
-            if (billingCycle === payments.BillingCycle.YEARLY) {
+        if (tier !== SubscriptionTier.FREE) {
+            const monthlyPrice = formatPrice(pricing.monthly);
+            const yearlyPrice = formatPrice(pricing.yearly);
+            if (billingCycle === BillingCycle.YEARLY) {
                 displayPrice = yearlyPrice;
                 billingText = "/year";
-                savings = payments.calculateYearlySavings(pricing.monthly, pricing.yearly);
+                savings = calculateYearlySavings(pricing.monthly, pricing.yearly);
             } else {
                 displayPrice = monthlyPrice;
                 billingText = "/month";
@@ -7277,13 +7394,13 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
             className: "text-3xl font-bold"
         }, displayPrice), billingText && /*#__PURE__*/ React.createElement("span", {
             className: "text-lg opacity-70"
-        }, billingText)), savings && billingCycle === payments.BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
+        }, billingText)), savings && billingCycle === BillingCycle.YEARLY && /*#__PURE__*/ React.createElement("div", {
             className: "text-sm text-green-600 font-medium"
-        }, "Save ", payments.formatPrice(savings.savingsAmount), " annually (", savings.savingsPercentage, "% off)"))), /*#__PURE__*/ React.createElement(CardContent, {
+        }, "Save ", formatPrice(savings.savingsAmount), " annually (", savings.savingsPercentage, "% off)"))), /*#__PURE__*/ React.createElement(CardContent, {
             className: "space-y-4"
         }, /*#__PURE__*/ React.createElement("div", {
             className: "space-y-2"
-        }, tier === payments.SubscriptionTier.FREE ? /*#__PURE__*/ React.createElement(React.Fragment, null, config.limitations?.map((limitation, index)=>/*#__PURE__*/ React.createElement("div", {
+        }, tier === SubscriptionTier.FREE ? /*#__PURE__*/ React.createElement(React.Fragment, null, config.limitations?.map((limitation, index)=>/*#__PURE__*/ React.createElement("div", {
                 key: index,
                 className: "flex items-start gap-2 text-sm"
             }, /*#__PURE__*/ React.createElement("div", {
@@ -7303,7 +7420,7 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
             variant: "outline",
             className: "w-full",
             disabled: true
-        }, "Current Plan") : tier === payments.SubscriptionTier.FREE ? /*#__PURE__*/ React.createElement(Button$1, {
+        }, "Current Plan") : tier === SubscriptionTier.FREE ? /*#__PURE__*/ React.createElement(Button$1, {
             variant: "outline",
             className: "w-full",
             onClick: ()=>handleSelectPlan(tier)
@@ -7312,7 +7429,7 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
             onClick: ()=>handleSelectPlan(tier)
         }, /*#__PURE__*/ React.createElement(ArrowRight, {
             className: "w-4 h-4 mr-2"
-        }), "Upgrade to ", config.name), tier !== payments.SubscriptionTier.BUSINESS && /*#__PURE__*/ React.createElement(Button$1, {
+        }), "Upgrade to ", config.name), tier !== SubscriptionTier.BUSINESS && /*#__PURE__*/ React.createElement(Button$1, {
             variant: "ghost",
             size: "sm",
             className: "w-full text-xs",
@@ -7332,18 +7449,18 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
     }, /*#__PURE__*/ React.createElement("div", {
         className: "bg-gray-100 p-1 rounded-lg flex relative"
     }, /*#__PURE__*/ React.createElement("button", {
-        onClick: ()=>setBillingCycle(payments.BillingCycle.MONTHLY),
-        className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative z-10", billingCycle === payments.BillingCycle.MONTHLY ? "text-gray-900" : "text-gray-600 hover:text-gray-900")
+        onClick: ()=>setBillingCycle(BillingCycle.MONTHLY),
+        className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative z-10", billingCycle === BillingCycle.MONTHLY ? "text-gray-900" : "text-gray-600 hover:text-gray-900")
     }, "Monthly"), /*#__PURE__*/ React.createElement("button", {
-        onClick: ()=>setBillingCycle(payments.BillingCycle.YEARLY),
-        className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative z-10", billingCycle === payments.BillingCycle.YEARLY ? "text-gray-900" : "text-gray-600 hover:text-gray-900")
+        onClick: ()=>setBillingCycle(BillingCycle.YEARLY),
+        className: cn("px-4 py-2 text-sm font-medium rounded-md transition-colors relative z-10", billingCycle === BillingCycle.YEARLY ? "text-gray-900" : "text-gray-600 hover:text-gray-900")
     }, "Yearly", /*#__PURE__*/ React.createElement(Badge, {
         className: "absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1.5 py-0.5"
     }, "Save 17%")), /*#__PURE__*/ React.createElement("div", {
-        className: cn("absolute top-1 bottom-1 bg-white rounded-md shadow-sm transition-transform duration-200 z-0", "w-[calc(50%-4px)]", billingCycle === payments.BillingCycle.YEARLY ? "transform translate-x-[calc(100%+8px)]" : "transform translate-x-1")
+        className: cn("absolute top-1 bottom-1 bg-white rounded-md shadow-sm transition-transform duration-200 z-0", "w-[calc(50%-4px)]", billingCycle === BillingCycle.YEARLY ? "transform translate-x-[calc(100%+8px)]" : "transform translate-x-1")
     })))), renderUsageLimits(), /*#__PURE__*/ React.createElement("div", {
         className: cn("grid gap-6", compact ? "grid-cols-1 md:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4", showComparison && "lg:grid-cols-4")
-    }, Object.values(payments.SubscriptionTier).map((tier)=>renderPricingCard(tier))), showComparison && !compact && /*#__PURE__*/ React.createElement("div", {
+    }, Object.values(SubscriptionTier).map((tier)=>renderPricingCard(tier))), showComparison && !compact && /*#__PURE__*/ React.createElement("div", {
         className: "mt-12 bg-white rounded-lg border shadow-sm overflow-hidden"
     }, /*#__PURE__*/ React.createElement("div", {
         className: "px-6 py-4 bg-gray-50 border-b"
@@ -7357,7 +7474,7 @@ function PricingCards({ currentTier = payments.SubscriptionTier.FREE, currentUsa
         className: "border-b"
     }, /*#__PURE__*/ React.createElement("th", {
         className: "text-left py-3 px-6 font-medium"
-    }, "Features"), Object.values(payments.SubscriptionTier).map((tier)=>/*#__PURE__*/ React.createElement("th", {
+    }, "Features"), Object.values(SubscriptionTier).map((tier)=>/*#__PURE__*/ React.createElement("th", {
             key: tier,
             className: "text-center py-3 px-6 font-medium"
         }, TIER_CONFIG[tier].name)))), /*#__PURE__*/ React.createElement("tbody", {

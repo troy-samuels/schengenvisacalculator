@@ -6,7 +6,8 @@ import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
-import { SubscriptionTier, checkFeatureAccess, getTierComparison, formatPrice } from '@schengen/payments'
+import { checkFeatureAccess, getTierComparison, formatPrice } from '@schengen/payments'
+import type { SubscriptionTier } from '@schengen/payments'
 
 export interface SubscriptionGateProps {
   // Feature gating

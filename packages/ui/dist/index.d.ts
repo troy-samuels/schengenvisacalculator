@@ -92,7 +92,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
+    variant?: "default" | "link" | "secondary" | "destructive" | "outline" | "success" | "warning" | "ghost" | "brand" | "cream" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -135,7 +135,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }
@@ -325,7 +325,7 @@ declare function useSubscriptionGate(feature: string, currentTier: SubscriptionT
     showGate: boolean;
     requireFeature: () => boolean;
     closeGate: () => void;
-    accessResult: any;
+    accessResult: boolean;
 };
 
 interface PaymentModalProps {
@@ -354,8 +354,8 @@ declare function usePaymentModal(): {
     billingCycle: BillingCycle;
     openModal: (tier: SubscriptionTier, cycle?: BillingCycle) => void;
     closeModal: () => void;
-    setSelectedTier: React__default.Dispatch<any>;
-    setBillingCycle: React__default.Dispatch<any>;
+    setSelectedTier: React__default.Dispatch<React__default.SetStateAction<SubscriptionTier>>;
+    setBillingCycle: React__default.Dispatch<React__default.SetStateAction<BillingCycle>>;
 };
 
 interface PricingCardsProps {

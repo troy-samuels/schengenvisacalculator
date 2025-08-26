@@ -4,14 +4,15 @@
 type AppRoutes = "/"
 type PageRoutes = never
 type LayoutRoutes = "/"
-type RedirectRoutes = "/calculator"
-type RewriteRoutes = never
+type RedirectRoutes = "/app/[[...path]]"
+type RewriteRoutes = "/sw.js"
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes
 
 
 interface ParamMap {
   "/": {}
-  "/calculator": {}
+  "/app/[[...path]]": { "path"?: string[]; }
+  "/sw.js": {}
 }
 
 

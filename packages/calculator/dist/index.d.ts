@@ -175,7 +175,7 @@ declare class DateOverlapValidator {
     /**
      * Validate if a date range conflicts with existing trips
      */
-    validateDateRange(newRange: DateRange, existingTrips: Trip[]): ValidationResult;
+    validateDateSpan(newRange: DateRange, existingTrips: Trip[]): ValidationResult;
     /**
      * Get all occupied dates from existing trips for calendar display
      */
@@ -191,7 +191,7 @@ declare class DateOverlapValidator {
     /**
      * Find next available date range of specified length
      */
-    findNextAvailableDateRange(preferredStart: Date, lengthInDays: number, existingTrips: Trip[], searchLimit?: number): DateRange | null;
+    findNextAvailableDateSpan(preferredStart: Date, lengthInDays: number, existingTrips: Trip[], searchLimit?: number): DateRange | null;
     /**
      * Suggest alternative dates when conflicts exist
      */
@@ -199,7 +199,7 @@ declare class DateOverlapValidator {
     /**
      * Batch validation for multiple date ranges
      */
-    validateMultipleDateRanges(newRanges: DateRange[], existingTrips: Trip[]): {
+    validateMultipleDateSpans(newRanges: DateRange[], existingTrips: Trip[]): {
         [index: number]: ValidationResult;
     };
     /**

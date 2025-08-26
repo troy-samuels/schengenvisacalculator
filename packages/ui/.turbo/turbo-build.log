@@ -4,28 +4,27 @@
 
 [36m
 [1msrc/types-only.ts[22m → [1mdist/index.d.ts[22m...[39m
-(node:40942) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/troysamuels/SCHENGEN%20VISA%20CALCULATOR/schengenvisacalculator/packages/ui/rollup.config.js is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-[1m[33m(!) Unresolved dependencies[39m[22m
-[90mhttps://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency[39m
-[1m@schengen/payments[22m (imported by "src/components/subscription-gate.tsx", "src/components/pricing-cards.tsx" and "src/components/payment-modal.tsx")
-[32mcreated [1mdist/index.d.ts[22m in [1m3.8s[22m[39m
+[32mcreated [1mdist/index.d.ts[22m in [1m1.5s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.esm.js[22m...[39m
-[1m[33m(!) src/components/pricing-cards.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/pricing-cards.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/pricing-cards.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useState } from 'react'[39m
 [1m[33m(!) src/components/subscription-gate.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/subscription-gate.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/subscription-gate.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
 3: import React, { useState } from 'react'[39m
+[1m[33m(!) src/components/pricing-cards.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/pricing-cards.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/pricing-cards.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useState } from 'react'[39m
+[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React from 'react'[39m
 [1m[33m(!) src/components/payment-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/payment-modal.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/payment-modal.tsx:1:0[22m
 [90m1: "use client"
@@ -38,30 +37,24 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/animated-counter.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/animated-counter.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/animated-counter.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useEffect, useState, useRef } from 'react'[39m
-[1m[33m(!) src/components/ui/select.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/select.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/select.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useState, useRef, useEffect } from 'react'[39m
 [1m[33m(!) src/components/ui/calendar-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/calendar-modal.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/calendar-modal.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
 3: import React, { useState, useEffect } from 'react'[39m
+[1m[33m(!) src/components/ui/select.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/select.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/select.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useState, useRef, useEffect } from 'react'[39m
+[1m[33m(!) src/components/ui/animated-counter.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/animated-counter.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/animated-counter.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useEffect, useState, useRef } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -70,10 +63,7 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: // src/label.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) Unresolved dependencies[39m[22m
-[90mhttps://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency[39m
-[1m@schengen/payments[22m (imported by "src/components/payment-modal.tsx", "src/components/pricing-cards.tsx" and "src/components/subscription-gate.tsx")
-[32mcreated [1mdist/index.esm.js[22m in [1m6.3s[22m[39m
+[32mcreated [1mdist/index.esm.js[22m in [1m1.7s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.cjs.js[22m...[39m
 [1m[33m(!) src/components/subscription-gate.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/subscription-gate.tsx" was ignored.[39m[22m
@@ -82,14 +72,14 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React, { useState } from 'react'[39m
-[1m[33m(!) src/components/payment-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/payment-modal.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/payment-modal.tsx:1:0[22m
+[1m[33m(!) src/components/pricing-cards.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/pricing-cards.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/pricing-cards.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
 3: import React, { useState } from 'react'[39m
-[1m[33m(!) src/components/pricing-cards.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/pricing-cards.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/pricing-cards.tsx:1:0[22m
+[1m[33m(!) src/components/payment-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/payment-modal.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/payment-modal.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
@@ -100,14 +90,20 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React, { useEffect, useState, useRef } from 'react'[39m
-[1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
+[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
 3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
+[1m[33m(!) src/components/ui/select.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/select.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/select.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useState, useRef, useEffect } from 'react'[39m
+[1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
@@ -118,12 +114,6 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React, { useState, useEffect } from 'react'[39m
-[1m[33m(!) src/components/ui/select.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/select.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/select.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useState, useRef, useEffect } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -132,10 +122,7 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: // src/label.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) Unresolved dependencies[39m[22m
-[90mhttps://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency[39m
-[1m@schengen/payments[22m (imported by "src/components/payment-modal.tsx", "src/components/pricing-cards.tsx" and "src/components/subscription-gate.tsx")
-[32mcreated [1mdist/index.cjs.js[22m in [1m5.8s[22m[39m
+[32mcreated [1mdist/index.cjs.js[22m in [1m1.2s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.umd.min.js[22m...[39m
 [1m[33m(!) src/components/subscription-gate.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/subscription-gate.tsx" was ignored.[39m[22m
@@ -144,18 +131,36 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React, { useState } from 'react'[39m
-[1m[33m(!) src/components/payment-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/payment-modal.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/payment-modal.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useState } from 'react'[39m
 [1m[33m(!) src/components/pricing-cards.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/pricing-cards.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/pricing-cards.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
 3: import React, { useState } from 'react'[39m
+[1m[33m(!) src/components/payment-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/payment-modal.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/payment-modal.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useState } from 'react'[39m
+[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React from 'react'[39m
+[1m[33m(!) src/components/ui/animated-counter.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/animated-counter.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/animated-counter.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useEffect, useState, useRef } from 'react'[39m
+[1m[33m(!) src/components/ui/calendar-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/calendar-modal.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/calendar-modal.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React, { useState, useEffect } from 'react'[39m
 [1m[33m(!) src/components/ui/select.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/select.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/select.tsx:1:0[22m
 [90m1: "use client"
@@ -168,24 +173,6 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: 
 3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/calendar-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/calendar-modal.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/calendar-modal.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useState, useEffect } from 'react'[39m
-[1m[33m(!) src/components/ui/animated-counter.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/animated-counter.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/animated-counter.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React, { useEffect, useState, useRef } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -194,11 +181,4 @@ To eliminate this warning, add "type": "module" to /Users/troysamuels/SCHENGEN V
    ^
 2: // src/label.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) Unresolved dependencies[39m[22m
-[90mhttps://rollupjs.org/troubleshooting/#warning-treating-module-as-external-dependency[39m
-[1m@schengen/payments[22m (imported by "src/components/payment-modal.tsx", "src/components/subscription-gate.tsx" and "src/components/pricing-cards.tsx")
-[1m[33m(!) Missing global variable name[39m[22m
-[90mhttps://rollupjs.org/configuration-options/#output-globals[39m
-Use "output.globals" to specify browser global variable names corresponding to external modules:
-[1m@schengen/payments[22m (guessing "payments")
-[32mcreated [1mdist/index.umd.min.js[22m in [1m7.4s[22m[39m
+[32mcreated [1mdist/index.umd.min.js[22m in [1m1.8s[22m[39m
