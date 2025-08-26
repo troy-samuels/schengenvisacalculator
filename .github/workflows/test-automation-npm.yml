@@ -92,7 +92,7 @@ jobs:
         fi
       
     - name: Run EU compliance validation
-      run: npm run compliance:eu
+      run: npm run test:eu-compliance > eu-compliance-report.txt
       
     - name: Verify compliance report exists
       run: |
@@ -146,7 +146,7 @@ jobs:
     - name: Run edge case tests
       run: |
         # Run edge case tests and save logs
-        npm run test:edge 2>&1 | tee edge-case-report.txt
+        npm run test:date-overlap 2>&1 | tee edge-case-report.txt
         exit ${PIPESTATUS[0]}
         
     - name: Check edge case status
