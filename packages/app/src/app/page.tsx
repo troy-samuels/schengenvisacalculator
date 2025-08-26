@@ -2,900 +2,671 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { Select, Button, Card, CardContent, CardHeader, CircularProgress, CalendarModal, AnimatedCounter } from '@schengen/ui'
-import { Calculator, Calendar, MapPin, Clock, AlertCircle, Info, CheckCircle, XCircle } from 'lucide-react'
+import { Button, CircularProgress, CalendarModal } from '@schengen/ui'
+import { Calendar, ChevronRight, Plus } from 'lucide-react'
 import { format } from 'date-fns'
-import { toast } from 'sonner'
-
-// Progressive form states
-type FormStage = 'country' | 'dates' | 'complete'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
 
-export default function HomePage() {
-  const [selectedCountry, setSelectedCountry] = useState<string>('')
-  const [selectedDateRange, setSelectedDateRange] = useState<AppDateRange>({ startDate: null, endDate: null })
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const [trips, setTrips] = useState<Trip[]>([])
-  const [calculationResult, setCalculationResult] = useState<any>(null)
-  const [isCalculating, setIsCalculating] = useState(false)
-  const [currentFormStage, setCurrentFormStage] = useState<FormStage>('country')
+interface VisaEntry {
+  id: string
+  country: string
+  startDate: Date | null
+  endDate: Date | null
+  days: number
+  daysInLast180: number
+  daysRemaining: number
+  activeColumn: "country" | "dates" | "complete" | null
+}
 
-  // Real-time calculation states
-  const [currentTripDays, setCurrentTripDays] = useState<number>(0)
-  const [totalDaysInPeriod, setTotalDaysInPeriod] = useState<number>(0)
-  const [remainingDays, setRemainingDays] = useState<number>(90)
+const schengenCountries = [
+  { code: "AT", name: "Austria", flag: "🇦🇹" },
+  { code: "BE", name: "Belgium", flag: "🇧🇪" },
+  { code: "BG", name: "Bulgaria", flag: "🇧🇬" },
+  { code: "HR", name: "Croatia", flag: "🇭🇷" },
+  { code: "CY", name: "Cyprus", flag: "🇨🇾" },
+  { code: "CZ", name: "Czech Republic", flag: "🇨🇿" },
+  { code: "DK", name: "Denmark", flag: "🇩🇰" },
+  { code: "EE", name: "Estonia", flag: "🇪🇪" },
+  { code: "FI", name: "Finland", flag: "🇫🇮" },
+  { code: "FR", name: "France", flag: "🇫🇷" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "GR", name: "Greece", flag: "🇬🇷" },
+  { code: "HU", name: "Hungary", flag: "🇭🇺" },
+  { code: "IS", name: "Iceland", flag: "🇮🇸" },
+  { code: "IT", name: "Italy", flag: "🇮🇹" },
+  { code: "LV", name: "Latvia", flag: "🇱🇻" },
+  { code: "LI", name: "Liechtenstein", flag: "🇱🇮" },
+  { code: "LT", name: "Lithuania", flag: "🇱🇹" },
+  { code: "LU", name: "Luxembourg", flag: "🇱🇺" },
+  { code: "MT", name: "Malta", flag: "🇲🇹" },
+  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
+  { code: "NO", name: "Norway", flag: "🇳🇴" },
+  { code: "PL", name: "Poland", flag: "🇵🇱" },
+  { code: "PT", name: "Portugal", flag: "🇵🇹" },
+  { code: "RO", name: "Romania", flag: "🇷🇴" },
+  { code: "SK", name: "Slovakia", flag: "🇸🇰" },
+  { code: "SI", name: "Slovenia", flag: "🇸🇮" },
+  { code: "ES", name: "Spain", flag: "🇪🇸" },
+  { code: "SE", name: "Sweden", flag: "🇸🇪" },
+  { code: "CH", name: "Switzerland", flag: "🇨🇭" },
+]
+
+// Animated Counter Component
+function AnimatedCounter({ value, duration = 500 }: { value: number; duration?: number }) {
+  const [displayValue, setDisplayValue] = useState(value)
+
+  useEffect(() => {
+    if (displayValue === value) return
+
+    const startValue = displayValue
+    const difference = value - startValue
+    const startTime = Date.now()
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const currentValue = Math.round(startValue + difference * easeOutQuart)
+
+      setDisplayValue(currentValue)
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [value, duration, displayValue])
+
+  return <span>{displayValue}</span>
+}
+
+// Progress Circle Component
+function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; size?: number }) {
+  const [animatedProgress, setAnimatedProgress] = useState(0)
+  const maxDays = 90
+  const percentage = Math.max(0, Math.min(100, (daysRemaining / maxDays) * 100))
+
+  useEffect(() => {
+    const startProgress = animatedProgress
+    const targetProgress = percentage
+    const startTime = Date.now()
+    const duration = 800
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const currentProgress = startProgress + (targetProgress - startProgress) * easeOutQuart
+
+      setAnimatedProgress(currentProgress)
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [percentage])
+
+  const radius = (size - 12) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (animatedProgress / 100) * circumference
+
+  // Color logic based on days remaining
+  const getColor = () => {
+    if (daysRemaining > 60) return "#10B981" // Green
+    if (daysRemaining > 30) return "#F59E0B" // Yellow/Orange
+    if (daysRemaining > 10) return "#EF4444" // Red
+    return "#DC2626" // Dark Red
+  }
+
+  return (
+    <div className="flex items-center justify-center">
+      <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="transform -rotate-90">
+          {/* Background circle */}
+          <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E5E7EB" strokeWidth="6" fill="transparent" />
+          {/* Progress circle */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={getColor()}
+            strokeWidth="6"
+            fill="transparent"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="transition-all duration-500 ease-out"
+          />
+        </svg>
+
+        {/* Center content */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className={`font-bold ${size > 60 ? "text-xl" : "text-lg"}`} style={{ color: getColor() }}>
+            <AnimatedCounter value={daysRemaining} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function HomePage() {
+  const [entries, setEntries] = useState<VisaEntry[]>([
+    {
+      id: "1",
+      country: "",
+      startDate: null,
+      endDate: null,
+      days: 0,
+      daysInLast180: 0,
+      daysRemaining: 90,
+      activeColumn: "country",
+    },
+  ])
+
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [selectedEntryId, setSelectedEntryId] = useState<string>("")
 
   // Get countries for dropdown
   const countryOptions = getCountriesForSelect()
 
-  // Determine current form stage
-  const getFormStage = useCallback((): FormStage => {
-    if (!selectedCountry) return 'country'
-    if (!selectedDateRange.startDate || !selectedDateRange.endDate) return 'dates'
-    return 'complete'
-  }, [selectedCountry, selectedDateRange])
-
-  // Update form stage when dependencies change
-  useEffect(() => {
-    setCurrentFormStage(getFormStage())
-  }, [getFormStage])
-
-  // Get column styling based on current stage
-  const getColumnStyle = (columnStage: FormStage) => {
-    const stage = getFormStage()
-    
-    if (columnStage === stage) {
-      return 'border-2 border-blue-400 bg-blue-50 shadow-md transition-all duration-300'
-    }
-    
-    if ((columnStage === 'country' && (stage === 'dates' || stage === 'complete')) ||
-        (columnStage === 'dates' && stage === 'complete')) {
-      return 'border-2 border-green-400 bg-green-50 transition-all duration-300'
-    }
-    
-    return 'border-2 border-gray-200 bg-gray-50 transition-all duration-300'
-  }
-
-  // Get progress dot styling
-  const getProgressDotStyle = (dotStage: FormStage) => {
-    const stage = getFormStage()
-    
-    if (dotStage === stage) {
-      return 'w-3 h-3 rounded-full bg-primary animate-pulse transition-all duration-300 shadow-sm'
-    }
-    
-    if ((dotStage === 'country' && (stage === 'dates' || stage === 'complete')) ||
-        (dotStage === 'dates' && stage === 'complete')) {
-      return 'w-3 h-3 rounded-full bg-calendar-valid transition-all duration-300 shadow-sm'
-    }
-    
-    return 'w-3 h-3 rounded-full bg-gray-300 transition-all duration-300'
-  }
-
-  const handleCalculate = useCallback(async () => {
-    console.log('handleCalculate called', { selectedCountry, selectedDateRange, trips: trips.length })
-    
-    if (!selectedCountry || !selectedDateRange.startDate || !selectedDateRange.endDate) {
-      toast.error('Please select country and travel dates')
-      return
-    }
-
-    const start = selectedDateRange.startDate
-    const end = selectedDateRange.endDate
-
-    if (start >= end) {
-      toast.error('End date must be after start date')
-      return
-    }
-
-    setIsCalculating(true)
-    
-    try {
-      const selectedCountryData = SCHENGEN_COUNTRIES.find(c => c.code === selectedCountry)
-      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-
-      const newTrip: Trip = {
-        id: `trip-${Date.now()}`,
-        country: selectedCountryData?.name || selectedCountry,
-        startDate: start,
-        endDate: end,
-        days,
+  // Recalculate all entries whenever entries change
+  const recalculateEntries = (updatedEntries: VisaEntry[]) => {
+    // First, ensure all entries have correct days calculation
+    const entriesWithDays = updatedEntries.map((entry) => {
+      let calculatedDays = 0
+      if (entry.startDate && entry.endDate) {
+        calculatedDays = Math.ceil((entry.endDate.getTime() - entry.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
       }
-
-      const updatedTrips = [...trips, newTrip]
-      console.log('Adding trip:', newTrip)
-      console.log('Updated trips:', updatedTrips)
-      
-      // Calculate compliance using RobustSchengenCalculator
-      const result = RobustSchengenCalculator.calculateExactCompliance(updatedTrips, new Date())
-
-      setTrips(updatedTrips)
-      setCalculationResult(result)
-      
-      // Update real-time calculations
-      setTotalDaysInPeriod(result.totalDaysUsed)
-      setRemainingDays(result.daysRemaining)
-      
-      toast.success(`Trip to ${selectedCountryData?.name || selectedCountry} added successfully!`)
-      
-      // Clear form after a short delay to show the trip was added
-      setTimeout(() => {
-        setSelectedCountry('')
-        setSelectedDateRange({ startDate: null, endDate: null })
-      }, 100)
-      
-    } catch (error) {
-      console.error('Calculation error:', error)
-      toast.error(`Error adding trip: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsCalculating(false)
-    }
-  }, [selectedCountry, selectedDateRange, trips])
-
-  const handleClearTrips = useCallback(() => {
-    setTrips([])
-    setCalculationResult(null)
-    toast.success('Cleared all trips')
-  }, [])
-
-  const handleDeleteTrip = useCallback((tripId: string) => {
-    const updatedTrips = trips.filter(t => t.id !== tripId)
-    setTrips(updatedTrips)
-    
-    if (updatedTrips.length === 0) {
-      setCalculationResult(null)
-    } else {
-      // Recalculate with remaining trips
-      const result = RobustSchengenCalculator.calculateExactCompliance(updatedTrips, new Date())
-      setCalculationResult(result)
-    }
-    
-    toast.success('Trip removed and compliance recalculated')
-  }, [trips])
-
-  // Calendar modal handlers
-  const handleOpenCalendar = useCallback(() => {
-    setIsCalendarOpen(true)
-  }, [])
-
-  const handleCloseCalendar = useCallback(() => {
-    setIsCalendarOpen(false)
-  }, [])
-
-  const handleDateRangeSelect = useCallback((range: AppDateRange) => {
-    setSelectedDateRange(range)
-  }, [])
-
-  // Real-time calculation effect
-  useEffect(() => {
-    // Calculate current trip days
-    if (selectedDateRange.startDate && selectedDateRange.endDate) {
-      const days = Math.ceil((selectedDateRange.endDate.getTime() - selectedDateRange.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-      setCurrentTripDays(days)
-    } else {
-      setCurrentTripDays(0)
-    }
-
-    // Calculate 180-day rolling window total
-    const today = new Date()
-    const oneEightyDaysAgo = new Date(today.getTime() - (180 * 24 * 60 * 60 * 1000))
-
-    let totalDaysUsed = 0
-
-    // Add days from existing trips that fall within the 180-day window
-    trips.forEach(trip => {
-      const tripStart = new Date(trip.startDate)
-      const tripEnd = new Date(trip.endDate)
-      
-      // Check if trip overlaps with 180-day window
-      if (tripEnd >= oneEightyDaysAgo && tripStart <= today) {
-        // Calculate overlapping days
-        const windowStart = new Date(Math.max(tripStart.getTime(), oneEightyDaysAgo.getTime()))
-        const windowEnd = new Date(Math.min(tripEnd.getTime(), today.getTime()))
-        const daysInWindow = Math.ceil((windowEnd.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
-        totalDaysUsed += Math.max(0, daysInWindow)
+      return {
+        ...entry,
+        days: calculatedDays
       }
     })
 
-    // Add current trip days if they would fall within the window
-    if (selectedDateRange.startDate && selectedDateRange.endDate) {
-      const currentTripStart = selectedDateRange.startDate
-      const currentTripEnd = selectedDateRange.endDate
-      
-      // Check if current trip overlaps with 180-day window
-      if (currentTripEnd >= oneEightyDaysAgo && currentTripStart <= today) {
-        const windowStart = new Date(Math.max(currentTripStart.getTime(), oneEightyDaysAgo.getTime()))
-        const windowEnd = new Date(Math.min(currentTripEnd.getTime(), today.getTime()))
-        const daysInWindow = Math.ceil((windowEnd.getTime() - windowStart.getTime()) / (1000 * 60 * 60 * 24)) + 1
-        totalDaysUsed += Math.max(0, daysInWindow)
-      }
-    }
+    // Convert entries to Trip format for the calculator
+    const tripsForCalculation = entriesWithDays
+      .filter((entry) => entry.country && entry.startDate && entry.endDate)
+      .map((entry) => ({
+        id: entry.id,
+        country: entry.country,
+        startDate: entry.startDate!,
+        endDate: entry.endDate!,
+        days: entry.days,
+      }))
 
-    setTotalDaysInPeriod(totalDaysUsed)
-    setRemainingDays(Math.max(0, 90 - totalDaysUsed))
-  }, [selectedDateRange, trips])
+    // Calculate overall compliance using all valid trips
+    const compliance = tripsForCalculation.length > 0 
+      ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, new Date())
+      : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+
+    // Update each entry with calculated values
+    const entriesWithCalculations = entriesWithDays.map((entry, index) => {
+      // Determine active column based on completion state
+      let activeColumn: VisaEntry["activeColumn"] = "country"
+      if (entry.country && !entry.startDate) {
+        activeColumn = "dates"
+      } else if (entry.country && entry.startDate && entry.endDate) {
+        activeColumn = "complete"
+      } else if (!entry.country) {
+        activeColumn = "country"
+      }
+
+      // Calculate cumulative days up to this row (including this row)
+      const tripsUpToThisRow = entriesWithDays.slice(0, index + 1)
+        .filter(e => e.country && e.startDate && e.endDate)
+        .map(e => ({
+          id: e.id,
+          country: e.country,
+          startDate: e.startDate!,
+          endDate: e.endDate!,
+          days: e.days
+        }))
+
+      const cumulativeCompliance = tripsUpToThisRow.length > 0
+        ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, new Date())
+        : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+
+      return {
+        ...entry,
+        daysInLast180: cumulativeCompliance.totalDaysUsed, // Show cumulative total up to this row
+        daysRemaining: cumulativeCompliance.daysRemaining, // Show remaining days based on cumulative total
+        activeColumn,
+      }
+    })
+
+    return entriesWithCalculations
+  }
+
+  const addEntry = () => {
+    const newEntry: VisaEntry = {
+      id: Date.now().toString(),
+      country: "",
+      startDate: null,
+      endDate: null,
+      days: 0,
+      daysInLast180: 0,
+      daysRemaining: 90,
+      activeColumn: "country",
+    }
+    const updatedEntries = [...entries, newEntry]
+    setEntries(recalculateEntries(updatedEntries))
+  }
+
+  const updateEntry = (id: string, field: keyof VisaEntry, value: any) => {
+    const updatedEntries = entries.map((entry) => {
+      if (entry.id === id) {
+        const updatedEntry = { ...entry, [field]: value }
+
+        // Calculate days when both dates are selected
+        if (field === "startDate" || field === "endDate") {
+          if (updatedEntry.startDate && updatedEntry.endDate) {
+            updatedEntry.days = Math.ceil((updatedEntry.endDate.getTime() - updatedEntry.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          } else {
+            updatedEntry.days = 0
+          }
+        }
+
+        return updatedEntry
+      }
+      return entry
+    })
+
+    setEntries(recalculateEntries(updatedEntries))
+  }
+
+  const updateDateRange = (id: string, dateRange: AppDateRange) => {
+    const updatedEntries = entries.map((entry) => {
+      if (entry.id === id) {
+        const updatedEntry = {
+          ...entry,
+          startDate: dateRange.startDate || null,
+          endDate: dateRange.endDate || null,
+        }
+
+        // Calculate days when both dates are selected
+        if (updatedEntry.startDate && updatedEntry.endDate) {
+          updatedEntry.days = Math.ceil((updatedEntry.endDate.getTime() - updatedEntry.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        } else {
+          updatedEntry.days = 0
+        }
+
+        return updatedEntry
+      }
+      return entry
+    })
+
+    setEntries(recalculateEntries(updatedEntries))
+  }
+
+  const getColumnBorderStyles = (entry: VisaEntry, columnType: "country" | "dates" | "results") => {
+    const isActive = entry.activeColumn === columnType
+
+    const isCompleted = 
+      (entry.activeColumn === "dates" && columnType === "country") ||
+      (entry.activeColumn === "complete" && (columnType === "country" || columnType === "dates"))
+
+    const isNext = 
+      (entry.activeColumn === "country" && columnType === "dates" && entry.country) ||
+      (entry.activeColumn === "dates" && columnType === "results")
+
+    if (isActive) {
+      return "border-2 border-blue-500 bg-blue-50"
+    } else if (isCompleted) {
+      return "border-2 border-green-300 bg-green-50"
+    } else if (isNext) {
+      return "border-2 border-orange-300 bg-orange-50"
+    } else {
+      return "border border-gray-200 bg-gray-50"
+    }
+  }
+
+  const handleOpenCalendar = (entryId: string) => {
+    setSelectedEntryId(entryId)
+    setIsCalendarOpen(true)
+  }
+
+  const handleCloseCalendar = () => {
+    setIsCalendarOpen(false)
+    setSelectedEntryId("")
+  }
+
+  const handleDateRangeSelect = (range: AppDateRange) => {
+    if (selectedEntryId) {
+      updateDateRange(selectedEntryId, range)
+    }
+  }
+
+  // Calculate totals for display
+  const totalDays = entries.reduce((sum, entry) => sum + entry.days, 0)
+  const tripsForCalculation = entries
+    .filter((entry) => entry.country && entry.startDate && entry.endDate)
+    .map((entry) => ({
+      id: entry.id,
+      country: entry.country,
+      startDate: entry.startDate!,
+      endDate: entry.endDate!,
+      days: entry.days,
+    }))
+
+  const compliance = tripsForCalculation.length > 0 
+    ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, new Date())
+    : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
 
   return (
-    <main id="main-content" className="min-h-screen bg-cream">
-      <div className="container mx-auto p-4 mobile:p-6 max-w-6xl">
+    <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
       {/* Hero Section */}
-      <div className="text-center mb-8 mobile:mb-12">
-        <h1 className="text-4xl mobile:text-5xl font-bold mb-4 text-balance">
-          Schengen Visa Calculator
-        </h1>
-        <h2 className="text-xl mobile:text-2xl text-muted-foreground font-medium mb-6 text-balance">
-          Check Your 90/180 Day Rule Compliance - Avoid Overstay Penalties
-        </h2>
-        <p className="text-lg mb-6 max-w-3xl mx-auto text-balance leading-relaxed">
-          The Schengen Area allows visitors to stay for up to <strong>90 days within any 180-day period</strong>. 
-          Overstaying can result in <strong>entry bans, fines up to €5,000, and deportation</strong>. 
-          Our calculator ensures your European travel stays compliant and penalty-free.
-        </p>
-        
-        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-8 max-w-2xl mx-auto shadow-schengen-card">
-          <div className="flex items-center gap-2 mb-2">
-            <Info className="w-5 h-5 text-primary-600" />
-            <span className="font-semibold text-primary-900">Why This Matters</span>
+      <section className="py-8 md:py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
+              Plan Smarter
+              <br />
+              Travel Easier
+            </h1>
           </div>
-          <p className="text-sm text-primary-800">
-            Visa violations can ban you from Europe for 3+ years. Our tool calculates your exact compliance status 
-            and helps you plan safe travel within the 27 Schengen countries.
-          </p>
+          <div>
+            <h2 className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+              Know Where You Can Go — Instantly See Visa Rules, Book Trips, and Travel Confidently.
+            </h2>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Progress Indicators */}
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <div className="flex items-center gap-2">
-          <div className={getProgressDotStyle('country')}></div>
-          <span className={`text-sm font-medium transition-colors duration-300 ${
-            currentFormStage === 'country' ? 'text-primary-600' :
-            (currentFormStage === 'dates' || currentFormStage === 'complete') ? 'text-calendar-valid' :
-            'text-gray-400'
-          }`}>
-            Country
-          </span>
-        </div>
-        
-        <div className={`h-px w-8 transition-colors duration-300 ${
-          currentFormStage === 'dates' || currentFormStage === 'complete' ? 'bg-calendar-valid' : 'bg-gray-300'
-        }`}></div>
-        
-        <div className="flex items-center gap-2">
-          <div className={getProgressDotStyle('dates')}></div>
-          <span className={`text-sm font-medium transition-colors duration-300 ${
-            currentFormStage === 'dates' ? 'text-primary-600' :
-            currentFormStage === 'complete' ? 'text-calendar-valid' :
-            'text-gray-400'
-          }`}>
-            Dates
-          </span>
-        </div>
-        
-        <div className={`h-px w-8 transition-colors duration-300 ${
-          currentFormStage === 'complete' ? 'bg-calendar-valid' : 'bg-gray-300'
-        }`}></div>
-        
-        <div className="flex items-center gap-2">
-          <div className={getProgressDotStyle('complete')}></div>
-          <span className={`text-sm font-medium transition-colors duration-300 ${
-            currentFormStage === 'complete' ? 'text-calendar-valid' : 'text-gray-400'
-          }`}>
-            Complete
-          </span>
-        </div>
-      </div>
+            {/* Calculator Section */}
+      <section className="pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            {/* Column Headers - Desktop */}
+            <div
+              className="hidden md:grid gap-4 p-6 bg-gray-50 border-b"
+              style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
+            >
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">Country</h3>
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">Date Range</h3>
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">This Trip</h3>
+                <p className="text-xs text-gray-500">Days</p>
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900 text-sm">Total Used</h3>
+                <p className="text-xs text-gray-500">Last 180 days</p>
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-gray-900">Remaining</h3>
+                <p className="text-xs text-gray-500">Out of 90</p>
+              </div>
+            </div>
+            
+            {/* Mobile Header */}
+            <div className="md:hidden p-4 bg-gray-50 border-b">
+              <h3 className="font-semibold text-gray-900 text-center">Schengen Visa Calculator</h3>
+              <p className="text-xs text-gray-500 text-center mt-1">Track your 90/180 day rule compliance</p>
+            </div>
 
-        {/* Trip Calculator Interface - Desktop */}
-        <Card className="mb-8 p-6 bg-white shadow-schengen-card border-0 rounded-2xl hidden tablet:block">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="mb-4">
-                  <th className="text-left p-2 font-semibold text-gray-700">Country</th>
-                  <th className="text-left p-2 font-semibold text-gray-700">Date Range</th>
-                  <th className="text-left p-2 font-semibold text-gray-700">Days of Stay</th>
-                  <th className="text-left p-2 font-semibold text-gray-700">Days of Stay in the last 180 days</th>
-                  <th className="text-left p-2 font-semibold text-gray-700">Days Remaining</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Existing Trips */}
-                {trips.map((trip, index) => {
-                  const tripDays = Math.ceil((trip.endDate.getTime() - trip.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
-                  // Calculate cumulative compliance up to this trip (including this trip)
-                  const tripsUpToThis = trips.slice(0, index + 1)
-                  const cumulativeCompliance = RobustSchengenCalculator.calculateExactCompliance(tripsUpToThis, new Date())
-                  
-                  return (
-                    <tr key={trip.id} className="border-b border-gray-100">
-                      {/* Progress Dots */}
-                      <td className="p-2">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
-                        </div>
-                        <div className="rounded-lg p-4 min-w-[200px] border-2 border-green-300 bg-green-50">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">{SCHENGEN_COUNTRIES.find(c => c.name === trip.country)?.flag || '🇪🇺'}</span>
-                              <span className="font-semibold text-gray-800">{trip.country}</span>
-                            </div>
-                            <Button
-                              onClick={() => handleDeleteTrip(trip.id)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </td>
+            {/* Calculator Rows */}
+            <div className="p-6 space-y-8">
+              {entries.map((entry, index) => (
+                <div key={entry.id} className="relative">
+                  {/* Progress Indicator */}
+                  <div className="flex items-center justify-center mb-4 space-x-2 relative z-20">
+                    <div
+                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                        entry.activeColumn === "country"
+                          ? "bg-blue-500"
+                          : entry.country
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                      }`}
+                    />
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <div
+                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                        entry.activeColumn === "dates"
+                          ? "bg-blue-500"
+                          : (entry.startDate && entry.endDate)
+                            ? "bg-green-500"
+                            : entry.country
+                              ? "bg-orange-400"
+                              : "bg-gray-300"
+                      }`}
+                    />
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <div
+                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                        entry.activeColumn === "complete" ? "bg-green-500" : "bg-gray-300"
+                      }`}
+                    />
+                  </div>
 
-                      {/* Date Range */}
-                      <td className="p-2">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
-                          <div className="w-3 h-3 rounded-full bg-calendar-valid"></div>
+                  {/* Desktop Layout */}
+                  <div className="hidden md:grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}>
+                    {/* Country Selection */}
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "country")}`}>
+                      <div className="relative">
+                                    <select
+              value={entry.country}
+              onChange={(e) => updateEntry(entry.id, "country", e.target.value)}
+              className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
+            >
+                          <option value="" disabled>🇪🇺 Select Country</option>
+                          {schengenCountries.map(country => (
+                            <option key={country.code} value={country.code} className="text-gray-900 font-medium">
+                              {country.flag} {country.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
                         </div>
-                        <div className="rounded-lg p-4 min-w-[220px] border-2 border-blue-300 bg-blue-50">
-                          <div className="flex flex-col items-center text-center">
-                            <Calendar className="w-5 h-5 mb-2 text-blue-600" />
-                            <div className="font-semibold text-gray-800">
-                              {format(trip.startDate, 'MMM dd')} - {format(trip.endDate, 'MMM dd')}
-                            </div>
-                          </div>
                         </div>
-                      </td>
-
-                      {/* Days of Stay */}
-                      <td className="p-2">
-                        <div className="rounded-lg p-4 min-w-[120px] text-center bg-gray-50 border-2 border-gray-200">
-                          <div className="text-xl font-bold text-gray-800">
-                            <AnimatedCounter value={tripDays} suffix=" days" />
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Cumulative Days in Last 180 Days */}
-                      <td className="p-2">
-                        <div className={`rounded-lg p-4 min-w-[140px] text-center border-2 ${
-                          cumulativeCompliance.totalDaysUsed > 90 ? 'bg-red-50 border-red-300' :
-                          cumulativeCompliance.totalDaysUsed > 70 ? 'bg-orange-50 border-orange-300' :
-                          'bg-gray-50 border-gray-200'
-                        }`}>
-                          <div className={`text-xl font-bold ${
-                            cumulativeCompliance.totalDaysUsed > 90 ? 'text-red-700' :
-                            cumulativeCompliance.totalDaysUsed > 70 ? 'text-orange-700' :
-                            'text-gray-800'
-                          }`}>
-                            <AnimatedCounter value={cumulativeCompliance.totalDaysUsed} suffix=" days" />
-                          </div>
-                          {cumulativeCompliance.totalDaysUsed > 90 && (
-                            <div className="text-xs text-red-600 mt-1 font-medium">
-                              Over Limit!
+                      {entry.activeColumn === "country" && (
+                        <div className="text-xs text-blue-600 mt-2 text-center font-medium relative z-10">
+                          Select a country to continue
                             </div>
                           )}
-                        </div>
-                      </td>
-
-                      {/* Days Remaining */}
-                      <td className="p-2">
-                        <div className="flex flex-col items-center justify-center min-w-[120px]">
-                          <CircularProgress
-                            value={Math.max(0, cumulativeCompliance.daysRemaining)}
-                            max={90}
-                            size={80}
-                            strokeWidth={6}
-                            progressColor={
-                              cumulativeCompliance.daysRemaining > 60 ? "#10b981" :
-                              cumulativeCompliance.daysRemaining > 30 ? "#f59e0b" :
-                              cumulativeCompliance.daysRemaining > 10 ? "#ef4444" :
-                              "#dc2626"
-                            }
-                          />
-                          <div className="text-center mt-1">
-                            <div className={`text-xs font-medium ${
-                              cumulativeCompliance.daysRemaining > 60 ? 'text-green-600' :
-                              cumulativeCompliance.daysRemaining > 30 ? 'text-orange-600' :
-                              cumulativeCompliance.daysRemaining > 10 ? 'text-red-600' :
-                              'text-red-700'
-                            }`}>
-                              <AnimatedCounter value={Math.max(0, cumulativeCompliance.daysRemaining)} className="text-[10px]" />
-                            </div>
-                            <div className={`text-xs ${
-                              cumulativeCompliance.daysRemaining > 60 ? 'text-green-500' :
-                              cumulativeCompliance.daysRemaining > 30 ? 'text-orange-500' :
-                              cumulativeCompliance.daysRemaining > 10 ? 'text-red-500' :
-                              'text-red-600'
-                            }`}>
-                              {cumulativeCompliance.daysRemaining <= 0 ? 'Violated' :
-                               cumulativeCompliance.daysRemaining > 60 ? 'Safe' :
-                               cumulativeCompliance.daysRemaining > 30 ? 'Caution' :
-                               'Warning'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-
-                {/* New Trip Input Row */}
-                <tr>
-                  {/* Progress Dots */}
-                  <td className="p-2">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className={getProgressDotStyle('country')}></div>
-                      <div className={getProgressDotStyle('dates')}></div>
-                      <div className={getProgressDotStyle('complete')}></div>
                     </div>
-                    <div className={`rounded-lg p-4 min-w-[200px] ${getColumnStyle('country')}`}>
-                      <Select
-                        options={countryOptions}
-                        value={selectedCountry}
-                        onValueChange={setSelectedCountry}
-                        placeholder="🇪🇺 Select a Country"
-                        searchable={true}
-                        className="w-full border-none"
-                      />
-                    </div>
-                  </td>
 
-                  {/* Date Range Column */}
-                  <td className="p-2">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className={getProgressDotStyle('country')}></div>
-                      <div className={getProgressDotStyle('dates')}></div>
-                      <div className={getProgressDotStyle('complete')}></div>
-                    </div>
-                    <div className={`rounded-lg p-4 min-w-[220px] ${getColumnStyle('dates')}`}>
+                    {/* Date Range */}
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}>
                       <Button
-                        onClick={handleOpenCalendar}
-                        variant="ghost"
-                        disabled={!selectedCountry}
-                        className="w-full h-auto p-4 flex items-center justify-center"
+                        variant="outline"
+                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
+                        disabled={!entry.country}
+                        onClick={() => handleOpenCalendar(entry.id)}
                       >
-                        {selectedDateRange.startDate && selectedDateRange.endDate ? (
-                          <div className="flex flex-col items-center justify-center text-center">
-                            <Calendar className="w-5 h-5 mb-2 text-blue-600" />
-                            <div className="font-semibold text-gray-800">
-                              {format(selectedDateRange.startDate, 'MMM dd')} - {format(selectedDateRange.endDate, 'MMM dd')}
-                            </div>
+                        {entry.startDate && entry.endDate ? (
+                          <div className="flex items-center justify-center">
+                            <span className="font-medium text-gray-800">
+                              {`${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`}
+                            </span>
+                            <Calendar className="ml-2 h-4 w-4 flex-shrink-0 text-blue-600" />
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center gap-3">
-                            <Calendar className="w-6 h-6 text-gray-400" />
-                            <span className="font-medium text-black">Select Travel Dates</span>
+                          <div className="flex items-center justify-center">
+                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                            <span className="font-medium text-gray-800">
+                              {!entry.country ? "Select country first" : "Select dates"}
+                            </span>
                           </div>
                         )}
                       </Button>
-                    </div>
-                  </td>
-
-                  {/* Days of Stay Column */}
-                  <td className="p-2">
-                    <div className={`rounded-lg p-4 min-w-[120px] text-center ${getColumnStyle('complete')}`}>
-                      {currentTripDays > 0 ? (
-                        <div className="text-xl font-bold text-gray-800">
-                          <AnimatedCounter value={currentTripDays} suffix=" days" />
+                      {entry.activeColumn === "dates" && (
+                        <div className="text-xs text-blue-600 mt-2 text-center font-medium relative z-10">
+                          {!entry.country ? "Select a country first" : "Select your travel dates"}
                         </div>
-                      ) : (
-                        <div className="text-2xl font-bold text-gray-400">—</div>
                       )}
                     </div>
-                  </td>
 
-                  {/* Days in Last 180 Days Column */}
-                  <td className="p-2">
-                    <div className={`rounded-lg p-4 min-w-[140px] text-center ${getColumnStyle('complete')}`}>
-                      <div className="text-xl font-bold text-gray-800">
-                        {calculationResult ? (
-                          <AnimatedCounter value={calculationResult.totalDaysUsed} suffix=" days" />
-                        ) : (
-                          <span className="text-2xl font-bold text-gray-400">—</span>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Days Remaining Column */}
-                  <td className="p-2">
-                    <div className="flex flex-col items-center justify-center min-w-[120px]">
-                      <CircularProgress
-                        value={calculationResult ? calculationResult.daysRemaining : remainingDays}
-                        max={90}
-                        size={80}
-                        strokeWidth={6}
-                        progressColor={
-                          (calculationResult ? calculationResult.daysRemaining : remainingDays) > 60 ? "#10b981" :
-                          (calculationResult ? calculationResult.daysRemaining : remainingDays) > 30 ? "#f59e0b" :
-                          "#ef4444"
-                        }
-                      />
-                      <div className="text-center mt-1">
-                        <div className="text-xs font-medium text-gray-600">
-                          <AnimatedCounter value={calculationResult ? calculationResult.daysRemaining : remainingDays} className="text-[10px]" />
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <Button
-              onClick={handleCalculate}
-              variant="outline"
-              disabled={isCalculating || !selectedCountry || !selectedDateRange.startDate || !selectedDateRange.endDate}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all duration-200 ${
-                (selectedCountry && selectedDateRange.startDate && selectedDateRange.endDate)
-                  ? 'border-primary hover:border-primary-600 hover:bg-primary-50 text-primary'
-                  : 'border-gray-300 hover:border-gray-400 text-gray-500'
-              }`}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                (selectedCountry && selectedDateRange.startDate && selectedDateRange.endDate)
-                  ? 'border-primary'
-                  : 'border-gray-400'
-              }`}>
-                <span className="text-lg">+</span>
-              </div>
-              <span className="font-medium">
-                {isCalculating ? 'Adding Trip...' : trips.length > 0 ? 'Add Another Trip' : 'Add This Trip'}
-              </span>
-            </Button>
-
-            {trips.length > 0 && (
-              <Button
-                variant="default"
-                className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-600 text-white font-medium shadow-schengen-button transition-all duration-200 hover:scale-105"
-              >
-                Save Progress
-              </Button>
-            )}
-          </div>
-        </Card>
-
-        {/* Mobile Calculator Interface */}
-        <div className="tablet:hidden mb-8 space-y-6">
-          {/* Mobile Progress Summary Card */}
-          <Card className="p-6 bg-white shadow-schengen-card border-0 rounded-2xl">
-            <h3 className="text-lg font-semibold mb-4 text-center">Quick Status</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-primary mb-1">
-                  <AnimatedCounter value={currentTripDays} />
-                </div>
-                <div className="text-xs text-gray-600">Current Trip</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-calendar-warning mb-1">
-                  <AnimatedCounter value={totalDaysInPeriod} />
-                </div>
-                <div className="text-xs text-gray-600">Days Used</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-calendar-valid mb-1">
-                  <AnimatedCounter value={remainingDays} />
-                </div>
-                <div className="text-xs text-gray-600">Remaining</div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Mobile Form Steps */}
-          <Card className="p-6 bg-white shadow-schengen-card border-0 rounded-2xl">
-            <div className="space-y-6">
-              {/* Step 1: Country Selection */}
-              <div className={`p-4 rounded-xl transition-all duration-300 ${
-                currentFormStage === 'country' ? 'bg-primary-50 border-2 border-primary-300' :
-                selectedCountry ? 'bg-green-50 border-2 border-green-300' :
-                'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    currentFormStage === 'country' ? 'bg-primary text-white' :
-                    selectedCountry ? 'bg-calendar-valid text-white' :
-                    'bg-gray-300 text-gray-600'
-                  }`}>
-                    <span className="text-sm font-bold">1</span>
-                  </div>
-                  <h4 className="text-lg font-semibold">Select Country</h4>
-                  {selectedCountry && (
-                    <CheckCircle className="w-5 h-5 text-calendar-valid ml-auto" />
-                  )}
-                </div>
-                <Select
-                  options={countryOptions}
-                  value={selectedCountry}
-                  onValueChange={setSelectedCountry}
-                  placeholder="🇪🇺 Choose a Schengen Country"
-                  searchable={true}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Step 2: Date Selection */}
-              <div className={`p-4 rounded-xl transition-all duration-300 ${
-                currentFormStage === 'dates' ? 'bg-primary-50 border-2 border-primary-300' :
-                (selectedDateRange.startDate && selectedDateRange.endDate) ? 'bg-green-50 border-2 border-green-300' :
-                selectedCountry ? 'bg-gray-50 border-2 border-gray-300' :
-                'bg-gray-50 border-2 border-gray-200'
-              }`}>
-                {(selectedDateRange.startDate && selectedDateRange.endDate) && (
-                  <div className="flex justify-end mb-2">
-                    <CheckCircle className="w-5 h-5 text-calendar-valid" />
-                  </div>
-                )}
-                <Button
-                  onClick={handleOpenCalendar}
-                  variant="ghost"
-                  disabled={!selectedCountry}
-                  className={`w-full p-6 h-auto min-h-touch border-2 border-dashed transition-all duration-200 flex items-center justify-center ${
-                    !selectedCountry ? 'opacity-50 cursor-not-allowed border-gray-200' :
-                    currentFormStage === 'dates' ? 'border-primary-300 hover:border-primary-400' :
-                    'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="flex flex-col items-center justify-center text-center">
-                    {(selectedDateRange.startDate && selectedDateRange.endDate) ? (
-                      <div>
-                        <div className="font-semibold text-black text-lg">
-                          {format(selectedDateRange.startDate, 'MMM dd, yyyy')} → {format(selectedDateRange.endDate, 'MMM dd, yyyy')}
-                        </div>
-                        <div className="text-sm text-calendar-valid mt-1">
-                          {currentTripDays} days selected
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        <Calendar className="w-8 h-8 mb-3 text-gray-400" />
-                        <span className="font-medium text-black text-base">
-                          Select Travel Dates
+                    {/* Results Columns */}
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "results")}`}>
+                      <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center relative z-10">
+                        <span className="font-medium text-gray-800 text-sm">
+                          {entry.days > 0 ? `${entry.days} days` : "Select dates first"}
                         </span>
                       </div>
-                    )}
-                  </div>
-                </Button>
-              </div>
+                    </div>
 
-              {/* Step 3: Results */}
-              {currentFormStage === 'complete' && (
-                <div className="p-4 rounded-xl bg-green-50 border-2 border-green-300 animate-fade-in">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-calendar-valid text-white flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-lg font-semibold">Trip Summary</h4>
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "results")}`}>
+                      <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center relative z-10">
+                        <span className="text-gray-900 font-bold">
+                          {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
+                        </span>
+                      </div>
                   </div>
                   
-                  <div className="flex items-center justify-center mb-4">
-                    <CircularProgress
-                      value={remainingDays}
-                      max={90}
-                      size={100}
-                      strokeWidth={8}
-                      progressColor={
-                        remainingDays > 60 ? "#10b981" :
-                        remainingDays > 30 ? "#f59e0b" :
-                        remainingDays > 10 ? "#ef4444" :
-                        "#dc2626"
-                      }
-                      className="scale-105 shadow-lg"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="p-3 bg-white rounded-lg">
-                      <div className="text-lg font-bold text-calendar-warning">
-                        <AnimatedCounter value={totalDaysInPeriod} suffix=" days" />
+                    {/* Days Remaining with Progress Circle */}
+                    <div className="rounded-lg p-2">
+                      <div className="flex items-center justify-center h-20">
+                        <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                       </div>
-                      <div className="text-xs text-gray-600">Used in 180 days</div>
                     </div>
-                    <div className="p-3 bg-white rounded-lg">
-                      <div className={`text-lg font-bold ${
-                        remainingDays > 60 ? 'text-calendar-valid' :
-                        remainingDays > 30 ? 'text-calendar-warning' :
-                        'text-red-600'
-                      }`}>
-                        <AnimatedCounter value={remainingDays} suffix=" days" />
+                  </div>
+
+                  {/* Mobile Layout */}
+                  <div className="md:hidden space-y-4">
+                    {/* Country Selection */}
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "country")}`}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                      <div className="relative">
+                        <select
+                          value={entry.country}
+                          onChange={(e) => updateEntry(entry.id, "country", e.target.value)}
+                          className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
+                        >
+                          <option value="" disabled>🇪🇺 Select Country</option>
+                          {schengenCountries.map(country => (
+                            <option key={country.code} value={country.code} className="text-gray-900 font-medium">
+                              {country.flag} {country.name}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-600">Remaining</div>
+                      {entry.activeColumn === "country" && (
+                        <div className="text-xs text-blue-600 mt-2 text-center font-medium">
+                          Select a country to continue
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Date Range */}
+                    <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Travel Dates</label>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
+                        disabled={!entry.country}
+                        onClick={() => handleOpenCalendar(entry.id)}
+                      >
+                        {entry.startDate && entry.endDate ? (
+                          <div className="flex items-center justify-center">
+                            <span className="font-medium text-gray-800">
+                              {`${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`}
+                            </span>
+                            <Calendar className="ml-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center">
+                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                            <span className="font-medium text-gray-800">
+                              {!entry.country ? "Select country first" : "Select dates"}
+                            </span>
+                          </div>
+                        )}
+                      </Button>
+                      {entry.activeColumn === "dates" && (
+                        <div className="text-xs text-blue-600 mt-2 text-center font-medium">
+                          {!entry.country ? "Select a country first" : "Select your travel dates"}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Results Grid */}
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* This Trip */}
+                      <div className={`rounded-lg p-3 ${getColumnBorderStyles(entry, "results")}`}>
+                        <label className="block text-xs font-medium text-gray-500 mb-1 text-center">This Trip</label>
+                        <div className="bg-white rounded-lg p-2 font-semibold text-sm text-center border-0 shadow-sm h-10 flex items-center justify-center">
+                          <span className="font-medium text-gray-800 text-sm">
+                            {entry.days > 0 ? `${entry.days} days` : "Select dates first"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Total Used */}
+                      <div className={`rounded-lg p-3 ${getColumnBorderStyles(entry, "results")}`}>
+                        <label className="block text-xs font-medium text-gray-500 mb-1 text-center">Total Used</label>
+                        <div className="bg-white rounded-lg p-2 font-semibold text-sm text-center border-0 shadow-sm h-10 flex items-center justify-center">
+                          <span className="font-medium text-gray-800 text-sm">
+                            {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Days Remaining */}
+                      <div className="rounded-lg p-3">
+                        <label className="block text-xs font-medium text-gray-500 mb-1 text-center">Remaining</label>
+                        <div className="flex items-center justify-center h-10">
+                          <ProgressCircle daysRemaining={entry.daysRemaining} size={40} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              ))}
 
-            {/* Mobile Action Buttons */}
-            <div className="flex flex-col gap-3 mt-6">
-              <Button
-                onClick={handleCalculate}
-                disabled={isCalculating || !selectedCountry || !selectedDateRange.startDate || !selectedDateRange.endDate}
-                className={`w-full py-4 min-h-touch text-base font-medium transition-all duration-200 ${
-                  (selectedCountry && selectedDateRange.startDate && selectedDateRange.endDate)
-                    ? 'bg-primary hover:bg-primary-600 text-white shadow-schengen-button hover:scale-105'
-                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                {isCalculating ? 'Calculating...' : 'Add This Trip'}
-              </Button>
-              
-              {(currentTripDays > 0 || trips.length > 0) && (
-                <Button
-                  variant="outline"
-                  className="w-full py-4 min-h-touch text-base font-medium border-2 border-primary-300 text-primary hover:bg-primary-50 transition-all duration-200"
+              {/* Add Row Button */}
+              <div className="flex justify-center pt-4 space-x-4">
+                <button
+                  onClick={addEntry}
+                  className="flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors duration-200 bg-white rounded-full px-6 py-2 border border-gray-300 cursor-pointer"
+                  style={{ fontFamily: 'inherit' }}
                 >
-                  Save Progress
-                </Button>
-              )}
-            </div>
-          </Card>
-        </div>
+                  <span className="font-medium text-gray-800 text-sm">+</span>
+                  <span className="font-medium text-gray-800 text-sm">Add Another Trip</span>
+                </button>
 
-        {/* Results and Trip List */}
-        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-6 mobile:gap-8">
-          {/* Trip List */}
-          <Card className="bg-white shadow-schengen-card border-0 rounded-2xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                Your Trips
-                {trips.length > 0 && (
-                  <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
-                    {trips.length}
-                  </span>
-                )}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Schengen area travel history
-              </p>
-            </div>
-            {trips.length > 0 && (
+                {totalDays > 0 && (
               <Button
-                onClick={handleClearTrips}
-                variant="outline"
-                size="sm"
-              >
-                Clear All
-              </Button>
-            )}
-          </CardHeader>
-          
-          <CardContent>
-            {trips.length === 0 ? (
-              <div className="text-center py-8">
-                <MapPin className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h4 className="font-medium mb-2">No trips added yet</h4>
-                <p className="text-sm text-muted-foreground">
-                  Use the calculator above to add your first trip
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {trips.map((trip) => (
-                  <div
-                    key={trip.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    className="flex items-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium"
+                    style={{ backgroundColor: "#FA9937" }}
                   >
-                    <div>
-                      <div className="font-medium">{trip.country}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(trip.startDate, 'MMM dd, yyyy')} → {format(trip.endDate, 'MMM dd, yyyy')}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {trip.days} days
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => handleDeleteTrip(trip.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <XCircle className="w-4 h-4" />
+                    <span>Save Progress</span>
                     </Button>
-                  </div>
-                ))}
+                )}
               </div>
-            )}
-          </CardContent>
-          </Card>
-
-          {/* Compliance Results */}
-          <Card className="bg-white shadow-schengen-card border-0 rounded-2xl">
-          <CardHeader>
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-primary" />
-              Compliance Status
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              90/180-day rule analysis
-            </p>
-          </CardHeader>
-          
-          <CardContent>
-            {!calculationResult ? (
-              <div className="text-center py-8">
-                <Calculator className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h4 className="font-medium mb-2">No calculations yet</h4>
-                <p className="text-sm text-muted-foreground">
-                  Add a trip to see your compliance status
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Compliance Status */}
-                <div className={`p-4 rounded-lg border ${
-                  calculationResult.isCompliant
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-red-50 border-red-200'
-                }`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {calculationResult.isCompliant ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-600" />
-                    )}
-                    <span className={`font-semibold ${
-                      calculationResult.isCompliant ? 'text-green-900' : 'text-red-900'
-                    }`}>
-                      {calculationResult.isCompliant ? 'Compliant' : 'Overstay Risk'}
-                    </span>
-                  </div>
-                  <p className={`text-sm ${
-                    calculationResult.isCompliant ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    {calculationResult.isCompliant
-                      ? 'Your travel plans comply with the 90/180-day rule'
-                      : `You may exceed the 90-day limit by ${calculationResult.overstayDays} days`
-                    }
-                  </p>
-                </div>
-
-                {/* Statistics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">
-                      {calculationResult.totalDaysUsed}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Days Used</div>
-                  </div>
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {calculationResult.daysRemaining}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Days Remaining</div>
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Calculation period: {format(calculationResult.periodStart, 'MMM dd, yyyy')} - {format(calculationResult.periodEnd, 'MMM dd, yyyy')}
                 </div>
               </div>
-            )}
-          </CardContent>
-          </Card>
         </div>
+      </section>
 
         {/* Calendar Modal */}
       <CalendarModal
         isOpen={isCalendarOpen}
         onClose={handleCloseCalendar}
         onDateRangeSelect={handleDateRangeSelect}
-        initialRange={selectedDateRange}
+        initialRange={{ startDate: null, endDate: null }}
         />
       </div>
-    </main>
   )
 }
