@@ -1,23 +1,18 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns'
+import { Drawer } from 'vaul'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
-import { useIsMobile } from '../../hooks/useMediaQuery'
-import { MobileCalendarDrawer } from './mobile-calendar-drawer'
 import type { OccupiedDateInfo } from '../../validators/date-overlap-validator'
 import type { CalendarDateRange } from '../../types/calendar'
 
-// Re-export for backward compatibility
-export type { CalendarDateRange }
-
-export interface CalendarModalProps {
-  /** Whether the modal is open */
+export interface MobileCalendarDrawerProps {
+  /** Whether the drawer is open */
   isOpen: boolean
-  /** Callback when modal should close */
+  /** Callback when drawer should close */
   onClose: () => void
   /** Callback when date range is selected */
   onDateRangeSelect: (range: CalendarDateRange) => void
@@ -35,7 +30,7 @@ export interface CalendarModalProps {
   className?: string
 }
 
-export function CalendarModal({
+export function MobileCalendarDrawer({
   isOpen,
   onClose,
   onDateRangeSelect,
@@ -45,77 +40,26 @@ export function CalendarModal({
   minDate,
   maxDate,
   className
-}: CalendarModalProps) {
-  const isMobile = useIsMobile()
-
-  // If mobile, render the mobile drawer instead
-  if (isMobile) {
-    return (
-      <MobileCalendarDrawer
-        isOpen={isOpen}
-        onClose={onClose}
-        onDateRangeSelect={onDateRangeSelect}
-        initialRange={initialRange}
-        disabledDates={disabledDates}
-        occupiedDateInfo={occupiedDateInfo}
-        minDate={minDate}
-        maxDate={maxDate}
-        className={className}
-      />
-    )
-  }
-
-  // Desktop version below (existing code unchanged)
-  return <DesktopCalendarModal 
-    isOpen={isOpen}
-    onClose={onClose}
-    onDateRangeSelect={onDateRangeSelect}
-    initialRange={initialRange || { startDate: null, endDate: null }}
-    disabledDates={disabledDates}
-    occupiedDateInfo={occupiedDateInfo}
-    minDate={minDate}
-    maxDate={maxDate}
-    className={className}
-  />
-}
-
-// Desktop modal component (extracted from existing code)
-function DesktopCalendarModal({
-  isOpen,
-  onClose,
-  onDateRangeSelect,
-  initialRange,
-  disabledDates = [],
-  occupiedDateInfo = [],
-  minDate,
-  maxDate,
-  className
-}: {
-  isOpen: boolean
-  onClose: () => void
-  onDateRangeSelect: (range: CalendarDateRange) => void
-  initialRange: CalendarDateRange
-  disabledDates?: Date[]
-  occupiedDateInfo?: OccupiedDateInfo[]
-  minDate?: Date
-  maxDate?: Date
-  className?: string
-}) {
+}: MobileCalendarDrawerProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedRange, setSelectedRange] = useState<CalendarDateRange>(
-    initialRange
+    initialRange || { startDate: null, endDate: null }
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
 
-  // Reset when modal opens/closes
+  // Touch/swipe state for month navigation
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  // Reset when drawer opens/closes
   useEffect(() => {
     if (isOpen) {
-      setSelectedRange(initialRange)
+      setSelectedRange(initialRange || { startDate: null, endDate: null })
       setSelectingEnd(false)
     }
   }, [isOpen, initialRange])
 
-  // Handle date click
+  // Handle date click - identical logic to desktop modal
   const handleDateClick = (date: Date) => {
     // Check if date is disabled
     if (isDateDisabled(date)) return
@@ -158,24 +102,24 @@ function DesktopCalendarModal({
     }
   }
 
-  // Check if date is disabled
+  // Check if date is disabled - identical to desktop
   const isDateDisabled = (date: Date) => {
     if (minDate && date < minDate) return true
     if (maxDate && date > maxDate) return true
     return disabledDates.some(disabledDate => isSameDay(date, disabledDate))
   }
 
-  // Check if date is occupied by an existing trip
+  // Check if date is occupied by an existing trip - identical to desktop
   const getOccupiedDateInfo = (date: Date): OccupiedDateInfo | null => {
     return occupiedDateInfo.find(info => isSameDay(info.date, date)) || null
   }
 
-  // Check if date is occupied
+  // Check if date is occupied - identical to desktop
   const isDateOccupied = (date: Date) => {
     return getOccupiedDateInfo(date) !== null
   }
 
-  // Check if date is in selected range
+  // Check if date is in selected range - identical to desktop
   const isDateInRange = (date: Date) => {
     if (!selectedRange.startDate) return false
     if (!selectedRange.endDate) return isSameDay(date, selectedRange.startDate)
@@ -183,7 +127,7 @@ function DesktopCalendarModal({
     return date >= selectedRange.startDate && date <= selectedRange.endDate
   }
 
-  // Check if date is range boundary
+  // Check if date is range boundary - identical to desktop
   const isRangeStart = (date: Date) => {
     return selectedRange.startDate && isSameDay(date, selectedRange.startDate)
   }
@@ -192,24 +136,60 @@ function DesktopCalendarModal({
     return selectedRange.endDate && isSameDay(date, selectedRange.endDate)
   }
 
-  // Handle clear
+  // Handle clear - identical to desktop
   const handleClear = () => {
     setSelectedRange({ startDate: null, endDate: null })
     setSelectingEnd(false)
   }
 
-  // Handle done
+  // Handle done - identical to desktop
   const handleDone = () => {
     onDateRangeSelect(selectedRange)
     onClose()
   }
 
-  // Navigation functions
+  // Navigation functions - identical to desktop
   const goToPrevMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
   const goToNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
 
-  // Render calendar month
-  const renderMonth = (monthDate: Date) => {
+  // Touch event handlers for swipe navigation with safety checks
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Guard against missing touch API
+    if (typeof window === 'undefined' || !e.targetTouches || !e.targetTouches[0]) {
+      return
+    }
+    
+    setTouchEnd(null) // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX || 0)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Guard against missing touch API
+    if (typeof window === 'undefined' || !e.targetTouches || !e.targetTouches[0]) {
+      return
+    }
+    
+    setTouchEnd(e.targetTouches[0].clientX || 0)
+  }
+
+  const handleTouchEnd = () => {
+    // Guard against missing touch data or non-browser environment
+    if (typeof window === 'undefined' || !touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > 50
+    const isRightSwipe = distance < -50
+
+    if (isLeftSwipe) {
+      goToNextMonth() // Swipe left = next month
+    }
+    if (isRightSwipe) {
+      goToPrevMonth() // Swipe right = previous month
+    }
+  }
+
+  // Render single month for mobile (optimized layout)
+  const renderMobileMonth = (monthDate: Date) => {
     const monthStart = startOfMonth(monthDate)
     const monthEnd = endOfMonth(monthDate)
     
@@ -237,23 +217,31 @@ function DesktopCalendarModal({
     const allDays = [...paddingDays, ...monthDays, ...endPaddingDays]
 
     return (
-      <div className="flex-1">
+      <div className="flex-1 px-4">
         {/* Month header */}
-        <div className="text-center font-semibold text-lg mb-4">
+        <div className="text-center font-semibold text-xl mb-6">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
-        {/* Days of week header */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        {/* Days of week header - Mobile optimized */}
+        <div className="grid grid-cols-7 gap-1 mb-3">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+            <div key={day} className="text-center text-sm font-medium text-gray-500 p-3">
               {day}
             </div>
           ))}
         </div>
 
-        {/* Calendar days */}
-        <div className="grid grid-cols-7 gap-1">
+        {/* Calendar days - Mobile optimized with 44px touch targets */}
+        <div 
+          className="grid grid-cols-7 gap-1" 
+          data-testid="mobile-calendar-content"
+          {...(typeof window !== 'undefined' && 'ontouchstart' in window ? {
+            onTouchStart: handleTouchStart,
+            onTouchMove: handleTouchMove,
+            onTouchEnd: handleTouchEnd
+          } : {})}
+        >
           {allDays.map((date, index) => {
             const isCurrentMonth = isSameMonth(date, monthDate)
             const disabled = isDateDisabled(date)
@@ -271,7 +259,8 @@ function DesktopCalendarModal({
                 disabled={disabled || !isCurrentMonth || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
-                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors relative",
+                  // Mobile-optimized 44px touch targets (CLAUDE.md requirement)
+                  "h-11 w-11 text-sm font-medium rounded-lg transition-colors relative",
                   "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   {
                     // Current month styling
@@ -308,91 +297,87 @@ function DesktopCalendarModal({
     )
   }
 
-  if (!isOpen) return null
+  // SSR Safety: Only render drawer on client side
+  if (typeof window === 'undefined') {
+    return null
+  }
 
-  return typeof window !== 'undefined' ? createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-testid="desktop-calendar-modal">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50" 
-        onClick={onClose}
-        aria-hidden="true"
-      />
-      
-      {/* Modal content */}
-      <div className={cn(
-        "relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto",
-        "animate-in fade-in-0 zoom-in-95 duration-200",
-        className
-      )}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-4">
+  return (
+    <Drawer.Root open={isOpen} onOpenChange={onClose}>
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+        <Drawer.Content 
+          className={cn(
+            "bg-white flex flex-col rounded-t-xl h-[90vh] mt-24 fixed bottom-0 left-0 right-0",
+            "focus:outline-none",
+            className
+          )}
+          data-testid="mobile-drawer"
+        >
+          {/* Drag handle */}
+          <div 
+            className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4 mt-4" 
+            data-testid="drag-handle"
+          />
+          
+          {/* Header with navigation */}
+          <div className="flex items-center justify-between px-6 mb-4">
             <button
               onClick={goToPrevMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Previous month"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-xl font-semibold">Select dates</h2>
+            
+            <h2 className="text-lg font-semibold">Select dates</h2>
+            
             <button
               onClick={goToNextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Next month"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
 
-        {/* Calendar content */}
-        <div className="p-6">
-          {selectedRange.startDate && !selectedRange.endDate && (
-            <div className="mb-4 text-center">
-              <p className="text-blue-600 font-medium">
-                Select your travel dates
-              </p>
+          {/* Content area */}
+          <div className="flex-1 overflow-auto">
+            {selectedRange.startDate && !selectedRange.endDate && (
+              <div className="mb-4 text-center px-6">
+                <p className="text-blue-600 font-medium">
+                  Select your end date
+                </p>
+              </div>
+            )}
+
+            {/* Single month view for mobile */}
+            <div data-testid="single-month-view">
+              {renderMobileMonth(currentMonth)}
             </div>
-          )}
-
-          {/* Dual month view */}
-          <div className="flex gap-8 justify-center" data-testid="dual-month-view">
-            {renderMonth(currentMonth)}
-            {renderMonth(addMonths(currentMonth, 1))}
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200">
-          <Button
-            variant="outline"
-            onClick={handleClear}
-            disabled={!selectedRange.startDate}
-          >
-            Clear
-          </Button>
-          
-          <Button
-            onClick={handleDone}
-            disabled={!selectedRange.startDate}
-            className="px-8"
-          >
-            Done
-          </Button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  ) : null
+          {/* Footer */}
+          <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-white">
+            <Button
+              variant="outline"
+              onClick={handleClear}
+              disabled={!selectedRange.startDate}
+              className="px-8"
+            >
+              Clear
+            </Button>
+            
+            <Button
+              onClick={handleDone}
+              disabled={!selectedRange.startDate}
+              className="px-8"
+            >
+              Done
+            </Button>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
+  )
 }
-
-export default CalendarModal
