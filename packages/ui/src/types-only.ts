@@ -12,9 +12,12 @@ export * from "./components/ui/label"
 export * from "./components/ui/badge"
 export * from "./components/ui/header"
 export * from "./components/ui/circular-progress"
-export * from "./components/ui/calendar-modal"
 
-// Date overlap prevention system
+// Calendar modal with specific exports (CalendarDateRange only, OccupiedDateInfo comes from validator)
+export type { CalendarDateRange, CalendarModalProps } from "./components/ui/calendar-modal"
+export { CalendarModal } from "./components/ui/calendar-modal"
+
+// Date overlap prevention system (exports DateOverlapValidator and OccupiedDateInfo)
 export * from "./validators/date-overlap-validator"
 
 // Re-export calculator types and utilities for convenience

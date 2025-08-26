@@ -6,17 +6,11 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
+import type { OccupiedDateInfo } from '../../validators/date-overlap-validator'
 
-export interface DateRange {
+export interface CalendarDateRange {
   startDate: Date | null
   endDate: Date | null
-}
-
-export interface OccupiedDateInfo {
-  date: Date
-  tripId: string
-  country: string
-  tripName: string
 }
 
 export interface CalendarModalProps {
@@ -25,9 +19,9 @@ export interface CalendarModalProps {
   /** Callback when modal should close */
   onClose: () => void
   /** Callback when date range is selected */
-  onDateRangeSelect: (range: DateRange) => void
+  onDateRangeSelect: (range: CalendarDateRange) => void
   /** Initial date range */
-  initialRange?: DateRange
+  initialRange?: CalendarDateRange
   /** Disabled dates */
   disabledDates?: Date[]
   /** Information about occupied dates for better UX */
@@ -52,7 +46,7 @@ export function CalendarModal({
   className
 }: CalendarModalProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedRange, setSelectedRange] = useState<DateRange>(
+  const [selectedRange, setSelectedRange] = useState<CalendarDateRange>(
     initialRange || { startDate: null, endDate: null }
   )
   const [selectingEnd, setSelectingEnd] = useState(false)

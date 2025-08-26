@@ -90,7 +90,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
+    variant?: "default" | "link" | "secondary" | "destructive" | "outline" | "success" | "warning" | "ghost" | "brand" | "cream" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -133,7 +133,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }
@@ -175,9 +175,27 @@ backgroundColor, // Gray-200
 textColor, // Gray-700
 className, label, showPercentage, animationDuration }: CircularProgressProps): react_jsx_runtime.JSX.Element;
 
+/**
+ * Date Overlap Prevention System
+ * CRITICAL: Prevents users from selecting dates that conflict with existing trips
+ * Requirement: A person cannot be in two different locations simultaneously
+ */
 interface DateRange {
     startDate: Date | null;
     endDate: Date | null;
+}
+interface TripEntry {
+    id: string;
+    country: string;
+    startDate: Date | null;
+    endDate: Date | null;
+    days: number;
+}
+interface ValidationResult {
+    isValid: boolean;
+    conflicts: TripEntry[];
+    message: string;
+    conflictDates: Date[];
 }
 interface OccupiedDateInfo {
     date: Date;
@@ -185,15 +203,67 @@ interface OccupiedDateInfo {
     country: string;
     tripName: string;
 }
+declare class DateOverlapValidator {
+    /**
+     * CRITICAL: Validates if new date range conflicts with existing trips
+     * Must be 100% accurate for EU Schengen compliance
+     */
+    static validateDateRange(newRange: DateRange, existingTrips: TripEntry[], excludeTripId?: string): ValidationResult;
+    /**
+     * Returns array of dates that should be disabled in date picker
+     * These dates MUST be visually greyed out with strikethrough
+     */
+    static getDisabledDates(existingTrips: TripEntry[], excludeTripId?: string): Date[];
+    /**
+     * Returns detailed information about occupied dates for tooltips
+     */
+    static getOccupiedDateInfo(existingTrips: TripEntry[], excludeTripId?: string): OccupiedDateInfo[];
+    /**
+     * Check if two date ranges overlap
+     */
+    private static rangesOverlap;
+    /**
+     * Get specific dates where overlap occurs
+     */
+    private static getOverlapDates;
+    /**
+     * Helper to format date for user messages
+     */
+    static formatDateForMessage(date: Date): string;
+    /**
+     * Get user-friendly error message for date conflicts
+     */
+    static getConflictMessage(conflicts: TripEntry[], conflictDates: Date[]): string;
+}
+/**
+ * React hook for date overlap prevention
+ * Integrates with existing state management without UI changes
+ */
+interface UseDateOverlapPreventionProps {
+    existingTrips: TripEntry[];
+    excludeTripId?: string;
+}
+interface UseDateOverlapPreventionReturn {
+    validateDateRange: (range: DateRange) => ValidationResult;
+    getDisabledDates: () => Date[];
+    getOccupiedDateInfo: () => OccupiedDateInfo[];
+    isDateOccupied: (date: Date) => boolean;
+}
+declare function useDateOverlapPrevention({ existingTrips, excludeTripId }: UseDateOverlapPreventionProps): UseDateOverlapPreventionReturn;
+
+interface CalendarDateRange {
+    startDate: Date | null;
+    endDate: Date | null;
+}
 interface CalendarModalProps {
     /** Whether the modal is open */
     isOpen: boolean;
     /** Callback when modal should close */
     onClose: () => void;
     /** Callback when date range is selected */
-    onDateRangeSelect: (range: DateRange) => void;
+    onDateRangeSelect: (range: CalendarDateRange) => void;
     /** Initial date range */
-    initialRange?: DateRange;
+    initialRange?: CalendarDateRange;
     /** Disabled dates */
     disabledDates?: Date[];
     /** Information about occupied dates for better UX */
@@ -207,5 +277,5 @@ interface CalendarModalProps {
 }
 declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: CalendarModalProps): React__default.ReactPortal | null;
 
-export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, Header, Input, Label, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle };
-export type { BadgeProps, ButtonProps, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, OccupiedDateInfo };
+export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention };
+export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };
