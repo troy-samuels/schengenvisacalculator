@@ -341,9 +341,25 @@ export default function HomePage() {
   }
 
   const handleDateRangeSelect = (range: AppDateRange) => {
-    if (selectedEntryId) {
-      updateDateRange(selectedEntryId, range)
+    if (!selectedEntryId) return
+
+    // Validate date range for conflicts before updating
+    const validation = DateOverlapValidator.validateDateRange(
+      range, 
+      tripsForValidation, 
+      selectedEntryId
+    )
+
+    if (!validation.isValid) {
+      // Log helpful message (in the future, could show a toast notification)
+      console.warn('Date conflict detected:', validation.message)
+      console.log('Conflicting trips:', validation.conflicts.map(c => `${c.country} (${c.startDate?.toDateString()} - ${c.endDate?.toDateString()})`))
+      // Don't update the range if there's a conflict
+      return
     }
+
+    // Range is valid, proceed with update
+    updateDateRange(selectedEntryId, range)
   }
 
   // Calculate totals for display
@@ -361,6 +377,28 @@ export default function HomePage() {
   const compliance = tripsForCalculation.length > 0 
     ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, new Date())
     : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+
+  // Date overlap prevention: Convert entries to TripEntry format for validation
+  const tripsForValidation = useMemo(() => {
+    return entries.map(entry => ({
+      id: entry.id,
+      country: entry.country,
+      startDate: entry.startDate,
+      endDate: entry.endDate,
+      days: entry.days
+    }))
+  }, [entries])
+
+  // Get date overlap prevention data for the currently selected entry
+  const currentEntryId = selectedEntryId
+  const { getDisabledDates, getOccupiedDateInfo } = useDateOverlapPrevention({
+    existingTrips: tripsForValidation,
+    excludeTripId: currentEntryId // Exclude current entry when editing
+  })
+
+  // Get disabled dates and occupied date info for the calendar
+  const disabledDates = useMemo(() => getDisabledDates(), [getDisabledDates])
+  const occupiedDateInfo = useMemo(() => getOccupiedDateInfo(), [getOccupiedDateInfo])
 
   return (
     <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
@@ -524,7 +562,7 @@ export default function HomePage() {
 
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "results")}`}>
                       <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center relative z-10">
-                        <span className="text-gray-900 font-bold">
+                        <span className="font-medium text-gray-800 text-sm">
                           {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
                         </span>
                       </div>
@@ -666,6 +704,8 @@ export default function HomePage() {
         onClose={handleCloseCalendar}
         onDateRangeSelect={handleDateRangeSelect}
         initialRange={{ startDate: null, endDate: null }}
+        disabledDates={disabledDates}
+        occupiedDateInfo={occupiedDateInfo}
         />
       </div>
   )

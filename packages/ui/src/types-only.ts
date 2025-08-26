@@ -14,6 +14,9 @@ export * from "./components/ui/header"
 export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
 
+// Date overlap prevention system
+export * from "./validators/date-overlap-validator"
+
 // Re-export calculator types and utilities for convenience
 export type { 
   Trip, 
