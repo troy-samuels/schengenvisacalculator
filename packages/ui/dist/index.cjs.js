@@ -6621,6 +6621,13 @@ function TripCard({ trip, showEdit = false, showDelete = false, onEdit, onDelete
 TripCard.displayName = "TripCard";
 
 // Payments module
+var SubscriptionTier = /*#__PURE__*/ function(SubscriptionTier) {
+    SubscriptionTier["FREE"] = "free";
+    SubscriptionTier["PREMIUM"] = "premium";
+    SubscriptionTier["PRO"] = "pro";
+    SubscriptionTier["BUSINESS"] = "business";
+    return SubscriptionTier;
+}({});
 const SUBSCRIPTION_TIERS = [
     {
         id: 'free',

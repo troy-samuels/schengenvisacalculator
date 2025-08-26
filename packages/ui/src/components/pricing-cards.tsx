@@ -13,7 +13,7 @@ import {
   getTierFeatures,
   TIER_PRICING 
 } from '@schengen/payments'
-import type { SubscriptionTier } from '@schengen/payments'
+import { SubscriptionTier } from '@schengen/payments'
 
 export interface PricingCardsProps {
   // Current user context

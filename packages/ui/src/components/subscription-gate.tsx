@@ -7,7 +7,7 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Badge } from './ui/badge'
 import { checkFeatureAccess, getTierComparison, formatPrice } from '@schengen/payments'
-import type { SubscriptionTier } from '@schengen/payments'
+import { SubscriptionTier } from '@schengen/payments'
 
 export interface SubscriptionGateProps {
   // Feature gating

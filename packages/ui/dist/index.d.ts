@@ -92,7 +92,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "link" | "secondary" | "destructive" | "outline" | "success" | "warning" | "ghost" | "brand" | "cream" | null | undefined;
+    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "link" | "ghost" | "brand" | "cream" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {

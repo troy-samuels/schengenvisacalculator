@@ -12,7 +12,7 @@ import {
   calculateYearlySavings,
   getStripe 
 } from '@schengen/payments'
-import type { SubscriptionTier } from '@schengen/payments'
+import { SubscriptionTier } from '@schengen/payments'
 
 export interface PaymentModalProps {
   // Modal state
