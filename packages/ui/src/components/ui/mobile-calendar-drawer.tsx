@@ -46,11 +46,12 @@ export function MobileCalendarDrawer({
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
 
-  // Generate 12 months starting from current month for Airbnb-style scrolling
+  // Generate 18 months starting from current month for true Airbnb-style scrolling
   const months = useMemo(() => {
     const monthsArray = []
     const startDate = new Date()
-    for (let i = 0; i < 12; i++) {
+    // Start from current month, go 18 months forward for more scrolling options
+    for (let i = 0; i < 18; i++) {
       monthsArray.push(addMonths(startDate, i))
     }
     return monthsArray
@@ -155,15 +156,15 @@ export function MobileCalendarDrawer({
 
   // No longer need touch handlers - scrolling is handled by native scroll
 
-  // Render single month for mobile (optimized layout)
-  const renderMobileMonth = (monthDate: Date) => {
+  // Render seamless month for Airbnb-style continuous scrolling
+  const renderSeamlessMonth = (monthDate: Date, isFirstMonth = false) => {
     const monthStart = startOfMonth(monthDate)
     const monthEnd = endOfMonth(monthDate)
     
     // Get all days in the month
     const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
-    // Add padding days from previous month
+    // Add padding days from previous month for first week
     const startPadding = monthStart.getDay()
     const paddingDays = []
     for (let i = startPadding - 1; i >= 0; i--) {
@@ -172,7 +173,7 @@ export function MobileCalendarDrawer({
       paddingDays.push(paddingDate)
     }
 
-    // Add padding days from next month
+    // Add padding days from next month for last week
     const endPadding = 6 - monthEnd.getDay()
     const endPaddingDays = []
     for (let i = 1; i <= endPadding; i++) {
@@ -184,23 +185,25 @@ export function MobileCalendarDrawer({
     const allDays = [...paddingDays, ...monthDays, ...endPaddingDays]
 
     return (
-      <div className="px-6">
-        {/* Month header - More prominent */}
-        <div className="text-left font-semibold text-2xl mb-4 text-gray-900">
+      <div className="px-4">
+        {/* Month header - sticky-like appearance but not actually sticky */}
+        <div className="text-left font-bold text-xl mb-6 text-gray-900 pt-6">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
-        {/* Days of week header - More prominent */}
-        <div className="grid grid-cols-7 gap-2 mb-4">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-            <div key={index} className="text-center text-xs font-semibold text-gray-600 py-2">
-              {day}
-            </div>
-          ))}
-        </div>
+        {/* Days of week header - only show for first month to avoid repetition */}
+        {isFirstMonth && (
+          <div className="grid grid-cols-7 gap-1 mb-3">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+              <div key={index} className="text-center text-sm font-medium text-gray-500 py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Calendar days - Enhanced visibility and touch targets */}
-        <div className="grid grid-cols-7 gap-2" data-testid="mobile-calendar-content">
+        {/* Calendar days - Airbnb-style seamless grid */}
+        <div className="grid grid-cols-7 gap-1 mb-2" data-testid="mobile-calendar-content">
           {allDays.map((date, index) => {
             const isCurrentMonth = isSameMonth(date, monthDate)
             const disabled = isDateDisabled(date)
@@ -218,12 +221,12 @@ export function MobileCalendarDrawer({
                 disabled={disabled || !isCurrentMonth || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
-                  // Enhanced 48px touch targets for better mobile UX
-                  "h-12 w-12 text-base font-semibold rounded-full transition-all duration-200 relative",
-                  "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                  // Airbnb-style: 44px touch targets, clean design
+                  "h-11 w-11 text-sm font-medium transition-all duration-150 relative",
+                  "hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black",
                   "flex items-center justify-center",
                   {
-                    // Current month styling - more prominent
+                    // Current month styling - clean Airbnb style
                     "text-gray-900 hover:bg-gray-100": isCurrentMonth && !disabled && !occupied && !inRange,
                     "text-gray-300": !isCurrentMonth,
                     
@@ -233,16 +236,15 @@ export function MobileCalendarDrawer({
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
                     "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
                     
-                    // Today styling - more prominent
-                    "bg-black text-white font-bold": today && !inRange && !occupied && isCurrentMonth,
+                    // Today styling - subtle Airbnb style
+                    "bg-black text-white font-semibold rounded-full": today && !inRange && !occupied && isCurrentMonth,
                     
-                    // Range styling - Airbnb-style
-                    "bg-gray-200 text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied,
-                    "bg-black text-white": (rangeStart || rangeEnd) && !occupied,
+                    // Range styling - true Airbnb colors and design
+                    "bg-gray-100 text-gray-900 rounded-full": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-black text-white rounded-full font-semibold": (rangeStart || rangeEnd) && !occupied,
                     
-                    // Hover effects
-                    "hover:bg-gray-100 hover:scale-105": !disabled && !inRange && !occupied && isCurrentMonth,
-                    "hover:bg-gray-800": (rangeStart || rangeEnd) && !disabled && !occupied,
+                    // Hover effects - subtle like Airbnb
+                    "hover:rounded-full": !disabled && !inRange && !occupied && isCurrentMonth,
                   }
                 )}
               >
@@ -285,26 +287,30 @@ export function MobileCalendarDrawer({
             <h2 className="text-lg font-semibold">Select dates</h2>
           </div>
 
-          {/* Content area */}
+          {/* Content area - True Airbnb seamless scrolling */}
           <div className="flex-1 overflow-hidden">
             {selectedRange.startDate && !selectedRange.endDate && (
-              <div className="mb-4 text-center px-6">
-                <p className="text-blue-600 font-medium">
+              <div className="mb-3 text-center px-4">
+                <p className="text-gray-600 font-medium text-sm">
                   Select your end date
                 </p>
               </div>
             )}
 
-            {/* Airbnb-style scrollable months */}
+            {/* True Airbnb-style seamless scrolling calendar */}
             <div 
-              className="h-full overflow-y-auto overscroll-y-contain scroll-smooth"
-              style={{ WebkitOverflowScrolling: 'touch' }}
+              className="h-full overflow-y-auto overscroll-y-contain"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                scrollBehavior: 'smooth'
+              }}
               data-testid="scrollable-months"
             >
-              <div className="pb-6">
+              {/* Seamless month container - no gaps like Airbnb */}
+              <div className="pb-8">
                 {months.map((month, index) => (
-                  <div key={index} className="mb-12 last:mb-0">
-                    {renderMobileMonth(month)}
+                  <div key={index}>
+                    {renderSeamlessMonth(month, index === 0)}
                   </div>
                 ))}
               </div>
