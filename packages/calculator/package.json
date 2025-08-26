@@ -1,0 +1,56 @@
+{
+  "name": "@schengen/calculator",
+  "version": "2.0.0",
+  "description": "EU-compliant Schengen 90/180-day rule calculator",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:unit": "jest --coverage",
+    "test:eu-compliance": "jest --testNamePattern='EU Official.*KOM'",
+    "test:date-overlap": "jest --testNamePattern='Date.*Overlap'",
+    "test:calculator": "jest --coverage --coverageThreshold='{\"global\":{\"statements\":100}}'",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
+  },
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "jest": "^29.7.0",
+    "@swc/core": "^1.7.0",
+    "@swc/jest": "^0.2.36",
+    "@types/jest": "^29.5.0",
+    "eslint": "^8.57.1",
+    "rollup": "^4.22.4",
+    "rollup-plugin-dts": "^6.1.1",
+    "typescript": "^5.6.2",
+    "@rollup/plugin-swc": "^0.4.0"
+  },
+  "keywords": [
+    "schengen",
+    "visa",
+    "calculator",
+    "travel",
+    "eu",
+    "90-180-rule"
+  ],
+  "author": "Schengen Calculator Team",
+  "license": "MIT"
+}

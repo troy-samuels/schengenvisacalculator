@@ -1,0 +1,211 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Import Onest font (brand font) */
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 24 100% 58%; /* #FA9937 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 24 100% 58%; /* #FA9937 */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 24 100% 58%; /* #FA9937 */
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 24 100% 58%; /* #FA9937 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Ensure minimum touch targets for mobile accessibility */
+  @media (max-width: 767px) {
+    button,
+    [role="button"],
+    input[type="button"],
+    input[type="submit"],
+    .touch-target {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+}
+
+@layer components {
+  /* Schengen-specific component styles */
+  .schengen-calendar {
+    @apply bg-cream/20 border border-primary/20 rounded-lg;
+  }
+
+  .schengen-occupied-date {
+    @apply bg-gray-200 text-gray-600 line-through cursor-not-allowed opacity-60;
+  }
+
+  .schengen-available-date {
+    @apply bg-gray-50 hover:bg-primary/10 cursor-pointer transition-colors;
+  }
+
+  .schengen-selected-date {
+    @apply bg-primary text-primary-foreground cursor-pointer;
+  }
+
+  .schengen-conflict-date {
+    @apply bg-red-100 text-red-700 cursor-not-allowed border border-red-200;
+  }
+
+  .schengen-brand-gradient {
+    background: linear-gradient(135deg, #FA9937 0%, #ff9933 50%, #e6802a 100%);
+  }
+
+  .schengen-glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .schengen-shadow {
+    box-shadow: 
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1),
+      0 4px 6px -1px rgb(250 153 55 / 0.1);
+  }
+
+  .schengen-focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+  }
+
+  /* Date picker specific styles */
+  .date-picker-occupied::before {
+    content: '';
+    @apply absolute inset-0 bg-gray-300 opacity-50 rounded;
+  }
+
+  .date-picker-occupied::after {
+    content: '';
+    @apply absolute top-1/2 left-1/2 w-6 h-0.5 bg-gray-600 transform -translate-x-1/2 -translate-y-1/2 rotate-45;
+  }
+
+  /* Mobile-specific enhancements */
+  @media (max-width: 767px) {
+    .mobile-calendar-day {
+      @apply min-h-[44px] min-w-[44px] text-base;
+    }
+
+    .mobile-touch-target {
+      @apply min-h-[44px] min-w-[44px] p-3;
+    }
+
+    .mobile-spacing {
+      @apply px-4 py-3;
+    }
+  }
+
+  /* Accessibility improvements */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .schengen-occupied-date {
+      @apply border-2 border-gray-800;
+    }
+
+    .schengen-selected-date {
+      @apply border-2 border-white;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .schengen-calendar {
+      @apply bg-white border-gray-400;
+    }
+
+    .schengen-occupied-date {
+      @apply bg-gray-200 text-gray-800;
+    }
+
+    .schengen-selected-date {
+      @apply bg-gray-800 text-white;
+    }
+  }
+}
+
+@layer utilities {
+  /* Custom utilities for Schengen components */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  }
+
+  .text-shadow {
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 10px 15px rgb(0 0 0 / 0.1), 0 4px 6px rgb(0 0 0 / 0.05);
+  }
+
+  /* Brand-specific animations */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out forwards;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s infinite;
+  }
+
+  /* Focus utilities */
+  .focus-visible {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2;
+  }
+}
