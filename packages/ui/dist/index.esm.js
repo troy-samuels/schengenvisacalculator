@@ -433,7 +433,7 @@ const createLucideIcon = (iconName, iconNode)=>{
     return Component;
 };
 
-const __iconNode$5 = [
+const __iconNode$3 = [
     [
         "path",
         {
@@ -442,9 +442,9 @@ const __iconNode$5 = [
         }
     ]
 ];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$5);
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$3);
 
-const __iconNode$4 = [
+const __iconNode$2 = [
     [
         "path",
         {
@@ -453,67 +453,7 @@ const __iconNode$4 = [
         }
     ]
 ];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$4);
-
-const __iconNode$3 = [
-    [
-        "path",
-        {
-            d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",
-            key: "1r0f0z"
-        }
-    ],
-    [
-        "circle",
-        {
-            cx: "12",
-            cy: "10",
-            r: "3",
-            key: "ilqhr7"
-        }
-    ]
-];
-const MapPin = createLucideIcon("map-pin", __iconNode$3);
-
-const __iconNode$2 = [
-    [
-        "path",
-        {
-            d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2",
-            key: "1yyitq"
-        }
-    ],
-    [
-        "circle",
-        {
-            cx: "9",
-            cy: "7",
-            r: "4",
-            key: "nufk8"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "19",
-            x2: "19",
-            y1: "8",
-            y2: "14",
-            key: "1bvyxn"
-        }
-    ],
-    [
-        "line",
-        {
-            x1: "22",
-            x2: "16",
-            y1: "11",
-            y2: "11",
-            key: "1shjgl"
-        }
-    ]
-];
-const UserPlus = createLucideIcon("user-plus", __iconNode$2);
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$2);
 
 const __iconNode$1 = [
     [
@@ -5051,68 +4991,50 @@ function Badge({ className, variant, ...props }) {
     });
 }
 
-function Header({ onLoginClick, onSignupClick, className = "" }) {
+function Header({ onLoginClick, onSignupClick, user, loading, className = "" }) {
     return /*#__PURE__*/ React__default.createElement("header", {
-        className: `w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ${className}`
+        className: `w-full ${className}`
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "container mx-auto px-4 sm:px-6 lg:px-8"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "flex h-16 items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("div", null), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-6"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2"
     }, /*#__PURE__*/ React__default.createElement("div", {
-        className: "flex h-8 w-8 items-center justify-center rounded-lg bg-primary"
-    }, /*#__PURE__*/ React__default.createElement(MapPin, {
-        className: "h-5 w-5 text-primary-foreground"
-    })), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex flex-col"
     }, /*#__PURE__*/ React__default.createElement("span", {
         className: "text-lg font-bold text-foreground leading-none"
-    }, "Schengen Calculator"), /*#__PURE__*/ React__default.createElement("span", {
-        className: "text-xs text-muted-foreground leading-none"
-    }, "90/180 Day Rule Checker"))), /*#__PURE__*/ React__default.createElement("nav", {
-        className: "hidden md:flex items-center space-x-6"
-    }, /*#__PURE__*/ React__default.createElement("a", {
-        href: "#calculator",
-        className: "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-    }, "Calculator"), /*#__PURE__*/ React__default.createElement("a", {
-        href: "#about",
-        className: "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-    }, "About 90/180 Rule"), /*#__PURE__*/ React__default.createElement("a", {
-        href: "#help",
-        className: "text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-    }, "Help")), /*#__PURE__*/ React__default.createElement("div", {
+    }, "Schengen Calculator"))), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-3"
-    }, /*#__PURE__*/ React__default.createElement(Button$1, {
-        variant: "ghost",
-        size: "sm",
-        onClick: onLoginClick,
-        className: "hidden sm:inline-flex"
+    }, loading ? /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "h-8 w-8 rounded-full bg-gray-200 animate-pulse"
+    }), /*#__PURE__*/ React__default.createElement("div", {
+        className: "hidden sm:block h-4 w-20 bg-gray-200 animate-pulse rounded"
+    })) : user ? /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-3"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2"
+    }, user.user_metadata?.avatar_url ? /*#__PURE__*/ React__default.createElement("img", {
+        src: user.user_metadata.avatar_url,
+        alt: "Profile",
+        className: "h-8 w-8 rounded-full"
+    }) : /*#__PURE__*/ React__default.createElement("div", {
+        className: "h-8 w-8 rounded-full bg-primary flex items-center justify-center"
     }, /*#__PURE__*/ React__default.createElement(User, {
-        className: "h-4 w-4 mr-2"
-    }), "Log In"), /*#__PURE__*/ React__default.createElement(Button$1, {
-        variant: "default",
-        size: "sm",
+        className: "h-4 w-4 text-primary-foreground"
+    })), /*#__PURE__*/ React__default.createElement("span", {
+        className: "hidden sm:block text-sm font-medium text-foreground"
+    }, user.user_metadata?.full_name || user.email))) : /*#__PURE__*/ React__default.createElement(React__default.Fragment, null, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onLoginClick,
+        className: "text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors px-3 py-2"
+    }, "Log In"), /*#__PURE__*/ React__default.createElement("button", {
         onClick: onSignupClick,
-        className: "schengen-brand-gradient"
-    }, /*#__PURE__*/ React__default.createElement(UserPlus, {
-        className: "h-4 w-4 mr-2"
-    }), "Sign Up"), /*#__PURE__*/ React__default.createElement(Button$1, {
-        variant: "ghost",
-        size: "sm",
-        className: "md:hidden",
-        "aria-label": "Open menu"
-    }, /*#__PURE__*/ React__default.createElement("svg", {
-        className: "h-6 w-6",
-        fill: "none",
-        viewBox: "0 0 24 24",
-        stroke: "currentColor"
-    }, /*#__PURE__*/ React__default.createElement("path", {
-        strokeLinecap: "round",
-        strokeLinejoin: "round",
-        strokeWidth: 2,
-        d: "M4 6h16M4 12h16M4 18h16"
-    })))))));
+        className: "bg-green-700 hover:bg-green-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm"
+    }, "Start Now")))))));
 }
 
 function CircularProgress({ value, max = 90, size = 120, strokeWidth = 8, progressColor = "#10b981", backgroundColor = "#e5e7eb", textColor = "#374151", className, label, showPercentage = false, animationDuration = 1000 }) {

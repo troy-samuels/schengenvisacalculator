@@ -142,9 +142,11 @@ declare function Badge({ className, variant, ...props }: BadgeProps): react_jsx_
 interface HeaderProps {
     onLoginClick?: () => void;
     onSignupClick?: () => void;
+    user?: any;
+    loading?: boolean;
     className?: string;
 }
-declare function Header({ onLoginClick, onSignupClick, className }: HeaderProps): react_jsx_runtime.JSX.Element;
+declare function Header({ onLoginClick, onSignupClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
 
 interface CircularProgressProps {
     /** Current value */
