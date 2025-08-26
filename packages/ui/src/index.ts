@@ -15,3 +15,13 @@ export * from "./components/ui/header"
 export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
 export type { DateRange } from "./components/ui/calendar-modal"
+
+// Date overlap prevention system
+export * from "./validators/date-overlap-validator"
+export type { 
+  ValidationResult, 
+  OccupiedDateInfo, 
+  TripEntry,
+  UseDateOverlapPreventionProps,
+  UseDateOverlapPreventionReturn 
+} from "./validators/date-overlap-validator"

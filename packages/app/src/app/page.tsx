@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { Button, CircularProgress, CalendarModal } from '@schengen/ui'
+import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 

@@ -12,6 +12,13 @@ export interface DateRange {
   endDate: Date | null
 }
 
+export interface OccupiedDateInfo {
+  date: Date
+  tripId: string
+  country: string
+  tripName: string
+}
+
 export interface CalendarModalProps {
   /** Whether the modal is open */
   isOpen: boolean
@@ -23,6 +30,8 @@ export interface CalendarModalProps {
   initialRange?: DateRange
   /** Disabled dates */
   disabledDates?: Date[]
+  /** Information about occupied dates for better UX */
+  occupiedDateInfo?: OccupiedDateInfo[]
   /** Minimum selectable date */
   minDate?: Date
   /** Maximum selectable date */
@@ -37,6 +46,7 @@ export function CalendarModal({
   onDateRangeSelect,
   initialRange,
   disabledDates = [],
+  occupiedDateInfo = [],
   minDate,
   maxDate,
   className
@@ -59,6 +69,16 @@ export function CalendarModal({
   const handleDateClick = (date: Date) => {
     // Check if date is disabled
     if (isDateDisabled(date)) return
+
+    // Handle occupied date click - show helpful message
+    if (isDateOccupied(date)) {
+      const occupiedInfo = getOccupiedDateInfo(date)
+      if (occupiedInfo) {
+        // You could add a toast notification here in the future
+        console.log(`Cannot select ${format(date, 'MMM dd')} - already used by ${occupiedInfo.country} trip`)
+      }
+      return
+    }
 
     if (!selectedRange.startDate || selectingEnd) {
       // Select start date or reset and select new start date
@@ -93,6 +113,16 @@ export function CalendarModal({
     if (minDate && date < minDate) return true
     if (maxDate && date > maxDate) return true
     return disabledDates.some(disabledDate => isSameDay(date, disabledDate))
+  }
+
+  // Check if date is occupied by an existing trip
+  const getOccupiedDateInfo = (date: Date): OccupiedDateInfo | null => {
+    return occupiedDateInfo.find(info => isSameDay(info.date, date)) || null
+  }
+
+  // Check if date is occupied
+  const isDateOccupied = (date: Date) => {
+    return getOccupiedDateInfo(date) !== null
   }
 
   // Check if date is in selected range
@@ -177,6 +207,8 @@ export function CalendarModal({
           {allDays.map((date, index) => {
             const isCurrentMonth = isSameMonth(date, monthDate)
             const disabled = isDateDisabled(date)
+            const occupied = isDateOccupied(date)
+            const occupiedInfo = getOccupiedDateInfo(date)
             const inRange = isDateInRange(date)
             const rangeStart = isRangeStart(date)
             const rangeEnd = isRangeEnd(date)
@@ -186,32 +218,38 @@ export function CalendarModal({
               <button
                 key={index}
                 onClick={() => handleDateClick(date)}
-                disabled={disabled || !isCurrentMonth}
+                disabled={disabled || !isCurrentMonth || occupied}
+                title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
-                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors",
+                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors relative",
                   "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   {
                     // Current month styling
-                    "text-gray-900": isCurrentMonth && !disabled,
+                    "text-gray-900": isCurrentMonth && !disabled && !occupied,
                     "text-gray-400": !isCurrentMonth,
                     
                     // Disabled styling
                     "text-gray-300 cursor-not-allowed": disabled,
                     
+                    // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
+                    
                     // Today styling
-                    "bg-blue-100 text-blue-900": today && !inRange && isCurrentMonth,
+                    "bg-blue-100 text-blue-900": today && !inRange && !occupied && isCurrentMonth,
                     
                     // Range styling
-                    "bg-primary/20": inRange && !rangeStart && !rangeEnd,
-                    "bg-primary text-white": rangeStart || rangeEnd,
+                    "bg-primary/20": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-primary text-white": (rangeStart || rangeEnd) && !occupied,
                     
                     // Hover effects
-                    "hover:bg-primary/10": !disabled && !inRange && isCurrentMonth,
-                    "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled,
+                    "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
+                    "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied,
                   }
                 )}
               >
-                {date.getDate()}
+                <span className={occupied ? "line-through" : ""}>
+                  {date.getDate()}
+                </span>
               </button>
             )
           })}

@@ -5222,7 +5222,7 @@ function CircularProgress({ value, max = 90, size = 120, strokeWidth = 8, progre
     }, label)));
 }
 
-function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates = [], minDate, maxDate, className }) {
+function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates = [], occupiedDateInfo = [], minDate, maxDate, className }) {
     const [currentMonth, setCurrentMonth] = React.useState(new Date());
     const [selectedRange, setSelectedRange] = React.useState(initialRange || {
         startDate: null,
@@ -5246,6 +5246,15 @@ function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disab
     const handleDateClick = (date)=>{
         // Check if date is disabled
         if (isDateDisabled(date)) return;
+        // Handle occupied date click - show helpful message
+        if (isDateOccupied(date)) {
+            const occupiedInfo = getOccupiedDateInfo(date);
+            if (occupiedInfo) {
+                // You could add a toast notification here in the future
+                console.log(`Cannot select ${dateFns.format(date, 'MMM dd')} - already used by ${occupiedInfo.country} trip`);
+            }
+            return;
+        }
         if (!selectedRange.startDate || selectingEnd) {
             // Select start date or reset and select new start date
             if (selectingEnd && selectedRange.startDate && date < selectedRange.startDate) {
@@ -5293,6 +5302,14 @@ function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disab
         if (minDate && date < minDate) return true;
         if (maxDate && date > maxDate) return true;
         return disabledDates.some((disabledDate)=>dateFns.isSameDay(date, disabledDate));
+    };
+    // Check if date is occupied by an existing trip
+    const getOccupiedDateInfo = (date)=>{
+        return occupiedDateInfo.find((info)=>dateFns.isSameDay(info.date, date)) || null;
+    };
+    // Check if date is occupied
+    const isDateOccupied = (date)=>{
+        return getOccupiedDateInfo(date) !== null;
     };
     // Check if date is in selected range
     const isDateInRange = (date)=>{
@@ -5375,6 +5392,8 @@ function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disab
         }, allDays.map((date, index)=>{
             const isCurrentMonth = dateFns.isSameMonth(date, monthDate);
             const disabled = isDateDisabled(date);
+            const occupied = isDateOccupied(date);
+            const occupiedInfo = getOccupiedDateInfo(date);
             const inRange = isDateInRange(date);
             const rangeStart = isRangeStart(date);
             const rangeEnd = isRangeEnd(date);
@@ -5382,23 +5401,28 @@ function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disab
             return /*#__PURE__*/ React.createElement("button", {
                 key: index,
                 onClick: ()=>handleDateClick(date),
-                disabled: disabled || !isCurrentMonth,
-                className: cn("h-10 w-10 text-sm font-medium rounded-lg transition-colors", "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50", {
+                disabled: disabled || !isCurrentMonth || occupied,
+                title: occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined,
+                className: cn("h-10 w-10 text-sm font-medium rounded-lg transition-colors relative", "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50", {
                     // Current month styling
-                    "text-gray-900": isCurrentMonth && !disabled,
+                    "text-gray-900": isCurrentMonth && !disabled && !occupied,
                     "text-gray-400": !isCurrentMonth,
                     // Disabled styling
                     "text-gray-300 cursor-not-allowed": disabled,
+                    // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
                     // Today styling
-                    "bg-blue-100 text-blue-900": today && !inRange && isCurrentMonth,
+                    "bg-blue-100 text-blue-900": today && !inRange && !occupied && isCurrentMonth,
                     // Range styling
-                    "bg-primary/20": inRange && !rangeStart && !rangeEnd,
-                    "bg-primary text-white": rangeStart || rangeEnd,
+                    "bg-primary/20": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-primary text-white": (rangeStart || rangeEnd) && !occupied,
                     // Hover effects
-                    "hover:bg-primary/10": !disabled && !inRange && isCurrentMonth,
-                    "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled
+                    "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
+                    "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied
                 })
-            }, date.getDate());
+            }, /*#__PURE__*/ React.createElement("span", {
+                className: occupied ? "line-through" : ""
+            }, date.getDate()));
         })));
     };
     if (!isOpen) return null;
@@ -5455,6 +5479,156 @@ function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disab
     }, "Done")))), document.body) : null;
 }
 
+/**
+ * Date Overlap Prevention System
+ * CRITICAL: Prevents users from selecting dates that conflict with existing trips
+ * Requirement: A person cannot be in two different locations simultaneously
+ */ class DateOverlapValidator {
+    /**
+   * CRITICAL: Validates if new date range conflicts with existing trips
+   * Must be 100% accurate for EU Schengen compliance
+   */ static validateDateRange(newRange, existingTrips, excludeTripId) {
+        if (!newRange.startDate || !newRange.endDate) {
+            return {
+                isValid: true,
+                conflicts: [],
+                message: 'Dates are available',
+                conflictDates: []
+            };
+        }
+        // Filter out the trip being edited (if any)
+        const tripsToCheck = existingTrips.filter((trip)=>trip.id !== excludeTripId && trip.startDate && trip.endDate);
+        const conflicts = tripsToCheck.filter((trip)=>this.rangesOverlap(newRange, {
+                startDate: trip.startDate,
+                endDate: trip.endDate
+            }));
+        const conflictDates = conflicts.length > 0 ? this.getOverlapDates(newRange, conflicts) : [];
+        return {
+            isValid: conflicts.length === 0,
+            conflicts: conflicts,
+            message: conflicts.length > 0 ? `Dates overlap with existing trip: ${conflicts[0].country}` : 'Dates are available',
+            conflictDates
+        };
+    }
+    /**
+   * Returns array of dates that should be disabled in date picker
+   * These dates MUST be visually greyed out with strikethrough
+   */ static getDisabledDates(existingTrips, excludeTripId) {
+        const disabledDates = [];
+        const tripsToCheck = existingTrips.filter((trip)=>trip.id !== excludeTripId && trip.startDate && trip.endDate);
+        tripsToCheck.forEach((trip)=>{
+            if (!trip.startDate || !trip.endDate) return;
+            let currentDate = new Date(trip.startDate);
+            const endDate = new Date(trip.endDate);
+            while(currentDate <= endDate){
+                disabledDates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        });
+        return disabledDates;
+    }
+    /**
+   * Returns detailed information about occupied dates for tooltips
+   */ static getOccupiedDateInfo(existingTrips, excludeTripId) {
+        const occupiedInfo = [];
+        const tripsToCheck = existingTrips.filter((trip)=>trip.id !== excludeTripId && trip.startDate && trip.endDate);
+        tripsToCheck.forEach((trip)=>{
+            if (!trip.startDate || !trip.endDate) return;
+            let currentDate = new Date(trip.startDate);
+            const endDate = new Date(trip.endDate);
+            while(currentDate <= endDate){
+                occupiedInfo.push({
+                    date: new Date(currentDate),
+                    tripId: trip.id,
+                    country: trip.country,
+                    tripName: `${trip.country} Trip`
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        });
+        return occupiedInfo;
+    }
+    /**
+   * Check if two date ranges overlap
+   */ static rangesOverlap(range1, range2) {
+        if (!range1.startDate || !range1.endDate || !range2.startDate || !range2.endDate) {
+            return false;
+        }
+        // Convert to timestamps for accurate comparison
+        const start1 = range1.startDate.getTime();
+        const end1 = range1.endDate.getTime();
+        const start2 = range2.startDate.getTime();
+        const end2 = range2.endDate.getTime();
+        // Check for overlap: ranges overlap if start1 <= end2 AND end1 >= start2
+        return start1 <= end2 && end1 >= start2;
+    }
+    /**
+   * Get specific dates where overlap occurs
+   */ static getOverlapDates(newRange, conflicts) {
+        if (!newRange.startDate || !newRange.endDate) return [];
+        const overlapDates = [];
+        const newStart = new Date(newRange.startDate);
+        const newEnd = new Date(newRange.endDate);
+        let currentDate = new Date(newStart);
+        while(currentDate <= newEnd){
+            // Check if this date is occupied by any conflicting trip
+            const isOccupied = conflicts.some((trip)=>{
+                if (!trip.startDate || !trip.endDate) return false;
+                const tripStart = new Date(trip.startDate);
+                const tripEnd = new Date(trip.endDate);
+                return currentDate >= tripStart && currentDate <= tripEnd;
+            });
+            if (isOccupied) {
+                overlapDates.push(new Date(currentDate));
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return overlapDates;
+    }
+    /**
+   * Helper to format date for user messages
+   */ static formatDateForMessage(date) {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
+    /**
+   * Get user-friendly error message for date conflicts
+   */ static getConflictMessage(conflicts, conflictDates) {
+        if (conflicts.length === 0) return 'Dates are available';
+        if (conflicts.length === 1) {
+            const conflict = conflicts[0];
+            const startStr = conflict.startDate ? this.formatDateForMessage(conflict.startDate) : 'Unknown';
+            const endStr = conflict.endDate ? this.formatDateForMessage(conflict.endDate) : 'Unknown';
+            return `Cannot select these dates. You already have a trip to ${conflict.country} from ${startStr} to ${endStr}.`;
+        }
+        return `Cannot select these dates. You have ${conflicts.length} overlapping trips.`;
+    }
+}
+function useDateOverlapPrevention({ existingTrips, excludeTripId }) {
+    const validateDateRange = (range)=>{
+        return DateOverlapValidator.validateDateRange(range, existingTrips, excludeTripId);
+    };
+    const getDisabledDates = ()=>{
+        return DateOverlapValidator.getDisabledDates(existingTrips, excludeTripId);
+    };
+    const getOccupiedDateInfo = ()=>{
+        return DateOverlapValidator.getOccupiedDateInfo(existingTrips, excludeTripId);
+    };
+    const isDateOccupied = (date)=>{
+        const disabledDates = getDisabledDates();
+        return disabledDates.some((disabledDate)=>disabledDate.toDateString() === date.toDateString());
+    };
+    return {
+        validateDateRange,
+        getDisabledDates,
+        getOccupiedDateInfo,
+        isDateOccupied
+    };
+}
+
 exports.Badge = Badge;
 exports.Button = Button$1;
 exports.Calendar = Calendar;
@@ -5466,6 +5640,7 @@ exports.CardFooter = CardFooter;
 exports.CardHeader = CardHeader;
 exports.CardTitle = CardTitle;
 exports.CircularProgress = CircularProgress;
+exports.DateOverlapValidator = DateOverlapValidator;
 exports.Header = Header;
 exports.Input = Input;
 exports.Label = Label;
@@ -5492,4 +5667,5 @@ exports.labelVariants = labelVariants;
 exports.startOfDay = startOfDay;
 exports.subtractDays = subtractDays;
 exports.throttle = throttle;
+exports.useDateOverlapPrevention = useDateOverlapPrevention;
 //# sourceMappingURL=index.cjs.js.map

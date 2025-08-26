@@ -90,7 +90,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" | "brand" | "cream" | "success" | "warning" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -179,6 +179,12 @@ interface DateRange {
     startDate: Date | null;
     endDate: Date | null;
 }
+interface OccupiedDateInfo {
+    date: Date;
+    tripId: string;
+    country: string;
+    tripName: string;
+}
 interface CalendarModalProps {
     /** Whether the modal is open */
     isOpen: boolean;
@@ -190,6 +196,8 @@ interface CalendarModalProps {
     initialRange?: DateRange;
     /** Disabled dates */
     disabledDates?: Date[];
+    /** Information about occupied dates for better UX */
+    occupiedDateInfo?: OccupiedDateInfo[];
     /** Minimum selectable date */
     minDate?: Date;
     /** Maximum selectable date */
@@ -197,7 +205,7 @@ interface CalendarModalProps {
     /** Additional className */
     className?: string;
 }
-declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, minDate, maxDate, className }: CalendarModalProps): React__default.ReactPortal | null;
+declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: CalendarModalProps): React__default.ReactPortal | null;
 
 export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, Header, Input, Label, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle };
-export type { BadgeProps, ButtonProps, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps };
+export type { BadgeProps, ButtonProps, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, OccupiedDateInfo };
