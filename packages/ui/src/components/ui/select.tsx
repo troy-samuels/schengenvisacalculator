@@ -206,26 +206,29 @@ export function Select({
         onClick={handleToggle}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-left",
+          "flex w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors",
           "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          "hover:bg-accent hover:text-accent-foreground transition-colors",
-          "mobile-touch-target"
+          "hover:bg-accent hover:text-accent-foreground",
+          "mobile-touch-target",
+          selectedOption ? "justify-center text-center" : "justify-between text-left"
         )}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
         <span className={cn(
-          selectedOption ? "text-foreground" : "text-muted-foreground"
+          selectedOption ? "text-foreground font-medium" : "text-muted-foreground"
         )}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown 
-          className={cn(
-            "h-4 w-4 shrink-0 transition-transform duration-200",
-            isOpen && "transform rotate-180"
-          )} 
-        />
+        {!selectedOption && (
+          <ChevronDown 
+            className={cn(
+              "h-4 w-4 shrink-0 transition-transform duration-200",
+              isOpen && "transform rotate-180"
+            )} 
+          />
+        )}
       </button>
 
       {/* Dropdown rendered via portal for proper z-index */}

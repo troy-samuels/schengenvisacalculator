@@ -8,7 +8,6 @@ import { DayPickerProps } from 'react-day-picker';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Trip, DateRange as DateRange$1, ValidationResult } from '@schengen/calculator';
 export { ConflictDetail, DateRange, OverlapPreventionConfig, Trip, ValidationResult } from '@schengen/calculator';
-import * as _schengen_payments from '@schengen/payments';
 import { SubscriptionTier, BillingCycle } from '@schengen/payments';
 
 /**
@@ -93,7 +92,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "link" | "ghost" | "brand" | "cream" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -136,7 +135,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }
@@ -322,11 +321,11 @@ interface SubscriptionGateProps {
 }
 declare function SubscriptionGate({ feature, currentTier, userUsage, mode, showComparison, showTrialOffer, onUpgrade, onClose, customMessage, customTitle, className }: SubscriptionGateProps): react_jsx_runtime.JSX.Element | null;
 declare function useSubscriptionGate(feature: string, currentTier: SubscriptionTier, userUsage?: any): {
-    hasAccess: boolean;
+    hasAccess: any;
     showGate: boolean;
     requireFeature: () => boolean;
     closeGate: () => void;
-    accessResult: _schengen_payments.FeatureGateResult;
+    accessResult: any;
 };
 
 interface PaymentModalProps {
@@ -355,8 +354,8 @@ declare function usePaymentModal(): {
     billingCycle: BillingCycle;
     openModal: (tier: SubscriptionTier, cycle?: BillingCycle) => void;
     closeModal: () => void;
-    setSelectedTier: React__default.Dispatch<React__default.SetStateAction<SubscriptionTier>>;
-    setBillingCycle: React__default.Dispatch<React__default.SetStateAction<BillingCycle>>;
+    setSelectedTier: React__default.Dispatch<any>;
+    setBillingCycle: React__default.Dispatch<any>;
 };
 
 interface PricingCardsProps {

@@ -15,6 +15,7 @@ export * from "./components/ui/header"
 export * from "./components/ui/select"
 export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
+export type { DateRange } from "./components/ui/calendar-modal"
 export * from "./components/ui/animated-counter"
 
 // Schengen-specific components
@@ -29,7 +30,6 @@ export * from "./components/pricing-cards"
 // Re-export calculator types and utilities for convenience
 export type { 
   Trip, 
-  DateRange, 
   ValidationResult, 
   ConflictDetail, 
   OverlapPreventionConfig 
