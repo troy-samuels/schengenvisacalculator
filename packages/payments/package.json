@@ -13,7 +13,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"

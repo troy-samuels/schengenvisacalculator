@@ -50,6 +50,13 @@ export class DateOverlapValidator {
   }
 
   /**
+   * Validate if a date range conflicts with existing trips (alias for validateDateSpan)
+   */
+  validateDateRange(newRange: DateRange, existingTrips: Trip[]): ValidationResult {
+    return this.validateDateSpan(newRange, existingTrips)
+  }
+
+  /**
    * Validate if a date range conflicts with existing trips
    */
   validateDateSpan(newRange: DateRange, existingTrips: Trip[]): ValidationResult {
@@ -373,5 +380,60 @@ export class DateOverlapValidator {
    */
   getConfig(): OverlapPreventionConfig {
     return { ...this.config }
+  }
+
+  /**
+   * Find the next available date range starting from a preferred date
+   */
+  findNextAvailableDateRange(
+    preferredStart: Date,
+    lengthInDays: number,
+    existingTrips: Trip[],
+    searchLimitDays: number = 365
+  ): DateRange | null {
+    const searchLimit = new Date(preferredStart.getTime() + searchLimitDays * 24 * 60 * 60 * 1000)
+    
+    for (let searchDate = new Date(preferredStart); searchDate <= searchLimit; searchDate.setDate(searchDate.getDate() + 1)) {
+      const proposedRange: DateRange = {
+        start: new Date(searchDate),
+        end: new Date(searchDate.getTime() + (lengthInDays - 1) * 24 * 60 * 60 * 1000)
+      }
+      
+      const validation = this.validateDateRange(proposedRange, existingTrips)
+      if (validation.isValid) {
+        return proposedRange
+      }
+    }
+    
+    return null
+  }
+
+  /**
+   * Validate multiple date ranges at once
+   */
+  validateMultipleDateRanges(
+    dateRanges: DateRange[],
+    existingTrips: Trip[]
+  ): { [index: number]: ValidationResult } {
+    const results: { [index: number]: ValidationResult } = {}
+    const allProposedTrips: Trip[] = [...existingTrips]
+    
+    dateRanges.forEach((range, index) => {
+      const validation = this.validateDateRange(range, allProposedTrips)
+      results[index] = validation
+      
+      // If this range is valid, add it to the list for subsequent validations
+      if (validation.isValid) {
+        allProposedTrips.push({
+          id: `temp-${index}`,
+          country: `temp-${index}`,
+          startDate: range.start,
+          endDate: range.end,
+          days: Math.ceil((range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+        })
+      }
+    })
+    
+    return results
   }
 }

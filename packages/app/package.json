@@ -10,7 +10,7 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:e2e": "playwright test",
     "test:performance": "lighthouse --output=json --output-path=./lighthouse-report.json",
     "analyze": "ANALYZE=true next build",

@@ -12,12 +12,12 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:unit": "jest --coverage",
-    "test:eu-compliance": "jest --testNamePattern='EU Official.*KOM'",
-    "test:date-overlap": "jest --testNamePattern='Date.*Overlap'",
-    "test:calculator": "jest --coverage --coverageThreshold='{\"global\":{\"statements\":100}}'",
+    "test": "jest --config=jest.config.cjs",
+    "test:watch": "jest --config=jest.config.cjs --watch",
+    "test:unit": "jest --config=jest.config.cjs --coverage",
+    "test:eu-compliance": "jest --config=jest.config.cjs --testNamePattern='EU Official.*KOM'",
+    "test:date-overlap": "jest --config=jest.config.cjs --testNamePattern='Date.*Overlap'",
+    "test:calculator": "jest --config=jest.config.cjs --coverage --coverageThreshold='{\"global\":{\"statements\":100}}'",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"

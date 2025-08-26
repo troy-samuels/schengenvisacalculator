@@ -6,9 +6,7 @@ import { VariantProps } from 'class-variance-authority';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import { DayPickerProps } from 'react-day-picker';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import { Trip, DateRange as DateRange$1, ValidationResult } from '@schengen/calculator';
 export { ConflictDetail, DateRange, OverlapPreventionConfig, Trip, ValidationResult } from '@schengen/calculator';
-import { SubscriptionTier, BillingCycle } from '@schengen/payments';
 
 /**
  * Utility function to merge Tailwind CSS classes with conditional logic
@@ -92,7 +90,7 @@ declare function isMobile(): boolean;
 declare function isTouchDevice(): boolean;
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "link" | "ghost" | "brand" | "cream" | null | undefined;
+    variant?: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -135,7 +133,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }
@@ -147,22 +145,6 @@ interface HeaderProps {
     className?: string;
 }
 declare function Header({ onLoginClick, onSignupClick, className }: HeaderProps): react_jsx_runtime.JSX.Element;
-
-interface SelectOption {
-    value: string;
-    label: string;
-    disabled?: boolean;
-}
-interface SelectProps {
-    options: SelectOption[];
-    value?: string;
-    placeholder?: string;
-    onValueChange?: (value: string) => void;
-    disabled?: boolean;
-    className?: string;
-    searchable?: boolean;
-}
-declare function Select({ options, value, placeholder, onValueChange, disabled, className, searchable }: SelectProps): react_jsx_runtime.JSX.Element;
 
 interface CircularProgressProps {
     /** Current value */
@@ -217,166 +199,5 @@ interface CalendarModalProps {
 }
 declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, minDate, maxDate, className }: CalendarModalProps): React__default.ReactPortal | null;
 
-interface AnimatedCounterProps {
-    value: number;
-    duration?: number;
-    className?: string;
-    suffix?: string;
-    prefix?: string;
-}
-declare function AnimatedCounter({ value, duration, className, suffix, prefix }: AnimatedCounterProps): react_jsx_runtime.JSX.Element;
-
-interface SchengenCalendarProps {
-    /** Existing trips for conflict detection */
-    existingTrips?: Trip[];
-    /** Selected date (single mode) */
-    selected?: Date;
-    /** Selected date range (range mode) */
-    selectedRange?: DateRange$1;
-    /** Calendar mode */
-    mode?: "single" | "range";
-    /** Callback for single date selection */
-    onSelect?: (date: Date | undefined) => void;
-    /** Callback for date range selection */
-    onRangeSelect?: (range: DateRange$1 | undefined) => void;
-    /** Show occupied date indicators */
-    showOccupiedDates?: boolean;
-    /** Show conflict warnings */
-    showConflictWarnings?: boolean;
-    /** Show alternative date suggestions */
-    showAlternativeSuggestions?: boolean;
-    /** Custom validator configuration */
-    validatorConfig?: {
-        allowSameDayTravel?: boolean;
-        allowBorderTransitions?: boolean;
-        strictMode?: boolean;
-    };
-    /** Additional class name */
-    className?: string;
-    /** Minimum date that can be selected */
-    fromDate?: Date;
-    /** Maximum date that can be selected */
-    toDate?: Date;
-    /** Disabled dates */
-    disabled?: Date[] | ((date: Date) => boolean);
-    /** Custom styling for different date states */
-    customClassNames?: {
-        occupied?: string;
-        conflict?: string;
-        available?: string;
-        selected?: string;
-    };
-    /** Show validation messages */
-    showValidationMessages?: boolean;
-    /** Custom validation message render */
-    renderValidationMessage?: (validation: ValidationResult) => React.ReactNode;
-}
-declare function SchengenCalendar({ existingTrips, selected, selectedRange, mode, onSelect, onRangeSelect, showOccupiedDates, showConflictWarnings, showAlternativeSuggestions, validatorConfig, className, fromDate, toDate, disabled, customClassNames, showValidationMessages, renderValidationMessage, ...props }: SchengenCalendarProps): react_jsx_runtime.JSX.Element;
-declare namespace SchengenCalendar {
-    var displayName: string;
-}
-
-interface TripCardProps {
-    /** Trip data to display */
-    trip: Trip;
-    /** Show edit button */
-    showEdit?: boolean;
-    /** Show delete button */
-    showDelete?: boolean;
-    /** Callback when edit is clicked */
-    onEdit?: (trip: Trip) => void;
-    /** Callback when delete is clicked */
-    onDelete?: (trip: Trip) => void;
-    /** Additional class name */
-    className?: string;
-    /** Compact mode for mobile */
-    compact?: boolean;
-    /** Show country flag (requires country code mapping) */
-    showFlag?: boolean;
-    /** Custom country flag render function */
-    renderFlag?: (countryName: string) => React.ReactNode;
-}
-declare function TripCard({ trip, showEdit, showDelete, onEdit, onDelete, className, compact, showFlag, renderFlag, }: TripCardProps): react_jsx_runtime.JSX.Element;
-declare namespace TripCard {
-    var displayName: string;
-}
-
-interface SubscriptionGateProps {
-    feature: string;
-    currentTier: SubscriptionTier;
-    userUsage?: {
-        calculations?: number;
-        exportCount?: number;
-        storageUsed?: number;
-        apiRequests?: number;
-    };
-    mode?: 'modal' | 'inline' | 'banner';
-    showComparison?: boolean;
-    showTrialOffer?: boolean;
-    onUpgrade?: (targetTier: SubscriptionTier) => void;
-    onClose?: () => void;
-    customMessage?: string;
-    customTitle?: string;
-    className?: string;
-}
-declare function SubscriptionGate({ feature, currentTier, userUsage, mode, showComparison, showTrialOffer, onUpgrade, onClose, customMessage, customTitle, className }: SubscriptionGateProps): react_jsx_runtime.JSX.Element | null;
-declare function useSubscriptionGate(feature: string, currentTier: SubscriptionTier, userUsage?: any): {
-    hasAccess: any;
-    showGate: boolean;
-    requireFeature: () => boolean;
-    closeGate: () => void;
-    accessResult: boolean;
-};
-
-interface PaymentModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    selectedTier: SubscriptionTier;
-    billingCycle?: BillingCycle;
-    userId?: string;
-    userEmail?: string;
-    currentTier?: SubscriptionTier;
-    title?: string;
-    subtitle?: string;
-    showFeatureComparison?: boolean;
-    showSecurityBadges?: boolean;
-    onSuccess?: (subscriptionId: string) => void;
-    onError?: (error: Error) => void;
-    onCancel?: () => void;
-    stripePublishableKey?: string;
-    priceId?: string;
-    className?: string;
-}
-declare function PaymentModal({ isOpen, onClose, selectedTier, billingCycle, userId, userEmail, currentTier, title, subtitle, showFeatureComparison, showSecurityBadges, onSuccess, onError, onCancel, stripePublishableKey, priceId, className }: PaymentModalProps): react_jsx_runtime.JSX.Element | null;
-declare function usePaymentModal(): {
-    isOpen: boolean;
-    selectedTier: SubscriptionTier;
-    billingCycle: BillingCycle;
-    openModal: (tier: SubscriptionTier, cycle?: BillingCycle) => void;
-    closeModal: () => void;
-    setSelectedTier: React__default.Dispatch<React__default.SetStateAction<SubscriptionTier>>;
-    setBillingCycle: React__default.Dispatch<React__default.SetStateAction<BillingCycle>>;
-};
-
-interface PricingCardsProps {
-    currentTier?: SubscriptionTier;
-    currentUsage?: {
-        calculations?: number;
-        exportCount?: number;
-        storageUsed?: number;
-    };
-    showComparison?: boolean;
-    showPopularBadge?: boolean;
-    showAnnualToggle?: boolean;
-    highlightTier?: SubscriptionTier;
-    compact?: boolean;
-    onSelectPlan?: (tier: SubscriptionTier, billingCycle: BillingCycle) => void;
-    onStartTrial?: (tier: SubscriptionTier) => void;
-    title?: string;
-    subtitle?: string;
-    className?: string;
-}
-declare function PricingCards({ currentTier, currentUsage, showComparison, showPopularBadge, showAnnualToggle, highlightTier, compact, onSelectPlan, onStartTrial, title, subtitle, className }: PricingCardsProps): react_jsx_runtime.JSX.Element;
-
-export { AnimatedCounter, Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, Header, Input, Label, PaymentModal, PricingCards, SchengenCalendar, Select, SubscriptionGate, TripCard, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, usePaymentModal, useSubscriptionGate };
-export type { BadgeProps, ButtonProps, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, PaymentModalProps, PricingCardsProps, SchengenCalendarProps, SelectOption, SelectProps, SubscriptionGateProps, TripCardProps };
+export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, Header, Input, Label, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle };
+export type { BadgeProps, ButtonProps, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps };
