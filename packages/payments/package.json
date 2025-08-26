@@ -1,0 +1,42 @@
+{
+  "name": "@schengen/payments",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Stripe payment integration for Schengen Calculator",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix"
+  },
+  "dependencies": {
+    "stripe": "^16.12.0",
+    "@stripe/stripe-js": "^5.9.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-swc": "^0.4.0",
+    "@types/node": "^22.18.0",
+    "rollup": "^4.22.4",
+    "rollup-plugin-dts": "^6.1.1",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "payments",
+    "stripe",
+    "schengen"
+  ],
+  "author": "Schengen Calculator Team",
+  "license": "MIT"
+}

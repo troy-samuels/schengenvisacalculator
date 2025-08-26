@@ -1,7 +1,7 @@
 import { isValid, startOfDay, endOfDay, areIntervalsOverlapping, differenceInDays } from "date-fns"
 import type { Trip, ValidationError } from '../types'
 
-export interface DateRange {
+export interface DateSpan {
   start: Date
   end: Date
 }
@@ -52,9 +52,9 @@ export class DateOverlapValidator {
   /**
    * Validate if a date range conflicts with existing trips
    */
-  validateDateRange(newRange: DateRange, existingTrips: Trip[]): ValidationResult {
+  validateDateSpan(newRange: DateSpan, existingTrips: Trip[]): ValidationResult {
     // Input validation
-    if (!this.isValidDateRange(newRange)) {
+    if (!this.isValidDateSpan(newRange)) {
       return {
         isValid: false,
         conflicts: [],
@@ -164,22 +164,22 @@ export class DateOverlapValidator {
   /**
    * Find next available date range of specified length
    */
-  findNextAvailableDateRange(
+  findNextAvailableDateSpan(
     preferredStart: Date,
     lengthInDays: number,
     existingTrips: Trip[],
     searchLimit: number = 365
-  ): DateRange | null {
+  ): DateSpan | null {
     let testDate = startOfDay(preferredStart)
     const maxSearchDate = new Date(testDate.getTime() + (searchLimit * 24 * 60 * 60 * 1000))
 
     while (testDate <= maxSearchDate) {
-      const testRange: DateRange = {
+      const testRange: DateSpan = {
         start: testDate,
         end: new Date(testDate.getTime() + ((lengthInDays - 1) * 24 * 60 * 60 * 1000))
       }
 
-      const validation = this.validateDateRange(testRange, existingTrips)
+      const validation = this.validateDateSpan(testRange, existingTrips)
       if (validation.isValid) {
         return testRange
       }
@@ -195,23 +195,23 @@ export class DateOverlapValidator {
    * Suggest alternative dates when conflicts exist
    */
   suggestAlternativeDates(
-    conflictedRange: DateRange,
+    conflictedRange: DateSpan,
     lengthInDays: number,
     existingTrips: Trip[]
-  ): DateRange[] {
-    const suggestions: DateRange[] = []
+  ): DateSpan[] {
+    const suggestions: DateSpan[] = []
     const duration = lengthInDays || differenceInDays(conflictedRange.end, conflictedRange.start) + 1
 
     // Try earlier dates
     const earlierDate = new Date(conflictedRange.start.getTime() - (30 * 24 * 60 * 60 * 1000))
-    const earlierRange = this.findNextAvailableDateRange(earlierDate, duration, existingTrips, 60)
+    const earlierRange = this.findNextAvailableDateSpan(earlierDate, duration, existingTrips, 60)
     if (earlierRange && earlierRange.start < conflictedRange.start) {
       suggestions.push(earlierRange)
     }
 
     // Try later dates
     const laterDate = new Date(conflictedRange.end.getTime() + (24 * 60 * 60 * 1000))
-    const laterRange = this.findNextAvailableDateRange(laterDate, duration, existingTrips, 60)
+    const laterRange = this.findNextAvailableDateSpan(laterDate, duration, existingTrips, 60)
     if (laterRange) {
       suggestions.push(laterRange)
     }
@@ -222,8 +222,8 @@ export class DateOverlapValidator {
   /**
    * Batch validation for multiple date ranges
    */
-  validateMultipleDateRanges(
-    newRanges: DateRange[],
+  validateMultipleDateSpans(
+    newRanges: DateSpan[],
     existingTrips: Trip[]
   ): { [index: number]: ValidationResult } {
     const results: { [index: number]: ValidationResult } = {}
@@ -233,7 +233,7 @@ export class DateOverlapValidator {
 
     newRanges.forEach((range, index) => {
       // Validate against existing trips and previously validated new trips
-      const result = this.validateDateRange(range, combinedTrips)
+      const result = this.validateDateSpan(range, combinedTrips)
       results[index] = result
 
       // If valid, add to combined trips for next validations
@@ -254,7 +254,7 @@ export class DateOverlapValidator {
   /**
    * Private: Check if two date ranges overlap
    */
-  private rangesOverlap(range1: DateRange, range2: DateRange): boolean {
+  private rangesOverlap(range1: DateSpan, range2: DateSpan): boolean {
     return areIntervalsOverlapping(
       { start: range1.start, end: range1.end },
       { start: range2.start, end: range2.end }
@@ -265,8 +265,8 @@ export class DateOverlapValidator {
    * Private: Calculate detailed conflict information
    */
   private calculateConflictDetail(
-    newRange: DateRange,
-    tripRange: DateRange,
+    newRange: DateSpan,
+    tripRange: DateSpan,
     trip: Trip
   ): ConflictDetail {
     // Calculate the actual overlap period
@@ -288,8 +288,8 @@ export class DateOverlapValidator {
    */
   private shouldReportConflict(
     conflict: ConflictDetail,
-    newRange: DateRange,
-    tripRange: DateRange
+    newRange: DateSpan,
+    tripRange: DateSpan
   ): boolean {
     // In strict mode, report all conflicts
     if (this.config.strictMode) return true
@@ -344,7 +344,7 @@ export class DateOverlapValidator {
   /**
    * Private: Validate date range input
    */
-  private isValidDateRange(range: DateRange): boolean {
+  private isValidDateSpan(range: DateSpan): boolean {
     if (!range || !range.start || !range.end) return false
     if (!isValid(range.start) || !isValid(range.end)) return false
     if (range.start > range.end) return false

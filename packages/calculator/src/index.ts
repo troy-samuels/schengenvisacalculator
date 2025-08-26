@@ -18,7 +18,7 @@ export type {
 } from './types'
 
 export type {
-  DateRange,
+  DateSpan,
   ValidationResult,
   ConflictDetail,
   OverlapPreventionConfig

@@ -1,6 +1,7 @@
 {
   "name": "@schengen/calculator",
   "version": "2.0.0",
+  "type": "module",
   "description": "EU-compliant Schengen 90/180-day rule calculator",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -22,25 +23,25 @@
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "dependencies": {
-    "date-fns": "^3.6.0",
-    "zod": "^3.24.1"
+    "date-fns": "^4.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/node": "^22.7.4",
+    "@types/node": "^22.18.0",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^8.8.0",
-    "jest": "^29.7.0",
+    "jest": "^30.0.5",
     "@swc/core": "^1.7.0",
     "@swc/jest": "^0.2.36",
-    "@types/jest": "^29.5.0",
-    "eslint": "^8.57.1",
+    "@types/jest": "^30.0.0",
+    "eslint": "^9.34.0",
     "rollup": "^4.22.4",
     "rollup-plugin-dts": "^6.1.1",
-    "typescript": "^5.6.2",
+    "typescript": "^5.7.0",
     "@rollup/plugin-swc": "^0.4.0"
   },
   "keywords": [
