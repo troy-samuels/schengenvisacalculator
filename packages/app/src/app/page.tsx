@@ -403,7 +403,10 @@ export default function HomePage() {
                               cumulativeCompliance.daysRemaining > 10 ? 'text-red-600' :
                               'text-red-700'
                             }`}>
-                              <AnimatedCounter value={Math.max(0, cumulativeCompliance.daysRemaining)} />
+                              <AnimatedCounter 
+                                value={Math.max(0, cumulativeCompliance.daysRemaining)} 
+                                className="text-[10px]"
+                              />
                             </div>
                             <div className={`text-xs ${
                               cumulativeCompliance.daysRemaining > 60 ? 'text-green-500' :
@@ -517,7 +520,10 @@ export default function HomePage() {
                       />
                       <div className="text-center mt-1">
                         <div className="text-xs font-medium text-gray-600">
-                          <AnimatedCounter value={calculationResult ? calculationResult.daysRemaining : remainingDays} />
+                          <AnimatedCounter 
+                            value={calculationResult ? calculationResult.daysRemaining : remainingDays} 
+                            className="text-[10px]"
+                          />
                         </div>
                       </div>
                     </div>
