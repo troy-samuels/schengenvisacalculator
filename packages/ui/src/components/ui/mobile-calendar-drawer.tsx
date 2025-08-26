@@ -65,46 +65,52 @@ export function MobileCalendarDrawer({
     }
   }, [isOpen, initialRange])
 
-  // Handle date click - identical logic to desktop modal
+  // Handle date click - simplified Airbnb-style logic
   const handleDateClick = (date: Date) => {
     // Check if date is disabled
-    if (isDateDisabled(date)) return
+    if (isDateDisabled(date)) {
+      console.log('Date is disabled:', format(date, 'MMM dd'))
+      return
+    }
 
     // Handle occupied date click - show helpful message
     if (isDateOccupied(date)) {
       const occupiedInfo = getOccupiedDateInfo(date)
       if (occupiedInfo) {
-        // You could add a toast notification here in the future
         console.log(`Cannot select ${format(date, 'MMM dd')} - already used by ${occupiedInfo.country} trip`)
       }
       return
     }
 
-    if (!selectedRange.startDate || selectingEnd) {
-      // Select start date or reset and select new start date
-      if (selectingEnd && selectedRange.startDate && date < selectedRange.startDate) {
-        // If clicking before start date while selecting end, reset
-        setSelectedRange({ startDate: date, endDate: null })
-        setSelectingEnd(false)
-      } else if (!selectedRange.startDate) {
-        // First selection - start date
-        setSelectedRange({ startDate: date, endDate: null })
-        setSelectingEnd(true)
-      } else {
-        // Selecting end date
-        setSelectedRange({ ...selectedRange, endDate: date })
-        setSelectingEnd(false)
-      }
-    } else {
-      // Start date exists, this is end date selection
+    console.log('Clicking date:', format(date, 'MMM dd'), 'Current state:', { 
+      startDate: selectedRange.startDate ? format(selectedRange.startDate, 'MMM dd') : null,
+      endDate: selectedRange.endDate ? format(selectedRange.endDate, 'MMM dd') : null,
+      selectingEnd 
+    })
+
+    // Airbnb-style selection: start -> end -> reset
+    if (!selectedRange.startDate) {
+      // First click: set start date
+      setSelectedRange({ startDate: date, endDate: null })
+      setSelectingEnd(true)
+      console.log('Set start date:', format(date, 'MMM dd'))
+    } else if (!selectedRange.endDate) {
+      // Second click: set end date (or reset if before start)
       if (date >= selectedRange.startDate) {
         setSelectedRange({ ...selectedRange, endDate: date })
         setSelectingEnd(false)
+        console.log('Set end date:', format(date, 'MMM dd'))
       } else {
-        // If clicked date is before start, make it the new start
+        // Reset if clicking before start date
         setSelectedRange({ startDate: date, endDate: null })
         setSelectingEnd(true)
+        console.log('Reset with new start date:', format(date, 'MMM dd'))
       }
+    } else {
+      // Both dates selected: reset with new start
+      setSelectedRange({ startDate: date, endDate: null })
+      setSelectingEnd(true)
+      console.log('Reset with new start date:', format(date, 'MMM dd'))
     }
   }
 
@@ -217,34 +223,42 @@ export function MobileCalendarDrawer({
             return (
               <button
                 key={index}
-                onClick={() => handleDateClick(date)}
-                disabled={disabled || !isCurrentMonth || occupied}
+                onClick={() => {
+                  console.log('Button clicked:', format(date, 'MMM dd'), 'isCurrentMonth:', isCurrentMonth, 'disabled:', disabled, 'occupied:', occupied)
+                  if (!disabled && isCurrentMonth && !occupied) {
+                    handleDateClick(date)
+                  }
+                }}
+                disabled={false}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
                   // Airbnb-style: 44px touch targets, clean design
                   "h-11 w-11 text-sm font-medium transition-all duration-150 relative",
-                  "hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black",
-                  "flex items-center justify-center",
+                  "flex items-center justify-center cursor-pointer",
                   {
                     // Current month styling - clean Airbnb style
-                    "text-gray-900 hover:bg-gray-100": isCurrentMonth && !disabled && !occupied && !inRange,
-                    "text-gray-300": !isCurrentMonth,
+                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black": 
+                      isCurrentMonth && !disabled && !occupied && !inRange,
+                    
+                    // Other month styling (lighter, still clickable for seamless experience)
+                    "text-gray-300 hover:bg-gray-50 hover:rounded-full": 
+                      !isCurrentMonth && !disabled && !occupied,
                     
                     // Disabled styling
                     "text-gray-200 cursor-not-allowed": disabled,
                     
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied,
                     
                     // Today styling - subtle Airbnb style
-                    "bg-black text-white font-semibold rounded-full": today && !inRange && !occupied && isCurrentMonth,
+                    "bg-black text-white font-semibold rounded-full": 
+                      today && !inRange && !occupied,
                     
                     // Range styling - true Airbnb colors and design
-                    "bg-gray-100 text-gray-900 rounded-full": inRange && !rangeStart && !rangeEnd && !occupied,
-                    "bg-black text-white rounded-full font-semibold": (rangeStart || rangeEnd) && !occupied,
-                    
-                    // Hover effects - subtle like Airbnb
-                    "hover:rounded-full": !disabled && !inRange && !occupied && isCurrentMonth,
+                    "bg-gray-100 text-gray-900 rounded-full": 
+                      inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-black text-white rounded-full font-semibold": 
+                      (rangeStart || rangeEnd) && !occupied,
                   }
                 )}
               >
@@ -267,11 +281,11 @@ export function MobileCalendarDrawer({
   return (
     <Drawer.Root open={isOpen} onOpenChange={onClose}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40" />
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-50" />
         <Drawer.Content 
           className={cn(
             "bg-white flex flex-col rounded-t-xl h-[90vh] mt-24 fixed bottom-0 left-0 right-0",
-            "focus:outline-none",
+            "focus:outline-none z-50",
             className
           )}
           data-testid="mobile-drawer"
