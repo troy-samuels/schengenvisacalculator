@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns'
 import { Drawer } from 'vaul'
@@ -41,15 +41,20 @@ export function MobileCalendarDrawer({
   maxDate,
   className
 }: MobileCalendarDrawerProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedRange, setSelectedRange] = useState<CalendarDateRange>(
     initialRange || { startDate: null, endDate: null }
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
 
-  // Touch/swipe state for month navigation
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  // Generate 12 months starting from current month for Airbnb-style scrolling
+  const months = useMemo(() => {
+    const monthsArray = []
+    const startDate = new Date()
+    for (let i = 0; i < 12; i++) {
+      monthsArray.push(addMonths(startDate, i))
+    }
+    return monthsArray
+  }, [])
 
   // Reset when drawer opens/closes
   useEffect(() => {
@@ -148,45 +153,7 @@ export function MobileCalendarDrawer({
     onClose()
   }
 
-  // Navigation functions - identical to desktop
-  const goToPrevMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
-  const goToNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
-
-  // Touch event handlers for swipe navigation with safety checks
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Guard against missing touch API
-    if (typeof window === 'undefined' || !e.targetTouches || !e.targetTouches[0]) {
-      return
-    }
-    
-    setTouchEnd(null) // Reset touchEnd
-    setTouchStart(e.targetTouches[0].clientX || 0)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    // Guard against missing touch API
-    if (typeof window === 'undefined' || !e.targetTouches || !e.targetTouches[0]) {
-      return
-    }
-    
-    setTouchEnd(e.targetTouches[0].clientX || 0)
-  }
-
-  const handleTouchEnd = () => {
-    // Guard against missing touch data or non-browser environment
-    if (typeof window === 'undefined' || !touchStart || !touchEnd) return
-    
-    const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > 50
-    const isRightSwipe = distance < -50
-
-    if (isLeftSwipe) {
-      goToNextMonth() // Swipe left = next month
-    }
-    if (isRightSwipe) {
-      goToPrevMonth() // Swipe right = previous month
-    }
-  }
+  // No longer need touch handlers - scrolling is handled by native scroll
 
   // Render single month for mobile (optimized layout)
   const renderMobileMonth = (monthDate: Date) => {
@@ -217,31 +184,23 @@ export function MobileCalendarDrawer({
     const allDays = [...paddingDays, ...monthDays, ...endPaddingDays]
 
     return (
-      <div className="flex-1 px-4">
-        {/* Month header */}
-        <div className="text-center font-semibold text-xl mb-6">
+      <div className="px-6">
+        {/* Month header - More prominent */}
+        <div className="text-left font-semibold text-2xl mb-4 text-gray-900">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
-        {/* Days of week header - Mobile optimized */}
-        <div className="grid grid-cols-7 gap-1 mb-3">
-          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 p-3">
+        {/* Days of week header - More prominent */}
+        <div className="grid grid-cols-7 gap-2 mb-4">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={index} className="text-center text-xs font-semibold text-gray-600 py-2">
               {day}
             </div>
           ))}
         </div>
 
-        {/* Calendar days - Mobile optimized with 44px touch targets */}
-        <div 
-          className="grid grid-cols-7 gap-1" 
-          data-testid="mobile-calendar-content"
-          {...(typeof window !== 'undefined' && 'ontouchstart' in window ? {
-            onTouchStart: handleTouchStart,
-            onTouchMove: handleTouchMove,
-            onTouchEnd: handleTouchEnd
-          } : {})}
-        >
+        {/* Calendar days - Enhanced visibility and touch targets */}
+        <div className="grid grid-cols-7 gap-2" data-testid="mobile-calendar-content">
           {allDays.map((date, index) => {
             const isCurrentMonth = isSameMonth(date, monthDate)
             const disabled = isDateDisabled(date)
@@ -259,30 +218,31 @@ export function MobileCalendarDrawer({
                 disabled={disabled || !isCurrentMonth || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
-                  // Mobile-optimized 44px touch targets (CLAUDE.md requirement)
-                  "h-11 w-11 text-sm font-medium rounded-lg transition-colors relative",
+                  // Enhanced 48px touch targets for better mobile UX
+                  "h-12 w-12 text-base font-semibold rounded-full transition-all duration-200 relative",
                   "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                  "flex items-center justify-center",
                   {
-                    // Current month styling
-                    "text-gray-900": isCurrentMonth && !disabled && !occupied,
-                    "text-gray-400": !isCurrentMonth,
+                    // Current month styling - more prominent
+                    "text-gray-900 hover:bg-gray-100": isCurrentMonth && !disabled && !occupied && !inRange,
+                    "text-gray-300": !isCurrentMonth,
                     
                     // Disabled styling
-                    "text-gray-300 cursor-not-allowed": disabled,
+                    "text-gray-200 cursor-not-allowed": disabled,
                     
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
                     "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
                     
-                    // Today styling
-                    "bg-blue-100 text-blue-900": today && !inRange && !occupied && isCurrentMonth,
+                    // Today styling - more prominent
+                    "bg-black text-white font-bold": today && !inRange && !occupied && isCurrentMonth,
                     
-                    // Range styling
-                    "bg-primary/20": inRange && !rangeStart && !rangeEnd && !occupied,
-                    "bg-primary text-white": (rangeStart || rangeEnd) && !occupied,
+                    // Range styling - Airbnb-style
+                    "bg-gray-200 text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-black text-white": (rangeStart || rangeEnd) && !occupied,
                     
                     // Hover effects
-                    "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
-                    "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied,
+                    "hover:bg-gray-100 hover:scale-105": !disabled && !inRange && !occupied && isCurrentMonth,
+                    "hover:bg-gray-800": (rangeStart || rangeEnd) && !disabled && !occupied,
                   }
                 )}
               >
@@ -320,29 +280,13 @@ export function MobileCalendarDrawer({
             data-testid="drag-handle"
           />
           
-          {/* Header with navigation */}
-          <div className="flex items-center justify-between px-6 mb-4">
-            <button
-              onClick={goToPrevMonth}
-              className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            
+          {/* Header */}
+          <div className="text-center px-6 mb-6">
             <h2 className="text-lg font-semibold">Select dates</h2>
-            
-            <button
-              onClick={goToNextMonth}
-              className="p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
           </div>
 
           {/* Content area */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-hidden">
             {selectedRange.startDate && !selectedRange.endDate && (
               <div className="mb-4 text-center px-6">
                 <p className="text-blue-600 font-medium">
@@ -351,9 +295,19 @@ export function MobileCalendarDrawer({
               </div>
             )}
 
-            {/* Single month view for mobile */}
-            <div data-testid="single-month-view">
-              {renderMobileMonth(currentMonth)}
+            {/* Airbnb-style scrollable months */}
+            <div 
+              className="h-full overflow-y-auto overscroll-y-contain scroll-smooth"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+              data-testid="scrollable-months"
+            >
+              <div className="pb-6">
+                {months.map((month, index) => (
+                  <div key={index} className="mb-12 last:mb-0">
+                    {renderMobileMonth(month)}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

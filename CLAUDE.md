@@ -430,6 +430,129 @@ function trackFeatureUsage(userId: string, feature: string, tier: SubscriptionTi
 - **Compliance**: 100% EU test pass rate
 - **Security**: Zero high/critical vulnerabilities
 
+## 🚀 Deployment Guide
+
+### Vercel Deployment Process
+
+This Next.js monorepo is configured for automatic Vercel deployment with the following architecture:
+
+#### Pre-Deployment Checklist
+```bash
+# 1. Build all packages locally to catch TypeScript issues
+npm run build
+
+# 2. Run full test suite to ensure 100% EU compliance
+npm run test
+
+# 3. Verify all monorepo dependencies build correctly
+turbo build
+
+# 4. Check for TypeScript export conflicts (critical for Vercel)
+cd packages/ui && npm run build   # Should complete without "Duplicate export" errors
+cd packages/calculator && npm run build
+```
+
+#### Common Deployment Issues & Solutions
+
+**1. TypeScript Export Conflicts**
+- **Problem**: `Module '"@schengen/ui"' has no exported member 'DateOverlapValidator'`
+- **Root Cause**: Conflicting exports between packages or duplicate type names
+- **Solution**: Use specific exports in `types-only.ts` to avoid conflicts
+```typescript
+// ❌ Problematic - causes conflicts
+export * from "./components/ui/calendar-modal"
+export * from "./validators/date-overlap-validator" 
+
+// ✅ Correct - specific exports prevent conflicts
+export type { CalendarDateRange, CalendarModalProps } from "./components/ui/calendar-modal"
+export { CalendarModal } from "./components/ui/calendar-modal"
+export * from "./validators/date-overlap-validator"
+```
+
+**2. Monorepo Build Order Issues**
+- **Problem**: Dependencies not building in correct order
+- **Solution**: Vercel automatically handles this with `turbo.json` configuration
+- **Verification**: Check `turbo.json` has proper dependency graph
+
+**3. Environment Variables Missing**
+- **Problem**: Build succeeds but runtime failures occur
+- **Solution**: Ensure all required environment variables are set in Vercel dashboard
+```bash
+# Required for monetization features
+STRIPE_SECRET_KEY=sk_live_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Required for database operations  
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+#### Deployment Commands & Workflow
+
+```bash
+# Local development and testing
+npm run dev                    # Start development server
+npm run build                  # Test production build locally
+npm run test                   # Run full test suite
+
+# Git workflow for deployment  
+git add -A                     # Stage all changes
+git commit -m "feat: description"   # Commit with conventional format
+git push origin main           # Push to trigger Vercel deployment
+
+# Manual Vercel deployment (if needed)
+vercel                         # Deploy current directory
+vercel --prod                  # Deploy to production domain
+```
+
+#### TypeScript Build Configuration
+
+The monorepo uses a specific TypeScript build setup to prevent conflicts:
+
+**packages/ui/rollup.config.js**
+- Type declarations built from `src/types-only.ts` (not `src/index.ts`)
+- This separates runtime code from type exports for cleaner builds
+- Prevents "Conflicting re-exports" issues in production
+
+**Critical Files for Deployment**
+- `packages/ui/src/types-only.ts` - Controls TypeScript exports for production
+- `packages/ui/src/index.ts` - Controls runtime exports for development
+- `turbo.json` - Monorepo build configuration and dependency order
+- `vercel.json` - Vercel-specific deployment configuration (if present)
+
+#### Monitoring Deployment
+
+**Build Logs Analysis**
+- Rollup warnings are acceptable (e.g., "use client" directives ignored)
+- TypeScript errors are deployment blockers and must be resolved
+- Build time should be <2 minutes for the entire monorepo
+
+**Post-Deployment Verification**
+```bash
+# Test critical features after deployment
+curl -I https://your-domain.vercel.app                    # Check homepage loads
+curl https://your-domain.vercel.app/api/health           # Check API routes (if implemented)
+
+# Manual testing checklist
+- [ ] Date overlap prevention works correctly (CRITICAL)
+- [ ] Payment flow functions (for monetized features)  
+- [ ] Mobile responsiveness maintained
+- [ ] All EU compliance tests pass in production
+```
+
+#### Rollback Strategy
+
+```bash
+# Quick rollback to previous version
+vercel rollback [deployment-url]
+
+# Or revert Git commit and push
+git revert HEAD
+git push origin main
+```
+
 ---
 
 **This is a revenue-generating platform with enterprise security, not a basic calculator. Every development decision must consider monetization impact.**

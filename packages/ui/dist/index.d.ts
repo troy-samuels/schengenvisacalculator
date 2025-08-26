@@ -1,7 +1,6 @@
 import { ClassValue } from 'clsx';
 import * as class_variance_authority_dist_types from 'class-variance-authority/dist/types';
 import * as React from 'react';
-import React__default from 'react';
 import { VariantProps } from 'class-variance-authority';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import { DayPickerProps } from 'react-day-picker';
@@ -89,8 +88,27 @@ declare function isMobile(): boolean;
  */
 declare function isTouchDevice(): boolean;
 
+/**
+ * Custom hook for responsive media query detection
+ * Used to determine when to show mobile vs desktop calendar layouts
+ */
+declare function useMediaQuery(query: string): boolean;
+/**
+ * Convenience hook for mobile detection
+ * Returns true when screen width is 768px or less
+ */
+declare function useIsMobile(): boolean;
+
+/**
+ * Shared calendar types to prevent circular imports
+ */
+interface CalendarDateRange {
+    startDate: Date | null;
+    endDate: Date | null;
+}
+
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "link" | "secondary" | "destructive" | "outline" | "success" | "warning" | "ghost" | "brand" | "cream" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -133,7 +151,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }
@@ -253,10 +271,6 @@ interface UseDateOverlapPreventionReturn {
 }
 declare function useDateOverlapPrevention({ existingTrips, excludeTripId }: UseDateOverlapPreventionProps): UseDateOverlapPreventionReturn;
 
-interface CalendarDateRange {
-    startDate: Date | null;
-    endDate: Date | null;
-}
 interface CalendarModalProps {
     /** Whether the modal is open */
     isOpen: boolean;
@@ -277,7 +291,29 @@ interface CalendarModalProps {
     /** Additional className */
     className?: string;
 }
-declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: CalendarModalProps): React__default.ReactPortal | null;
+declare function CalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: CalendarModalProps): react_jsx_runtime.JSX.Element;
 
-export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention };
-export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };
+interface MobileCalendarDrawerProps {
+    /** Whether the drawer is open */
+    isOpen: boolean;
+    /** Callback when drawer should close */
+    onClose: () => void;
+    /** Callback when date range is selected */
+    onDateRangeSelect: (range: CalendarDateRange) => void;
+    /** Initial date range */
+    initialRange?: CalendarDateRange;
+    /** Disabled dates */
+    disabledDates?: Date[];
+    /** Information about occupied dates for better UX */
+    occupiedDateInfo?: OccupiedDateInfo[];
+    /** Minimum selectable date */
+    minDate?: Date;
+    /** Maximum selectable date */
+    maxDate?: Date;
+    /** Additional className */
+    className?: string;
+}
+declare function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: MobileCalendarDrawerProps): react_jsx_runtime.JSX.Element | null;
+
+export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, MobileCalendarDrawer, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useIsMobile, useMediaQuery };
+export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, MobileCalendarDrawerProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };
