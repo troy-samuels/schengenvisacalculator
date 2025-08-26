@@ -138,21 +138,25 @@ export function MobileCalendarDrawer({
     return getOccupiedDateInfo(date) !== null
   }
 
-  // Check if date is in selected range - identical to desktop
-  const isDateInRange = (date: Date) => {
-    if (!selectedRange.startDate) return false
+  // Check if date is in selected range - only for current month dates
+  const isDateInRange = (date: Date, monthDate: Date) => {
+    if (!selectedRange.startDate || !isSameMonth(date, monthDate)) return false
     if (!selectedRange.endDate) return isSameDay(date, selectedRange.startDate)
     
     return date >= selectedRange.startDate && date <= selectedRange.endDate
   }
 
-  // Check if date is range boundary - identical to desktop
-  const isRangeStart = (date: Date) => {
-    return selectedRange.startDate && isSameDay(date, selectedRange.startDate)
+  // Check if date is range boundary - only for current month dates
+  const isRangeStart = (date: Date, monthDate: Date) => {
+    return selectedRange.startDate && 
+           isSameMonth(date, monthDate) && 
+           isSameDay(date, selectedRange.startDate)
   }
 
-  const isRangeEnd = (date: Date) => {
-    return selectedRange.endDate && isSameDay(date, selectedRange.endDate)
+  const isRangeEnd = (date: Date, monthDate: Date) => {
+    return selectedRange.endDate && 
+           isSameMonth(date, monthDate) && 
+           isSameDay(date, selectedRange.endDate)
   }
 
   // Handle clear - identical to desktop
@@ -222,9 +226,9 @@ export function MobileCalendarDrawer({
             const disabled = isDateDisabled(date)
             const occupied = isDateOccupied(date)
             const occupiedInfo = getOccupiedDateInfo(date)
-            const inRange = isDateInRange(date)
-            const rangeStart = isRangeStart(date)
-            const rangeEnd = isRangeEnd(date)
+            const inRange = isDateInRange(date, monthDate)
+            const rangeStart = isRangeStart(date, monthDate)
+            const rangeEnd = isRangeEnd(date, monthDate)
             const today = isToday(date)
 
             return (
@@ -233,8 +237,10 @@ export function MobileCalendarDrawer({
                 onClick={() => {
                   // Only allow clicks on current month dates to prevent double selection
                   if (!disabled && isCurrentMonth && !occupied) {
-                    console.log('Selecting date:', format(date, 'yyyy-MM-dd'))
+                    console.log('Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'))
                     handleDateClick(date)
+                  } else {
+                    console.log('Click blocked - disabled:', disabled, 'isCurrentMonth:', isCurrentMonth, 'occupied:', occupied)
                   }
                 }}
                 disabled={!isCurrentMonth || disabled || occupied}
