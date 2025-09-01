@@ -570,6 +570,11 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
  * 5. Mobile-optimized with larger touch targets
  */ class DateOverlapValidator {
     /**
+   * Validate if a date range conflicts with existing trips (alias for validateDateSpan)
+   */ validateDateRange(newRange, existingTrips) {
+        return this.validateDateSpan(newRange, existingTrips);
+    }
+    /**
    * Validate if a date range conflicts with existing trips
    */ validateDateSpan(newRange, existingTrips) {
         // Input validation
@@ -810,6 +815,45 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
         return {
             ...this.config
         };
+    }
+    /**
+   * Find the next available date range starting from a preferred date
+   */ findNextAvailableDateRange(preferredStart, lengthInDays, existingTrips, searchLimitDays = 365) {
+        const searchLimit = new Date(preferredStart.getTime() + searchLimitDays * 24 * 60 * 60 * 1000);
+        for(let searchDate = new Date(preferredStart); searchDate <= searchLimit; searchDate.setDate(searchDate.getDate() + 1)){
+            const proposedRange = {
+                start: new Date(searchDate),
+                end: new Date(searchDate.getTime() + (lengthInDays - 1) * 24 * 60 * 60 * 1000)
+            };
+            const validation = this.validateDateRange(proposedRange, existingTrips);
+            if (validation.isValid) {
+                return proposedRange;
+            }
+        }
+        return null;
+    }
+    /**
+   * Validate multiple date ranges at once
+   */ validateMultipleDateRanges(dateRanges, existingTrips) {
+        const results = {};
+        const allProposedTrips = [
+            ...existingTrips
+        ];
+        dateRanges.forEach((range, index)=>{
+            const validation = this.validateDateRange(range, allProposedTrips);
+            results[index] = validation;
+            // If this range is valid, add it to the list for subsequent validations
+            if (validation.isValid) {
+                allProposedTrips.push({
+                    id: `temp-${index}`,
+                    country: `temp-${index}`,
+                    startDate: range.start,
+                    endDate: range.end,
+                    days: Math.ceil((range.end.getTime() - range.start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+                });
+            }
+        });
+        return results;
     }
     constructor(config = {}){
         this.config = {

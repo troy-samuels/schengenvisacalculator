@@ -504,7 +504,16 @@ export default function HomePage() {
   const getRowReferenceDate = (tripsUpToThisRow: any[]): Date => {
     if (tripsUpToThisRow.length === 0) return new Date()
     
-    // For cumulative display, use the latest end date OR today (whichever is later)
+    // For single entries or simple cases, use a more straightforward approach
+    if (tripsUpToThisRow.length === 1) {
+      const trip = tripsUpToThisRow[0]
+      // If the trip is in the future, use today as reference
+      // If the trip is in the past or current, use the end date
+      const today = new Date()
+      return trip.endDate > today ? today : trip.endDate
+    }
+    
+    // For multiple trips, use the latest end date OR today (whichever is later)
     // This ensures past trips are included in calculations and future trips are projected correctly
     const latestTripEnd = Math.max(...tripsUpToThisRow.map(trip => trip.endDate.getTime()))
     const today = new Date().getTime()
@@ -571,6 +580,21 @@ export default function HomePage() {
       const cumulativeCompliance = tripsUpToThisRow.length > 0
         ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, rowReferenceDate)
         : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+      
+      // Debug logging for mobile troubleshooting
+      if (tripsUpToThisRow.length > 0) {
+        console.log(`Entry ${index}: Trips for calculation:`, tripsUpToThisRow.map(t => ({
+          country: t.country,
+          startDate: t.startDate.toDateString(),
+          endDate: t.endDate.toDateString(),
+          days: t.days
+        })))
+        console.log(`Entry ${index}: Cumulative compliance:`, {
+          totalDaysUsed: cumulativeCompliance.totalDaysUsed,
+          daysRemaining: cumulativeCompliance.daysRemaining,
+          referenceDate: rowReferenceDate.toDateString()
+        })
+      }
 
       return {
         ...entry,
@@ -599,6 +623,8 @@ export default function HomePage() {
   }
 
   const updateEntry = (id: string, field: keyof VisaEntry, value: any) => {
+    console.log('Mobile: Updating entry field:', field, 'with value:', value, 'for entry:', id)
+    
     const updatedEntries = entries.map((entry) => {
       if (entry.id === id) {
         const updatedEntry = { ...entry, [field]: value }
@@ -607,10 +633,19 @@ export default function HomePage() {
         if (field === "startDate" || field === "endDate") {
           if (updatedEntry.startDate && updatedEntry.endDate) {
             updatedEntry.days = Math.ceil((updatedEntry.endDate.getTime() - updatedEntry.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+            console.log('Mobile: Calculated days for entry:', updatedEntry.days)
           } else {
             updatedEntry.days = 0
           }
         }
+
+        console.log('Mobile: Updated entry:', { 
+          id: updatedEntry.id, 
+          country: updatedEntry.country, 
+          startDate: updatedEntry.startDate?.toDateString(), 
+          endDate: updatedEntry.endDate?.toDateString(), 
+          days: updatedEntry.days 
+        })
 
         return updatedEntry
       }
@@ -695,7 +730,16 @@ export default function HomePage() {
     }
 
     // Range is valid, proceed with update
+    console.log('Mobile: Updating date range for entry:', selectedEntryId, 'with range:', range)
     updateDateRange(selectedEntryId, range)
+    
+    // Force a recalculation after a short delay to ensure mobile rendering updates
+    setTimeout(() => {
+      setEntries(currentEntries => {
+        console.log('Mobile: Forcing recalculation after date selection')
+        return recalculateEntries([...currentEntries])
+      })
+    }, 100)
   }
 
   // Calculate totals for display
@@ -909,7 +953,7 @@ export default function HomePage() {
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "results")}`}>
                       <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center relative z-10">
                         <span className="font-medium text-gray-800 text-sm">
-                          {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
+                          {entry.country && entry.startDate && entry.endDate ? `${entry.daysInLast180} days` : "—"}
                         </span>
                       </div>
                   </div>
@@ -1002,7 +1046,7 @@ export default function HomePage() {
                         <label className="block text-xs font-medium text-gray-500 mb-1 text-center">Total Used</label>
                         <div className="bg-white rounded-lg p-2 font-semibold text-sm text-center border-0 shadow-sm h-10 flex items-center justify-center">
                           <span className="font-medium text-gray-800 text-sm">
-                            {entry.daysInLast180 > 0 ? `${entry.daysInLast180} days` : "—"}
+                            {entry.country && entry.startDate && entry.endDate ? `${entry.daysInLast180} days` : "—"}
                           </span>
                         </div>
                       </div>

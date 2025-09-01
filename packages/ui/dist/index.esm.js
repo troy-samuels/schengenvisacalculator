@@ -8901,13 +8901,14 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         endDate: null
     });
     const [selectingEnd, setSelectingEnd] = useState(false);
-    // Generate 18 months starting from current month for true Airbnb-style scrolling
+    // Generate months including past and future for full date range support
     const months = useMemo(()=>{
         const monthsArray = [];
-        const startDate = new Date();
-        // Start from current month, go 18 months forward for more scrolling options
-        for(let i = 0; i < 18; i++){
-            monthsArray.push(addMonths(startDate, i));
+        const currentDate = new Date();
+        // Start from 12 months ago, go 24 months forward (36 months total)
+        // This provides good coverage for past travel history and future planning
+        for(let i = -12; i < 24; i++){
+            monthsArray.push(addMonths(currentDate, i));
         }
         return monthsArray;
     }, []);
@@ -8924,59 +8925,67 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         isOpen,
         initialRange
     ]);
-    // Handle date click - identical logic to desktop modal
+    // Handle date click - precise single-date selection
     const handleDateClick = (date)=>{
+        // Create a clean date without time for comparison
+        const cleanDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         // Check if date is disabled
-        if (isDateDisabled(date)) return;
+        if (isDateDisabled(cleanDate)) {
+            console.log('Date is disabled:', format(cleanDate, 'yyyy-MM-dd'));
+            return;
+        }
         // Handle occupied date click - show helpful message
-        if (isDateOccupied(date)) {
-            const occupiedInfo = getOccupiedDateInfo(date);
+        if (isDateOccupied(cleanDate)) {
+            const occupiedInfo = getOccupiedDateInfo(cleanDate);
             if (occupiedInfo) {
-                // You could add a toast notification here in the future
-                console.log(`Cannot select ${format(date, 'MMM dd')} - already used by ${occupiedInfo.country} trip`);
+                console.log(`Cannot select ${format(cleanDate, 'yyyy-MM-dd')} - already used by ${occupiedInfo.country} trip`);
             }
             return;
         }
-        if (!selectedRange.startDate || selectingEnd) {
-            // Select start date or reset and select new start date
-            if (selectingEnd && selectedRange.startDate && date < selectedRange.startDate) {
-                // If clicking before start date while selecting end, reset
+        console.log('Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', {
+            startDate: selectedRange.startDate ? format(selectedRange.startDate, 'yyyy-MM-dd') : null,
+            endDate: selectedRange.endDate ? format(selectedRange.endDate, 'yyyy-MM-dd') : null
+        });
+        // Clean Airbnb-style selection logic
+        if (!selectedRange.startDate) {
+            // First click: set start date (black circle)
+            setSelectedRange({
+                startDate: cleanDate,
+                endDate: null
+            });
+            setSelectingEnd(true);
+            console.log('✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'));
+        } else if (!selectedRange.endDate) {
+            // Second click: set end date or reset
+            if (cleanDate.getTime() === selectedRange.startDate.getTime()) {
+                // Clicking same date - do nothing or could deselect
+                console.log('Same date clicked, ignoring');
+                return;
+            } else if (cleanDate > selectedRange.startDate) {
+                // Valid end date - show range
                 setSelectedRange({
-                    startDate: date,
-                    endDate: null
+                    ...selectedRange,
+                    endDate: cleanDate
                 });
                 setSelectingEnd(false);
-            } else if (!selectedRange.startDate) {
-                // First selection - start date
+                console.log('✓ End date set:', format(cleanDate, 'yyyy-MM-dd'));
+            } else {
+                // Before start date - reset with new start
                 setSelectedRange({
-                    startDate: date,
+                    startDate: cleanDate,
                     endDate: null
                 });
                 setSelectingEnd(true);
-            } else {
-                // Selecting end date
-                setSelectedRange({
-                    ...selectedRange,
-                    endDate: date
-                });
-                setSelectingEnd(false);
+                console.log('↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'));
             }
         } else {
-            // Start date exists, this is end date selection
-            if (date >= selectedRange.startDate) {
-                setSelectedRange({
-                    ...selectedRange,
-                    endDate: date
-                });
-                setSelectingEnd(false);
-            } else {
-                // If clicked date is before start, make it the new start
-                setSelectedRange({
-                    startDate: date,
-                    endDate: null
-                });
-                setSelectingEnd(true);
-            }
+            // Both dates already selected - reset with new start
+            setSelectedRange({
+                startDate: cleanDate,
+                endDate: null
+            });
+            setSelectingEnd(true);
+            console.log('↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'));
         }
     };
     // Check if date is disabled - identical to desktop
@@ -8993,18 +9002,18 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     const isDateOccupied = (date)=>{
         return getOccupiedDateInfo(date) !== null;
     };
-    // Check if date is in selected range - identical to desktop
-    const isDateInRange = (date)=>{
-        if (!selectedRange.startDate) return false;
+    // Check if date is in selected range - only for current month dates
+    const isDateInRange = (date, monthDate)=>{
+        if (!selectedRange.startDate || !isSameMonth(date, monthDate)) return false;
         if (!selectedRange.endDate) return isSameDay$1(date, selectedRange.startDate);
         return date >= selectedRange.startDate && date <= selectedRange.endDate;
     };
-    // Check if date is range boundary - identical to desktop
-    const isRangeStart = (date)=>{
-        return selectedRange.startDate && isSameDay$1(date, selectedRange.startDate);
+    // Check if date is range boundary - only for current month dates
+    const isRangeStart = (date, monthDate)=>{
+        return selectedRange.startDate && isSameMonth(date, monthDate) && isSameDay$1(date, selectedRange.startDate);
     };
-    const isRangeEnd = (date)=>{
-        return selectedRange.endDate && isSameDay$1(date, selectedRange.endDate);
+    const isRangeEnd = (date, monthDate)=>{
+        return selectedRange.endDate && isSameMonth(date, monthDate) && isSameDay$1(date, selectedRange.endDate);
     };
     // Handle clear - identical to desktop
     const handleClear = ()=>{
@@ -9053,7 +9062,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         return /*#__PURE__*/ React__default.createElement("div", {
             className: "px-4"
         }, /*#__PURE__*/ React__default.createElement("div", {
-            className: "text-left font-bold text-xl mb-6 text-gray-900 pt-6"
+            className: "text-center font-bold text-xl mb-6 text-gray-900 pt-6"
         }, format(monthDate, 'MMMM yyyy')), isFirstMonth && /*#__PURE__*/ React__default.createElement("div", {
             className: "grid grid-cols-7 gap-1 mb-3"
         }, [
@@ -9075,31 +9084,38 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
             const disabled = isDateDisabled(date);
             const occupied = isDateOccupied(date);
             const occupiedInfo = getOccupiedDateInfo(date);
-            const inRange = isDateInRange(date);
-            const rangeStart = isRangeStart(date);
-            const rangeEnd = isRangeEnd(date);
-            const today = isToday$1(date);
+            const inRange = isDateInRange(date, monthDate);
+            const rangeStart = isRangeStart(date, monthDate);
+            const rangeEnd = isRangeEnd(date, monthDate);
+            isToday$1(date);
             return /*#__PURE__*/ React__default.createElement("button", {
-                key: index,
-                onClick: ()=>handleDateClick(date),
-                disabled: disabled || !isCurrentMonth || occupied,
+                key: `${format(monthDate, 'yyyy-MM')}-${index}`,
+                onClick: ()=>{
+                    // Only allow clicks on current month dates to prevent double selection
+                    if (!disabled && isCurrentMonth && !occupied) {
+                        console.log('Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'));
+                        handleDateClick(date);
+                    } else {
+                        console.log('Click blocked - disabled:', disabled, 'isCurrentMonth:', isCurrentMonth, 'occupied:', occupied);
+                    }
+                },
+                disabled: !isCurrentMonth || disabled || occupied,
                 title: occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined,
                 className: cn(// Airbnb-style: 44px touch targets, clean design
-                "h-11 w-11 text-sm font-medium transition-all duration-150 relative", "hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-black", "flex items-center justify-center", {
-                    // Current month styling - clean Airbnb style
-                    "text-gray-900 hover:bg-gray-100": isCurrentMonth && !disabled && !occupied && !inRange,
-                    "text-gray-300": !isCurrentMonth,
+                "h-11 w-11 text-sm font-medium transition-all duration-150 relative", "flex items-center justify-center", {
+                    // Current month styling - clickable dates
+                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": isCurrentMonth && !disabled && !occupied && !inRange,
+                    // Other month styling (not clickable, just visual padding)
+                    "text-gray-300 cursor-default": !isCurrentMonth,
                     // Disabled styling
                     "text-gray-200 cursor-not-allowed": disabled,
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
-                    // Today styling - subtle Airbnb style
-                    "bg-black text-white font-semibold rounded-full": today && !inRange && !occupied && isCurrentMonth,
-                    // Range styling - true Airbnb colors and design
-                    "bg-gray-100 text-gray-900 rounded-full": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied,
+                    // Remove today auto-highlighting - no special styling for today
+                    // Range start and end styling - clear black circles
                     "bg-black text-white rounded-full font-semibold": (rangeStart || rangeEnd) && !occupied,
-                    // Hover effects - subtle like Airbnb
-                    "hover:rounded-full": !disabled && !inRange && !occupied && isCurrentMonth
+                    // Range middle styling - light background
+                    "bg-gray-100 text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied
                 })
             }, /*#__PURE__*/ React__default.createElement("span", {
                 className: occupied ? "line-through" : ""
@@ -9114,9 +9130,9 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         open: isOpen,
         onOpenChange: onClose
     }, /*#__PURE__*/ React__default.createElement(Drawer.Portal, null, /*#__PURE__*/ React__default.createElement(Drawer.Overlay, {
-        className: "fixed inset-0 bg-black/40"
+        className: "fixed inset-0 bg-black/40 z-50"
     }), /*#__PURE__*/ React__default.createElement(Drawer.Content, {
-        className: cn("bg-white flex flex-col rounded-t-xl h-[90vh] mt-24 fixed bottom-0 left-0 right-0", "focus:outline-none", className),
+        className: cn("bg-white flex flex-col rounded-t-xl h-[90vh] mt-24 fixed bottom-0 left-0 right-0", "focus:outline-none z-50", className),
         "data-testid": "mobile-drawer"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-300 mb-4 mt-4",

@@ -173,6 +173,10 @@ declare class DateOverlapValidator {
     private config;
     constructor(config?: Partial<OverlapPreventionConfig>);
     /**
+     * Validate if a date range conflicts with existing trips (alias for validateDateSpan)
+     */
+    validateDateRange(newRange: DateRange, existingTrips: Trip[]): ValidationResult;
+    /**
      * Validate if a date range conflicts with existing trips
      */
     validateDateSpan(newRange: DateRange, existingTrips: Trip[]): ValidationResult;
@@ -238,6 +242,16 @@ declare class DateOverlapValidator {
      * Get current configuration
      */
     getConfig(): OverlapPreventionConfig;
+    /**
+     * Find the next available date range starting from a preferred date
+     */
+    findNextAvailableDateRange(preferredStart: Date, lengthInDays: number, existingTrips: Trip[], searchLimitDays?: number): DateRange | null;
+    /**
+     * Validate multiple date ranges at once
+     */
+    validateMultipleDateRanges(dateRanges: DateRange[], existingTrips: Trip[]): {
+        [index: number]: ValidationResult;
+    };
 }
 
 /**
