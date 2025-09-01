@@ -104,7 +104,7 @@ describe('RobustSchengenCalculator', () => {
     })
 
     it('should handle invalid input gracefully', () => {
-      const result = RobustSchengenCalculator.calculateExactCompliance(null as any, baseDate)
+      const result = RobustSchengenCalculator.calculateExactCompliance([] as any, baseDate)
       
       expect(result.totalDaysUsed).toBe(0)
       expect(result.daysRemaining).toBe(90)

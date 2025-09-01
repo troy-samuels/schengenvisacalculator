@@ -523,6 +523,14 @@ export default function HomePage() {
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntry[]) => {
+    console.log('🔄 RECALCULATING ENTRIES - Input:', updatedEntries.map(e => ({
+      id: e.id,
+      country: e.country,
+      startDate: e.startDate?.toDateString(),
+      endDate: e.endDate?.toDateString(),
+      days: e.days
+    })))
+
     // First, ensure all entries have correct days calculation
     const entriesWithDays = updatedEntries.map((entry) => {
       let calculatedDays = 0
@@ -534,6 +542,14 @@ export default function HomePage() {
         days: calculatedDays
       }
     })
+
+    console.log('📊 Entries with calculated days:', entriesWithDays.map(e => ({
+      id: e.id,
+      country: e.country,
+      startDate: e.startDate?.toDateString(),
+      endDate: e.endDate?.toDateString(),
+      days: e.days
+    })))
 
     // Convert entries to Trip format for the calculator
     const tripsForCalculation = entriesWithDays
@@ -554,6 +570,8 @@ export default function HomePage() {
 
     // Update each entry with calculated values
     const entriesWithCalculations = entriesWithDays.map((entry, index) => {
+      console.log(`\n🔍 ROW ${index}: Processing entry ${entry.country || 'incomplete'} (ID: ${entry.id})`)
+
       // Determine active column based on completion state
       let activeColumn: VisaEntry["activeColumn"] = "country"
       if (entry.country && !entry.startDate) {
@@ -575,32 +593,53 @@ export default function HomePage() {
           days: e.days
         }))
 
+      console.log(`  📋 Trips up to this row (${tripsUpToThisRow.length} total):`, 
+        tripsUpToThisRow.map(t => ({
+          country: t.country,
+          dates: `${t.startDate.toDateString()} → ${t.endDate.toDateString()}`,
+          days: t.days
+        })))
+
+      // Sort trips chronologically by end date for proper rolling calculation
+      const sortedTrips = [...tripsUpToThisRow].sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
+      
+      console.log(`  🗓️  Chronologically sorted trips:`, 
+        sortedTrips.map(t => ({
+          country: t.country,
+          endDate: t.endDate.toDateString(),
+          days: t.days
+        })))
+
       // Use trip-specific reference date for this row's rolling calculation
       // For completed trips, use the current trip's end date as reference
       // This shows rolling compliance as of each trip's completion
       const currentTripEndDate = entry.endDate || undefined
-      const rowReferenceDate = getRowReferenceDate(tripsUpToThisRow, currentTripEndDate)
-      const cumulativeCompliance = tripsUpToThisRow.length > 0
-        ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, rowReferenceDate)
-        : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+      const rowReferenceDate = getRowReferenceDate(sortedTrips, currentTripEndDate)
       
-      // Enhanced mobile debug logging for rolling calculations
-      if (tripsUpToThisRow.length > 0) {
-        console.log(`Mobile: Entry ${index} (${entry.country || 'incomplete'}):`)
-        console.log(`  - Reference Date: ${rowReferenceDate.toDateString()} ${currentTripEndDate ? '(trip end date)' : '(today)'}`)
-        console.log(`  - Trips in calculation:`, tripsUpToThisRow.map(t => ({
-          country: t.country,
-          startDate: t.startDate.toDateString(),
-          endDate: t.endDate.toDateString(),
-          days: t.days,
-          isInRollingWindow: t.endDate >= new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000)
-        })))
-        console.log(`  - Rolling compliance result:`, {
-          totalDaysUsed: cumulativeCompliance.totalDaysUsed,
-          daysRemaining: cumulativeCompliance.daysRemaining,
-          isCompliant: cumulativeCompliance.isCompliant,
-          '180DayWindowStart': new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000).toDateString(),
-          '180DayWindowEnd': rowReferenceDate.toDateString()
+      console.log(`  🎯 Reference date for row ${index}: ${rowReferenceDate.toDateString()} ${currentTripEndDate ? '(trip end date)' : '(today)'}`)
+      console.log(`  📅 180-day window: ${new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000).toDateString()} → ${rowReferenceDate.toDateString()}`)
+
+      const cumulativeCompliance = sortedTrips.length > 0
+        ? RobustSchengenCalculator.calculateExactCompliance(sortedTrips, rowReferenceDate)
+        : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+
+      console.log(`  ✅ Calculator result:`, {
+        totalDaysUsed: cumulativeCompliance.totalDaysUsed,
+        daysRemaining: cumulativeCompliance.daysRemaining,
+        isCompliant: cumulativeCompliance.isCompliant
+      })
+      
+      // Detailed analysis of which trips fall within rolling window
+      if (sortedTrips.length > 0) {
+        const windowStart = new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000)
+        console.log(`  🔍 Trip analysis for rolling window:`)
+        sortedTrips.forEach(trip => {
+          const inWindow = trip.endDate >= windowStart && trip.startDate <= rowReferenceDate
+          const overlapDays = inWindow ? Math.min(
+            Math.ceil((Math.min(trip.endDate.getTime(), rowReferenceDate.getTime()) - Math.max(trip.startDate.getTime(), windowStart.getTime())) / (1000 * 60 * 60 * 24)) + 1,
+            trip.days
+          ) : 0
+          console.log(`    ${inWindow ? '✅' : '❌'} ${trip.country}: ${trip.startDate.toDateString()} → ${trip.endDate.toDateString()} (${overlapDays} days count in window)`)
         })
       }
 
