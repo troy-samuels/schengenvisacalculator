@@ -2,9 +2,11 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention } from '@schengen/ui'
-import { Calendar, ChevronRight, Plus } from 'lucide-react'
-import { format } from 'date-fns'
+import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header } from '@schengen/ui'
+import { Calendar, ChevronRight, Plus, Save } from 'lucide-react'
+import { format, isFuture } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
+import { createClient } from '../lib/supabase/client'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
@@ -115,7 +117,9 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
     requestAnimationFrame(animate)
   }, [percentage])
 
-  const radius = (size - 12) / 2
+  // Dynamic stroke width based on size for better mobile proportions
+  const strokeWidth = size <= 45 ? 3 : size <= 60 ? 4 : size <= 80 ? 5 : 6
+  const radius = (size - strokeWidth * 2) / 2
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (animatedProgress / 100) * circumference
 
@@ -127,19 +131,39 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
     return "#DC2626" // Dark Red
   }
 
+  // Optimized text sizing for better mobile readability
+  const getTextSize = () => {
+    if (size <= 45) return "text-xs" // Mobile-optimized for 40px circles
+    if (size <= 60) return "text-sm"
+    if (size <= 80) return "text-lg"
+    return "text-xl"
+  }
+
+  // Font weight adjustment for smaller sizes - lighter for better readability
+  const getFontWeight = () => {
+    return size <= 50 ? "font-semibold" : "font-bold"
+  }
+
   return (
     <div className="flex items-center justify-center">
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="transform -rotate-90">
           {/* Background circle */}
-          <circle cx={size / 2} cy={size / 2} r={radius} stroke="#E5E7EB" strokeWidth="6" fill="transparent" />
+          <circle 
+            cx={size / 2} 
+            cy={size / 2} 
+            r={radius} 
+            stroke="#E5E7EB" 
+            strokeWidth={strokeWidth} 
+            fill="transparent" 
+          />
           {/* Progress circle */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             stroke={getColor()}
-            strokeWidth="6"
+            strokeWidth={strokeWidth}
             fill="transparent"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -148,14 +172,99 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
           />
         </svg>
 
-        {/* Center content */}
+        {/* Center content - optimized for mobile readability */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className={`font-bold ${size > 60 ? "text-xl" : "text-lg"}`} style={{ color: getColor() }}>
+          <div 
+            className={`${getFontWeight()} ${getTextSize()} leading-tight`} 
+            style={{ color: getColor() }}
+          >
             <AnimatedCounter value={daysRemaining} />
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+// Smart Floating Save Animation Component
+function SmartFloatingSave({ 
+  isVisible, 
+  onSave, 
+  isLoggedIn, 
+  onLogin,
+  className = "" 
+}: { 
+  isVisible: boolean
+  onSave: () => void
+  isLoggedIn: boolean
+  onLogin: () => void
+  className?: string
+}) {
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
+          transition={{ 
+            type: "spring",
+            stiffness: 300,
+            damping: 25,
+            duration: 0.4
+          }}
+          className={`fixed bottom-6 right-6 z-50 ${className}`}
+        >
+          <motion.div
+            animate={{ 
+              y: [0, -8, 0],
+              boxShadow: [
+                "0 4px 14px 0 rgba(0, 0, 0, 0.15)",
+                "0 8px 24px 0 rgba(0, 0, 0, 0.2)",
+                "0 4px 14px 0 rgba(0, 0, 0, 0.15)"
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full px-6 py-3 shadow-lg cursor-pointer select-none"
+            onClick={isLoggedIn ? onSave : onLogin}
+          >
+            <div className="flex items-center space-x-2">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ 
+                  duration: 1.5, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
+                <Save className="h-4 w-4" />
+              </motion.div>
+              <span className="font-semibold text-sm">
+                {isLoggedIn ? 'Save Future Trip' : 'Login to Save'}
+              </span>
+            </div>
+          </motion.div>
+          
+          {/* Pulsing ring animation */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-blue-400"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.8, 0, 0.8]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -175,9 +284,222 @@ export default function HomePage() {
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [selectedEntryId, setSelectedEntryId] = useState<string>("")
+  
+  // Smart Floating Save Animation State
+  const [showFloatingSave, setShowFloatingSave] = useState(false)
+
+  const supabase = createClient()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Check auth state on mount
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+    getUser()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Save user progress to database
+  const saveUserProgress = async () => {
+    if (!user) return
+
+    try {
+      // Delete existing entries for this user
+      await supabase
+        .from('visa_entries')
+        .delete()
+        .eq('user_id', user.id)
+
+      // Insert new entries
+      const validEntries = entries.filter(entry => 
+        entry.country && entry.startDate && entry.endDate
+      )
+
+      if (validEntries.length > 0) {
+        const { error } = await supabase
+          .from('visa_entries')
+          .insert(
+            validEntries.map(entry => ({
+              user_id: user.id,
+              country: entry.country,
+              start_date: entry.startDate!.toISOString().split('T')[0],
+              end_date: entry.endDate!.toISOString().split('T')[0],
+              entry_type: 'schengen' as const
+            }))
+          )
+
+        if (error) {
+          console.error('Error saving progress:', error)
+        } else {
+          console.log('Progress saved successfully')
+        }
+      }
+    } catch (error) {
+      console.error('Error saving progress:', error)
+    }
+  }
+
+  // Load user progress from database
+  const loadUserProgress = async () => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('visa_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('start_date', { ascending: true })
+
+      if (error) {
+        console.error('Error loading progress:', error)
+        return
+      }
+
+      if (data && data.length > 0) {
+        const loadedEntries: VisaEntry[] = data.map((entry, index) => ({
+          id: entry.id,
+          country: entry.country,
+          startDate: new Date(entry.start_date),
+          endDate: new Date(entry.end_date),
+          days: 0, // Will be calculated
+          daysInLast180: 0, // Will be calculated
+          daysRemaining: 90, // Will be calculated
+          activeColumn: "complete" as const
+        }))
+
+        // Add an empty entry at the end for new trips
+        loadedEntries.push({
+          id: Date.now().toString(),
+          country: "",
+          startDate: null,
+          endDate: null,
+          days: 0,
+          daysInLast180: 0,
+          daysRemaining: 90,
+          activeColumn: "country",
+        })
+
+        setEntries(recalculateEntries(loadedEntries))
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error)
+    }
+  }
+
+  // Load user progress when user logs in
+  useEffect(() => {
+    if (user) {
+      loadUserProgress()
+    }
+  }, [user])
+
+  // Smart Floating Save: Detect future dates and trigger animation
+  useEffect(() => {
+    const hasFutureDates = entries.some(entry => {
+      if (!entry.startDate || !entry.endDate) return false
+      
+      // Check if either start or end date is in the future
+      return isFuture(entry.startDate) || isFuture(entry.endDate)
+    })
+
+    // Show animation if:
+    // 1. User has future dates in their entries
+    // 2. User has at least one complete entry with dates
+    // 3. Animation isn't already showing (avoid flicker)
+    const hasCompleteEntries = entries.some(entry => 
+      entry.country && entry.startDate && entry.endDate
+    )
+
+    if (hasFutureDates && hasCompleteEntries && !showFloatingSave) {
+      // Delay the animation slightly to avoid jarring transitions
+      const timer = setTimeout(() => {
+        setShowFloatingSave(true)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    } else if (!hasFutureDates && showFloatingSave) {
+      // Hide animation when no future dates
+      setShowFloatingSave(false)
+    }
+  }, [entries, showFloatingSave])
+
+  // Authentication handlers
+  const handleLoginClick = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      })
+      if (error) console.error('Login error:', error)
+    } catch (error) {
+      console.error('Login error:', error)
+    }
+  }
+
+  const handleSignupClick = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      })
+      if (error) console.error('Signup error:', error)
+    } catch (error) {
+      console.error('Signup error:', error)
+    }
+  }
 
   // Get countries for dropdown
   const countryOptions = getCountriesForSelect()
+
+  // Helper functions for progressive row completion
+  const isRowComplete = (entry: VisaEntry): boolean => {
+    return !!(entry.country && entry.startDate && entry.endDate)
+  }
+
+  const canAddNewRow = (): boolean => {
+    if (entries.length === 0) return true // Allow first row
+    
+    const lastEntry = entries[entries.length - 1]
+    return isRowComplete(lastEntry)
+  }
+
+  const getIncompleteRowMessage = (): string => {
+    if (entries.length === 0) return ""
+    
+    const lastEntry = entries[entries.length - 1]
+    if (!lastEntry.country) return "Please select a country first"
+    if (!lastEntry.startDate || !lastEntry.endDate) return "Please select your travel dates"
+    return ""
+  }
+
+  // Helper function to get appropriate reference date for calculations
+  const getRowReferenceDate = (tripsUpToThisRow: any[]): Date => {
+    if (tripsUpToThisRow.length === 0) return new Date()
+    
+    // For cumulative display, use the latest end date OR today (whichever is later)
+    // This ensures past trips are included in calculations and future trips are projected correctly
+    const latestTripEnd = Math.max(...tripsUpToThisRow.map(trip => trip.endDate.getTime()))
+    const today = new Date().getTime()
+    
+    return new Date(Math.max(latestTripEnd, today))
+  }
 
   // Recalculate all entries whenever entries change
   const recalculateEntries = (updatedEntries: VisaEntry[]) => {
@@ -204,9 +526,10 @@ export default function HomePage() {
         days: entry.days,
       }))
 
-    // Calculate overall compliance using all valid trips
+    // Calculate overall compliance using dynamic reference date
+    const overallReferenceDate = getRowReferenceDate(tripsForCalculation)
     const compliance = tripsForCalculation.length > 0 
-      ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, new Date())
+      ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallReferenceDate)
       : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
 
     // Update each entry with calculated values
@@ -232,8 +555,10 @@ export default function HomePage() {
           days: e.days
         }))
 
+      // Use dynamic reference date for this row's cumulative calculation
+      const rowReferenceDate = getRowReferenceDate(tripsUpToThisRow)
       const cumulativeCompliance = tripsUpToThisRow.length > 0
-        ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, new Date())
+        ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, rowReferenceDate)
         : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
 
       return {
@@ -374,8 +699,10 @@ export default function HomePage() {
       days: entry.days,
     }))
 
+  // Use dynamic reference date for overall compliance display
+  const overallDisplayReferenceDate = getRowReferenceDate(tripsForCalculation)
   const compliance = tripsForCalculation.length > 0 
-    ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, new Date())
+    ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallDisplayReferenceDate)
     : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
 
   // Date overlap prevention: Convert entries to TripEntry format for validation
@@ -402,6 +729,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
+      {/* Header Navigation */}
+      <Header 
+        onLoginClick={handleLoginClick}
+        onSignupClick={handleSignupClick}
+        user={user}
+        loading={loading}
+      />
+      
       {/* Hero Section */}
       <section className="py-8 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -664,8 +999,8 @@ export default function HomePage() {
                       {/* Days Remaining */}
                       <div className="rounded-lg p-3">
                         <label className="block text-xs font-medium text-gray-500 mb-1 text-center">Remaining</label>
-                        <div className="flex items-center justify-center h-10">
-                          <ProgressCircle daysRemaining={entry.daysRemaining} size={40} />
+                        <div className="flex items-center justify-center h-12 py-1">
+                          <ProgressCircle daysRemaining={entry.daysRemaining} size={42} />
                         </div>
                       </div>
                     </div>
@@ -675,21 +1010,34 @@ export default function HomePage() {
 
               {/* Add Row Button */}
               <div className="flex justify-center pt-4 space-x-4">
-                <button
-                  onClick={addEntry}
-                  className="flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors duration-200 bg-white rounded-full px-6 py-2 border border-gray-300 cursor-pointer"
-                  style={{ fontFamily: 'inherit' }}
-                >
-                  <span className="font-medium text-gray-800 text-sm">+</span>
-                  <span className="font-medium text-gray-800 text-sm">Add Another Trip</span>
-                </button>
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={addEntry}
+                    disabled={!canAddNewRow()}
+                    className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-6 py-2 border ${
+                      canAddNewRow()
+                        ? 'hover:bg-gray-50 bg-white border-gray-300 cursor-pointer'
+                        : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                    }`}
+                    style={{ fontFamily: 'inherit' }}
+                  >
+                    <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'}`}>+</span>
+                    <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'}`}>Add Another Trip</span>
+                  </button>
+                  {!canAddNewRow() && (
+                    <div className="text-xs text-gray-500 mt-2 text-center max-w-48">
+                      {getIncompleteRowMessage()}
+                    </div>
+                  )}
+                </div>
 
                 {totalDays > 0 && (
               <Button
+                    onClick={user ? saveUserProgress : handleLoginClick}
                     className="flex items-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium"
                     style={{ backgroundColor: "#FA9937" }}
                   >
-                    <span>Save Progress</span>
+                    <span>{user ? 'Save Progress' : 'Login to Save'}</span>
                     </Button>
                 )}
               </div>
@@ -706,7 +1054,17 @@ export default function HomePage() {
         initialRange={{ startDate: null, endDate: null }}
         disabledDates={disabledDates}
         occupiedDateInfo={occupiedDateInfo}
+        minDate={new Date(new Date().getFullYear() - 10, 0, 1)} // 10 years ago
+        maxDate={new Date(new Date().getFullYear() + 5, 11, 31)} // 5 years in future
         />
+
+      {/* Smart Floating Save Animation */}
+      <SmartFloatingSave
+        isVisible={showFloatingSave}
+        onSave={saveUserProgress}
+        isLoggedIn={!!user}
+        onLogin={handleLoginClick}
+      />
       </div>
   )
 }

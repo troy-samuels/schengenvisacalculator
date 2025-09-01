@@ -46,13 +46,15 @@ export function MobileCalendarDrawer({
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
 
-  // Generate 18 months starting from current month for true Airbnb-style scrolling
+  // Generate months including past and future for full date range support
   const months = useMemo(() => {
     const monthsArray = []
-    const startDate = new Date()
-    // Start from current month, go 18 months forward for more scrolling options
-    for (let i = 0; i < 18; i++) {
-      monthsArray.push(addMonths(startDate, i))
+    const currentDate = new Date()
+    
+    // Start from 12 months ago, go 24 months forward (36 months total)
+    // This provides good coverage for past travel history and future planning
+    for (let i = -12; i < 24; i++) {
+      monthsArray.push(addMonths(currentDate, i))
     }
     return monthsArray
   }, [])
