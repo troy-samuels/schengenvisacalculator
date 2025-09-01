@@ -179,6 +179,15 @@ const FREE_TIER_LIMITS = {
 - **Analytics tracking** on all user interactions
 - **A/B testing** for pricing and conversion optimization
 
+### 🚨 **MANDATORY: MOBILE-FIRST DEVELOPMENT (NON-NEGOTIABLE)**
+**ALL CHANGES MUST INCLUDE MOBILE IMPLEMENTATION AUTOMATICALLY**
+- Every UI change MUST work on mobile (separate responsive layouts)
+- Every state update MUST work on mobile browsers  
+- Every new feature MUST include mobile considerations
+- Every component MUST have mobile-specific testing
+- Every calculation display MUST work on mobile viewports
+- NEVER implement desktop-only features
+
 ### Testing Requirements (NON-NEGOTIABLE)
 - Always run tests before committing: `npm run validate`
 - **EU compliance tests must pass 100%** (legal requirement)
@@ -301,12 +310,35 @@ describe('DateOverlapPrevention', () => {
 });
 ```
 
-### Mobile Development Standards
+### Mobile Development Standards (MANDATORY FOR ALL CHANGES)
 - **Touch Targets**: Minimum 44x44px for all interactive elements
 - **Responsive Design**: Mobile-first approach with breakpoints at 640px, 768px, 1024px
 - **Performance**: Target <50ms for calculations, <200KB initial bundle size
 - **PWA Requirements**: Offline functionality, service worker, app manifest
 - **Accessibility**: WCAG AA compliance, screen reader support, keyboard navigation
+
+### 📱 **CRITICAL: MOBILE-FIRST DEVELOPMENT RULE**
+**ANY CHANGES TO THE APPLICATION MUST AUTOMATICALLY INCLUDE MOBILE IMPLEMENTATION**
+
+When making ANY changes to the app, you MUST:
+1. **Implement changes for BOTH desktop AND mobile layouts simultaneously**
+2. **Test mobile responsiveness and touch interactions**
+3. **Verify state updates work correctly on mobile browsers**
+4. **Ensure conditional rendering works on both desktop and mobile**
+5. **Add mobile-specific debug logging when implementing new features**
+6. **Check that new UI components have proper mobile styling**
+
+### Mobile Implementation Checklist (REQUIRED)
+- [ ] Desktop implementation complete
+- [ ] Mobile responsive design applied (separate mobile layout in code)  
+- [ ] Touch event handling tested
+- [ ] State management works on mobile browsers
+- [ ] Display conditions work for mobile viewport
+- [ ] Debug logging added for mobile troubleshooting
+- [ ] Mobile-specific edge cases considered
+- [ ] Cross-device testing completed
+
+**NEVER implement features for desktop only - mobile must be included automatically.**
 
 ### API Development Guidelines
 - **Versioning**: Use `/api/v1/` prefix for all new endpoints
@@ -382,6 +414,7 @@ AFFILIATE_ID=your_affiliate_id
 - **Performance benchmarks must be maintained** (<50ms calculations, <200KB bundle)
 - **Mobile-first design principles must be preserved** (44px touch targets)
 - **Security features must be enterprise-grade** (MFA, encryption, audit logs)
+- **🚨 MOBILE IMPLEMENTATION IS MANDATORY FOR ALL CHANGES** - Desktop + Mobile simultaneously
 
 ## Revenue Architecture
 
