@@ -8949,15 +8949,21 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         endDate: null
     });
     const [selectingEnd, setSelectingEnd] = React.useState(false);
-    // Generate months including past and future for full date range support
+    const scrollContainerRef = React.useRef(null);
+    // Generate months from January 2024 to 12 months forward for travel planning
     const months = React.useMemo(()=>{
         const monthsArray = [];
+        const startDate = new Date(2024, 0, 1) // January 2024 as requested
+        ;
         const currentDate = new Date();
-        // Start from 12 months ago, go 24 months forward (36 months total)
-        // This provides good coverage for past travel history and future planning
-        for(let i = -12; i < 24; i++){
-            monthsArray.push(dateFns.addMonths(currentDate, i));
+        const endDate = dateFns.addMonths(currentDate, 12) // 12 months forward from today
+        ;
+        let monthDate = startDate;
+        while(monthDate <= endDate){
+            monthsArray.push(new Date(monthDate));
+            monthDate = dateFns.addMonths(monthDate, 1);
         }
+        console.log('Mobile calendar: Generated', monthsArray.length, 'months from', dateFns.format(monthsArray[0], 'MMMM yyyy'), 'to', dateFns.format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'));
         return monthsArray;
     }, []);
     // Reset when drawer opens/closes
@@ -8972,6 +8978,32 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     }, [
         isOpen,
         initialRange
+    ]);
+    // Auto-scroll to current month when drawer opens
+    React.useEffect(()=>{
+        if (isOpen && scrollContainerRef.current && months.length > 0) {
+            const currentDate = new Date();
+            const currentMonthIndex = months.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+            if (currentMonthIndex !== -1) {
+                // Add a small delay to ensure the drawer is fully rendered
+                setTimeout(()=>{
+                    if (scrollContainerRef.current) {
+                        // Calculate scroll position for current month
+                        const monthHeight = 400 // Approximate height per month
+                        ;
+                        const scrollPosition = currentMonthIndex * monthHeight;
+                        console.log('Mobile calendar: Auto-scrolling to current month', dateFns.format(currentDate, 'MMMM yyyy'), 'at index', currentMonthIndex);
+                        scrollContainerRef.current.scrollTo({
+                            top: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 100);
+            }
+        }
+    }, [
+        isOpen,
+        months
     ]);
     // Handle date click - precise single-date selection
     const handleDateClick = (date)=>{
@@ -9139,22 +9171,22 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
             return /*#__PURE__*/ React.createElement("button", {
                 key: `${dateFns.format(monthDate, 'yyyy-MM')}-${index}`,
                 onClick: ()=>{
-                    // Only allow clicks on current month dates to prevent double selection
-                    if (!disabled && isCurrentMonth && !occupied) {
+                    // Allow clicks on any non-disabled, non-occupied date (past, present, future)
+                    if (!disabled && !occupied) {
                         console.log('Selecting date:', dateFns.format(date, 'yyyy-MM-dd'), 'from month:', dateFns.format(monthDate, 'MMMM'));
                         handleDateClick(date);
                     } else {
-                        console.log('Click blocked - disabled:', disabled, 'isCurrentMonth:', isCurrentMonth, 'occupied:', occupied);
+                        console.log('Click blocked - disabled:', disabled, 'occupied:', occupied);
                     }
                 },
-                disabled: !isCurrentMonth || disabled || occupied,
+                disabled: disabled || occupied,
                 title: occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined,
                 className: cn(// Airbnb-style: 44px touch targets, clean design
                 "h-11 w-11 text-sm font-medium transition-all duration-150 relative", "flex items-center justify-center", {
-                    // Current month styling - clickable dates
-                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": isCurrentMonth && !disabled && !occupied && !inRange,
-                    // Other month styling (not clickable, just visual padding)
-                    "text-gray-300 cursor-default": !isCurrentMonth,
+                    // All valid dates styling - clickable (current, past, future months)
+                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": !disabled && !occupied && !inRange,
+                    // Other month dates that are outside valid range - lighter but still clickable
+                    "text-gray-500": !isCurrentMonth && !disabled && !occupied,
                     // Disabled styling
                     "text-gray-200 cursor-not-allowed": disabled,
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
@@ -9196,6 +9228,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     }, /*#__PURE__*/ React.createElement("p", {
         className: "text-gray-600 font-medium text-sm"
     }, "Select your end date")), /*#__PURE__*/ React.createElement("div", {
+        ref: scrollContainerRef,
         className: "h-full overflow-y-auto overscroll-y-contain",
         style: {
             WebkitOverflowScrolling: 'touch',

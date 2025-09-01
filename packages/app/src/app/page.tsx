@@ -501,16 +501,24 @@ export default function HomePage() {
   }
 
   // Helper function to get appropriate reference date for calculations
-  const getRowReferenceDate = (tripsUpToThisRow: any[]): Date => {
-    // FIXED: Always use "today" as reference for 90/180 rolling window calculation
-    // The 90/180 rule calculates how many days are used in the 180 days leading up to today
-    // This ensures accurate "Total Days Used" and "Days Remaining" calculations
-    const today = new Date()
+  const getRowReferenceDate = (tripsUpToThisRow: any[], currentTripEndDate?: Date): Date => {
+    // ENHANCED: Use the current trip's end date as reference for row-specific rolling calculations
+    // This shows "Total Days Used" and "Days Remaining" as of each trip's completion
+    // Falls back to "today" for incomplete rows or overall compliance calculations
     
-    // Mobile-specific debug logging as required by CLAUDE.md
-    console.log('90/180 calculation using reference date:', today.toDateString(), 'for', tripsUpToThisRow.length, 'trips')
+    let referenceDate: Date
     
-    return today
+    if (currentTripEndDate && tripsUpToThisRow.length > 0) {
+      // Use the current trip's end date for row-specific rolling calculations
+      referenceDate = new Date(currentTripEndDate)
+      console.log('Mobile: Using trip end date as reference:', referenceDate.toDateString(), 'for row calculation')
+    } else {
+      // Fall back to "today" for incomplete rows or overall calculations
+      referenceDate = new Date()
+      console.log('Mobile: Using today as reference date:', referenceDate.toDateString(), 'for', tripsUpToThisRow.length, 'trips')
+    }
+    
+    return referenceDate
   }
 
   // Recalculate all entries whenever entries change
@@ -567,24 +575,32 @@ export default function HomePage() {
           days: e.days
         }))
 
-      // Use dynamic reference date for this row's cumulative calculation
-      const rowReferenceDate = getRowReferenceDate(tripsUpToThisRow)
+      // Use trip-specific reference date for this row's rolling calculation
+      // For completed trips, use the current trip's end date as reference
+      // This shows rolling compliance as of each trip's completion
+      const currentTripEndDate = entry.endDate || undefined
+      const rowReferenceDate = getRowReferenceDate(tripsUpToThisRow, currentTripEndDate)
       const cumulativeCompliance = tripsUpToThisRow.length > 0
         ? RobustSchengenCalculator.calculateExactCompliance(tripsUpToThisRow, rowReferenceDate)
         : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
       
-      // Debug logging for mobile troubleshooting
+      // Enhanced mobile debug logging for rolling calculations
       if (tripsUpToThisRow.length > 0) {
-        console.log(`Entry ${index}: Trips for calculation:`, tripsUpToThisRow.map(t => ({
+        console.log(`Mobile: Entry ${index} (${entry.country || 'incomplete'}):`)
+        console.log(`  - Reference Date: ${rowReferenceDate.toDateString()} ${currentTripEndDate ? '(trip end date)' : '(today)'}`)
+        console.log(`  - Trips in calculation:`, tripsUpToThisRow.map(t => ({
           country: t.country,
           startDate: t.startDate.toDateString(),
           endDate: t.endDate.toDateString(),
-          days: t.days
+          days: t.days,
+          isInRollingWindow: t.endDate >= new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000)
         })))
-        console.log(`Entry ${index}: Cumulative compliance:`, {
+        console.log(`  - Rolling compliance result:`, {
           totalDaysUsed: cumulativeCompliance.totalDaysUsed,
           daysRemaining: cumulativeCompliance.daysRemaining,
-          referenceDate: rowReferenceDate.toDateString()
+          isCompliant: cumulativeCompliance.isCompliant,
+          '180DayWindowStart': new Date(rowReferenceDate.getTime() - 179 * 24 * 60 * 60 * 1000).toDateString(),
+          '180DayWindowEnd': rowReferenceDate.toDateString()
         })
       }
 
@@ -746,11 +762,21 @@ export default function HomePage() {
       days: entry.days,
     }))
 
-  // Use dynamic reference date for overall compliance display
-  const overallDisplayReferenceDate = getRowReferenceDate(tripsForCalculation)
+  // Use "today" as reference date for overall compliance display
+  // Overall compliance should always reflect current 90/180 status
+  const overallDisplayReferenceDate = getRowReferenceDate(tripsForCalculation) // Falls back to "today" without trip end date
   const compliance = tripsForCalculation.length > 0 
     ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallDisplayReferenceDate)
     : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+  
+  // Enhanced mobile debug logging for overall compliance
+  console.log('Mobile: Overall compliance calculation:', {
+    totalTrips: tripsForCalculation.length,
+    referenceDate: overallDisplayReferenceDate.toDateString(),
+    totalDaysUsed: compliance.totalDaysUsed,
+    daysRemaining: compliance.daysRemaining,
+    isCompliant: compliance.isCompliant
+  })
 
   // Date overlap prevention: Convert entries to TripEntry format for validation
   const tripsForValidation = useMemo(() => {

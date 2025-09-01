@@ -4,15 +4,9 @@
 
 [36m
 [1msrc/types-only.ts[22m → [1mdist/index.d.ts[22m...[39m
-[32mcreated [1mdist/index.d.ts[22m in [1m1.6s[22m[39m
+[32mcreated [1mdist/index.d.ts[22m in [1m1.4s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.esm.js[22m...[39m
-[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
 [90m1: "use client"
@@ -25,12 +19,18 @@
    ^
 2: 
 3: import React, { useState, useEffect } from 'react'[39m
+[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/mobile-calendar-drawer.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/mobile-calendar-drawer.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/mobile-calendar-drawer.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
-3: import React, { useState, useEffect, useMemo } from 'react'[39m
+3: import React, { useState, useEffect, useMemo, useRef } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -61,14 +61,6 @@
    ^
 2: // src/portal.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
-[90m1: "use client";
-   ^
-2: // src/dismissable-layer.tsx
-3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.[39m[22m
@@ -76,6 +68,22 @@
 [90m1: "use client";
    ^
 2: // src/focus-scope.tsx
+3: import * as React from "react";[39m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[90m1: "use client";
+   ^
+2: // src/focus-guards.tsx
+3: import * as React from "react";[39m
+[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
+[90m1: "use client";
+   ^
+2: // src/dismissable-layer.tsx
 3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-presence/dist/index.mjs:1:0[22m
@@ -85,17 +93,15 @@
    ^
 2: // src/presence.tsx
 3: import * as React2 from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
-[90m1: "use client";
-   ^
-2: // src/focus-guards.tsx
-3: import * as React from "react";[39m
-[32mcreated [1mdist/index.esm.js[22m in [1m2.1s[22m[39m
+[32mcreated [1mdist/index.esm.js[22m in [1m1.8s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.cjs.js[22m...[39m
+[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
 [90m1: "use client"
@@ -108,18 +114,12 @@
    ^
 2: 
 3: import React, { useState, useEffect } from 'react'[39m
-[1m[33m(!) src/components/ui/circular-progress.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/circular-progress.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/circular-progress.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/mobile-calendar-drawer.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/mobile-calendar-drawer.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/mobile-calendar-drawer.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
-3: import React, { useState, useEffect, useMemo } from 'react'[39m
+3: import React, { useState, useEffect, useMemo, useRef } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -142,6 +142,14 @@
    ^
 2: // src/dialog.tsx
 3: import * as React from "react";[39m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[90m1: "use client";
+   ^
+2: // src/focus-guards.tsx
+3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-portal/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.[39m[22m
@@ -158,13 +166,13 @@
    ^
 2: // src/presence.tsx
 3: import * as React2 from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
 [90m1: "use client";
    ^
-2: // src/focus-guards.tsx
+2: // src/dismissable-layer.tsx
 3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
@@ -174,17 +182,15 @@
    ^
 2: // src/focus-scope.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
-[90m1: "use client";
-   ^
-2: // src/dismissable-layer.tsx
-3: import * as React from "react";[39m
-[32mcreated [1mdist/index.cjs.js[22m in [1m1.5s[22m[39m
+[32mcreated [1mdist/index.cjs.js[22m in [1m1.3s[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.umd.min.js[22m...[39m
+[1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
+[90m1: "use client"
+   ^
+2: 
+3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/calendar-modal.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/calendar-modal.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/calendar-modal.tsx:1:0[22m
 [90m1: "use client"
@@ -197,18 +203,12 @@
    ^
 2: 
 3: import React from 'react'[39m
-[1m[33m(!) src/components/ui/header.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/header.tsx" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/header.tsx:1:0[22m
-[90m1: "use client"
-   ^
-2: 
-3: import React from 'react'[39m
 [1m[33m(!) src/components/ui/mobile-calendar-drawer.tsx (1:0): Module level directives cause errors when bundled, "use client" in "src/components/ui/mobile-calendar-drawer.tsx" was ignored.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/packages/ui/src/components/ui/mobile-calendar-drawer.tsx:1:0[22m
 [90m1: "use client"
    ^
 2: 
-3: import React, { useState, useEffect, useMemo } from 'react'[39m
+3: import React, { useState, useEffect, useMemo, useRef } from 'react'[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-label/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-label/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-label/dist/index.mjs" was ignored.[39m[22m
@@ -231,6 +231,14 @@
    ^
 2: // src/dialog.tsx
 3: import * as React from "react";[39m
+[1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-portal/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-portal/dist/index.mjs:1:0[22m
+[90m1: "use client";
+   ^
+2: // src/portal.tsx
+3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-presence/dist/index.mjs:1:0[22m
 [1m[33m(!) ../../node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-presence/dist/index.mjs" was ignored.[39m[22m
@@ -239,13 +247,13 @@
    ^
 2: // src/presence.tsx
 3: import * as React2 from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
 [90m1: "use client";
    ^
-2: // src/focus-scope.tsx
+2: // src/focus-guards.tsx
 3: import * as React from "react";[39m
 [1m[33m(!) ../../node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
 [1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs:1:0[22m
@@ -255,20 +263,12 @@
    ^
 2: // src/dismissable-layer.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-guards/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
+[1m[33m(!) ../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.[39m[22m
+[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-focus-scope/dist/index.mjs:1:0[22m
 [90m1: "use client";
    ^
-2: // src/focus-guards.tsx
+2: // src/focus-scope.tsx
 3: import * as React from "react";[39m
-[1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-portal/dist/index.mjs:1:0[22m
-[1m[33m(!) ../../node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.[39m[22m
-[1m/Users/troysamuels/SCHENGEN VISA CALCULATOR/schengenvisacalculator/node_modules/@radix-ui/react-portal/dist/index.mjs:1:0[22m
-[90m1: "use client";
-   ^
-2: // src/portal.tsx
-3: import * as React from "react";[39m
-[32mcreated [1mdist/index.umd.min.js[22m in [1m2.5s[22m[39m
+[32mcreated [1mdist/index.umd.min.js[22m in [1m2.1s[22m[39m
