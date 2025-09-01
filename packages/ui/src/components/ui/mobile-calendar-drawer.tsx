@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns'
 import { Drawer } from 'vaul'
@@ -45,17 +45,24 @@ export function MobileCalendarDrawer({
     initialRange || { startDate: null, endDate: null }
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  // Generate months including past and future for full date range support
+  // Generate months from January 2024 to 12 months forward for travel planning
   const months = useMemo(() => {
     const monthsArray = []
+    const startDate = new Date(2024, 0, 1) // January 2024 as requested
     const currentDate = new Date()
+    const endDate = addMonths(currentDate, 12) // 12 months forward from today
     
-    // Start from 12 months ago, go 24 months forward (36 months total)
-    // This provides good coverage for past travel history and future planning
-    for (let i = -12; i < 24; i++) {
-      monthsArray.push(addMonths(currentDate, i))
+    let monthDate = startDate
+    while (monthDate <= endDate) {
+      monthsArray.push(new Date(monthDate))
+      monthDate = addMonths(monthDate, 1)
     }
+    
+    console.log('Mobile calendar: Generated', monthsArray.length, 'months from', 
+      format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'))
+    
     return monthsArray
   }, [])
 
@@ -66,6 +73,36 @@ export function MobileCalendarDrawer({
       setSelectingEnd(false)
     }
   }, [isOpen, initialRange])
+
+  // Auto-scroll to current month when drawer opens
+  useEffect(() => {
+    if (isOpen && scrollContainerRef.current && months.length > 0) {
+      const currentDate = new Date()
+      const currentMonthIndex = months.findIndex(month => 
+        month.getFullYear() === currentDate.getFullYear() && 
+        month.getMonth() === currentDate.getMonth()
+      )
+      
+      if (currentMonthIndex !== -1) {
+        // Add a small delay to ensure the drawer is fully rendered
+        setTimeout(() => {
+          if (scrollContainerRef.current) {
+            // Calculate scroll position for current month
+            const monthHeight = 400 // Approximate height per month
+            const scrollPosition = currentMonthIndex * monthHeight
+            
+            console.log('Mobile calendar: Auto-scrolling to current month', 
+              format(currentDate, 'MMMM yyyy'), 'at index', currentMonthIndex)
+            
+            scrollContainerRef.current.scrollTo({
+              top: scrollPosition,
+              behavior: 'smooth'
+            })
+          }
+        }, 100)
+      }
+    }
+  }, [isOpen, months])
 
   // Handle date click - precise single-date selection
   const handleDateClick = (date: Date) => {
@@ -329,6 +366,7 @@ export function MobileCalendarDrawer({
 
             {/* True Airbnb-style seamless scrolling calendar */}
             <div 
+              ref={scrollContainerRef}
               className="h-full overflow-y-auto overscroll-y-contain"
               style={{ 
                 WebkitOverflowScrolling: 'touch',
