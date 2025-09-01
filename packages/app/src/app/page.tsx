@@ -6,7 +6,9 @@ import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateO
 import { Calendar, ChevronRight, Plus, Save } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
+import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
+import { Database } from '../lib/types/database'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
@@ -289,7 +291,7 @@ export default function HomePage() {
   const [showFloatingSave, setShowFloatingSave] = useState(false)
 
   const supabase = createClient()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   // Check auth state on mount
@@ -314,14 +316,22 @@ export default function HomePage() {
 
   // Save user progress to database
   const saveUserProgress = async () => {
-    if (!user) return
+    if (!user?.id) {
+      console.error('User not authenticated')
+      return
+    }
 
     try {
       // Delete existing entries for this user
-      await supabase
+      const { error: deleteError } = await (supabase as any)
         .from('visa_entries')
         .delete()
         .eq('user_id', user.id)
+
+      if (deleteError) {
+        console.error('Error deleting existing entries:', deleteError)
+        return
+      }
 
       // Insert new entries
       const validEntries = entries.filter(entry => 
@@ -329,20 +339,20 @@ export default function HomePage() {
       )
 
       if (validEntries.length > 0) {
-        const { error } = await supabase
-          .from('visa_entries')
-          .insert(
-            validEntries.map(entry => ({
-              user_id: user.id,
-              country: entry.country,
-              start_date: entry.startDate!.toISOString().split('T')[0],
-              end_date: entry.endDate!.toISOString().split('T')[0],
-              entry_type: 'schengen' as const
-            }))
-          )
+        const insertData: Database['public']['Tables']['visa_entries']['Insert'][] = validEntries.map(entry => ({
+          user_id: user.id,
+          country: entry.country,
+          start_date: entry.startDate!.toISOString().split('T')[0],
+          end_date: entry.endDate!.toISOString().split('T')[0],
+          entry_type: 'schengen' as const
+        }))
 
-        if (error) {
-          console.error('Error saving progress:', error)
+        const { error: insertError } = await (supabase as any)
+          .from('visa_entries')
+          .insert(insertData)
+
+        if (insertError) {
+          console.error('Error saving progress:', insertError)
         } else {
           console.log('Progress saved successfully')
         }
@@ -354,10 +364,10 @@ export default function HomePage() {
 
   // Load user progress from database
   const loadUserProgress = async () => {
-    if (!user) return
+    if (!user?.id) return
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('visa_entries')
         .select('*')
         .eq('user_id', user.id)
@@ -369,7 +379,8 @@ export default function HomePage() {
       }
 
       if (data && data.length > 0) {
-        const loadedEntries: VisaEntry[] = data.map((entry, index) => ({
+        const dbEntries: Database['public']['Tables']['visa_entries']['Row'][] = data
+        const loadedEntries: VisaEntry[] = dbEntries.map((entry, index) => ({
           id: entry.id,
           country: entry.country,
           startDate: new Date(entry.start_date),
