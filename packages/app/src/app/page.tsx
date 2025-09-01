@@ -502,23 +502,15 @@ export default function HomePage() {
 
   // Helper function to get appropriate reference date for calculations
   const getRowReferenceDate = (tripsUpToThisRow: any[]): Date => {
-    if (tripsUpToThisRow.length === 0) return new Date()
+    // FIXED: Always use "today" as reference for 90/180 rolling window calculation
+    // The 90/180 rule calculates how many days are used in the 180 days leading up to today
+    // This ensures accurate "Total Days Used" and "Days Remaining" calculations
+    const today = new Date()
     
-    // For single entries or simple cases, use a more straightforward approach
-    if (tripsUpToThisRow.length === 1) {
-      const trip = tripsUpToThisRow[0]
-      // If the trip is in the future, use today as reference
-      // If the trip is in the past or current, use the end date
-      const today = new Date()
-      return trip.endDate > today ? today : trip.endDate
-    }
+    // Mobile-specific debug logging as required by CLAUDE.md
+    console.log('90/180 calculation using reference date:', today.toDateString(), 'for', tripsUpToThisRow.length, 'trips')
     
-    // For multiple trips, use the latest end date OR today (whichever is later)
-    // This ensures past trips are included in calculations and future trips are projected correctly
-    const latestTripEnd = Math.max(...tripsUpToThisRow.map(trip => trip.endDate.getTime()))
-    const today = new Date().getTime()
-    
-    return new Date(Math.max(latestTripEnd, today))
+    return today
   }
 
   // Recalculate all entries whenever entries change

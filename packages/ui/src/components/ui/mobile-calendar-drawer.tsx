@@ -237,28 +237,28 @@ export function MobileCalendarDrawer({
               <button
                 key={`${format(monthDate, 'yyyy-MM')}-${index}`}
                 onClick={() => {
-                  // Only allow clicks on current month dates to prevent double selection
-                  if (!disabled && isCurrentMonth && !occupied) {
+                  // Allow clicks on any non-disabled, non-occupied date (past, present, future)
+                  if (!disabled && !occupied) {
                     console.log('Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'))
                     handleDateClick(date)
                   } else {
-                    console.log('Click blocked - disabled:', disabled, 'isCurrentMonth:', isCurrentMonth, 'occupied:', occupied)
+                    console.log('Click blocked - disabled:', disabled, 'occupied:', occupied)
                   }
                 }}
-                disabled={!isCurrentMonth || disabled || occupied}
+                disabled={disabled || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
                   // Airbnb-style: 44px touch targets, clean design
                   "h-11 w-11 text-sm font-medium transition-all duration-150 relative",
                   "flex items-center justify-center",
                   {
-                    // Current month styling - clickable dates
+                    // All valid dates styling - clickable (current, past, future months)
                     "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": 
-                      isCurrentMonth && !disabled && !occupied && !inRange,
+                      !disabled && !occupied && !inRange,
                     
-                    // Other month styling (not clickable, just visual padding)
-                    "text-gray-300 cursor-default": 
-                      !isCurrentMonth,
+                    // Other month dates that are outside valid range - lighter but still clickable
+                    "text-gray-500": 
+                      !isCurrentMonth && !disabled && !occupied,
                     
                     // Disabled styling
                     "text-gray-200 cursor-not-allowed": disabled,
