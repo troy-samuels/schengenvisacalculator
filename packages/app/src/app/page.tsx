@@ -188,87 +188,6 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
   )
 }
 
-// Smart Floating Save Animation Component
-function SmartFloatingSave({ 
-  isVisible, 
-  onSave, 
-  isLoggedIn, 
-  onLogin,
-  className = "" 
-}: { 
-  isVisible: boolean
-  onSave: () => void
-  isLoggedIn: boolean
-  onLogin: () => void
-  className?: string
-}) {
-  return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ 
-            type: "spring",
-            stiffness: 300,
-            damping: 25,
-            duration: 0.4
-          }}
-          className={`fixed bottom-6 right-6 z-50 ${className}`}
-        >
-          <motion.div
-            animate={{ 
-              y: [0, -8, 0],
-              boxShadow: [
-                "0 4px 14px 0 rgba(0, 0, 0, 0.15)",
-                "0 8px 24px 0 rgba(0, 0, 0, 0.2)",
-                "0 4px 14px 0 rgba(0, 0, 0, 0.15)"
-              ]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full px-6 py-3 shadow-lg cursor-pointer select-none"
-            onClick={isLoggedIn ? onSave : onLogin}
-          >
-            <div className="flex items-center space-x-2">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ 
-                  duration: 1.5, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-              >
-                <Save className="h-4 w-4" />
-              </motion.div>
-              <span className="font-semibold text-sm">
-                {isLoggedIn ? 'Save Future Trip' : 'Login to Save'}
-              </span>
-            </div>
-          </motion.div>
-          
-          {/* Pulsing ring animation */}
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-blue-400"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.8, 0, 0.8]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
 
 export default function HomePage() {
   const [entries, setEntries] = useState<VisaEntry[]>([
@@ -289,6 +208,23 @@ export default function HomePage() {
   
   // Smart Floating Save Animation State
   const [showFloatingSave, setShowFloatingSave] = useState(false)
+  
+  // Check for reduced motion preference
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  
+  useEffect(() => {
+    // Check if user prefers reduced motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    // Listen for changes
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
@@ -1144,13 +1080,65 @@ export default function HomePage() {
                 </div>
 
                 {totalDays > 0 && (
-              <Button
-                    onClick={user ? saveUserProgress : handleLoginClick}
-                    className="flex items-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium"
-                    style={{ backgroundColor: "#FA9937" }}
+                  <motion.div
+                    animate={showFloatingSave && !prefersReducedMotion ? { 
+                      scale: [1, 1.05, 1],
+                      boxShadow: [
+                        "0 4px 14px 0 rgba(250, 153, 55, 0.3)",
+                        "0 8px 24px 0 rgba(250, 153, 55, 0.5)", 
+                        "0 4px 14px 0 rgba(250, 153, 55, 0.3)"
+                      ]
+                    } : {}}
+                    transition={{
+                      duration: prefersReducedMotion ? 0 : 2,
+                      repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0,
+                      ease: "easeInOut"
+                    }}
+                    className="relative"
                   >
-                    <span>{user ? 'Save Progress' : 'Login to Save'}</span>
+                    <Button
+                      onClick={user ? saveUserProgress : handleLoginClick}
+                      className={`flex items-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
+                        showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
+                      }`}
+                      style={{ backgroundColor: "#FA9937" }}
+                    >
+                      <motion.div
+                        animate={showFloatingSave && !prefersReducedMotion ? { rotate: [0, 5, -5, 0] } : {}}
+                        transition={{ 
+                          duration: prefersReducedMotion ? 0 : 1.5, 
+                          repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
+                          ease: "easeInOut" 
+                        }}
+                      >
+                        <Save className="h-4 w-4" />
+                      </motion.div>
+                      <span>{user ? 'Save Progress' : 'Login to Save'}</span>
+                      
+                      {/* Static visual indicator for reduced motion users */}
+                      {showFloatingSave && (
+                        <div className="hidden motion-reduce:block ml-2">
+                          <div className="w-2 h-2 bg-orange-300 rounded-full"></div>
+                        </div>
+                      )}
                     </Button>
+                    
+                    {/* Pulsing ring animation for attention (hidden for reduced motion users) */}
+                    {showFloatingSave && !prefersReducedMotion && (
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-2 border-orange-400"
+                        animate={{
+                          scale: [1, 1.15, 1],
+                          opacity: [0.6, 0, 0.6]
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    )}
+                  </motion.div>
                 )}
               </div>
                 </div>
@@ -1170,13 +1158,6 @@ export default function HomePage() {
         maxDate={new Date(new Date().getFullYear() + 5, 11, 31)} // 5 years in future
         />
 
-      {/* Smart Floating Save Animation */}
-      <SmartFloatingSave
-        isVisible={showFloatingSave}
-        onSave={saveUserProgress}
-        isLoggedIn={!!user}
-        onLogin={handleLoginClick}
-      />
       </div>
   )
 }
