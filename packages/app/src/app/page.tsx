@@ -1139,7 +1139,7 @@ export default function HomePage() {
                   >
                     <Button
                       onClick={user ? saveUserProgress : handleLoginClick}
-                      className={`flex items-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
+                      className={`flex items-center justify-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
                       style={{ backgroundColor: "#FA9937" }}
@@ -1151,10 +1151,11 @@ export default function HomePage() {
                           repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
                           ease: "easeInOut" 
                         }}
+                        className="flex items-center justify-center"
                       >
-                        <Save className="h-4 w-4" />
+                        <Save className="h-4 w-4 flex-shrink-0" />
                       </motion.div>
-                      <span>{user ? 'Save Progress' : 'Login to Save'}</span>
+                      <span className="flex items-center">{user ? 'Save Progress' : 'Login to Save'}</span>
                       
                       {/* Static visual indicator for reduced motion users */}
                       {showFloatingSave && (

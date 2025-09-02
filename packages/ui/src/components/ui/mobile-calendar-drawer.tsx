@@ -106,14 +106,14 @@ export function MobileCalendarDrawer({
       console.log('📱 Mobile calendar: Found current month at index:', currentMonthIndex)
       
       if (currentMonthIndex !== -1) {
-        // Simplified auto-scroll with reliable scrollIntoView method
+        // Enhanced auto-scroll with manual positioning for reliable current month opening
         const scrollToCurrentMonth = () => {
           if (!scrollContainerRef.current) {
             console.warn('📱 Mobile calendar: Scroll container not available')
             return
           }
 
-          // Wait for DOM elements to be fully rendered
+          // Wait for drawer animation to complete and DOM elements to be fully rendered
           requestAnimationFrame(() => {
             setTimeout(() => {
               try {
@@ -121,32 +121,51 @@ export function MobileCalendarDrawer({
                 
                 if (monthElements && monthElements[currentMonthIndex]) {
                   const targetElement = monthElements[currentMonthIndex] as HTMLElement
+                  const scrollContainer = scrollContainerRef.current
                   
-                  console.log('📱 Mobile calendar: Scrolling to current month element')
+                  console.log('📱 Mobile calendar: Calculating scroll position for current month')
                   
-                  // Use scrollIntoView for reliable positioning
-                  targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                    inline: 'nearest'
+                  // Calculate precise scroll position - target element should be at top with small offset
+                  const containerTop = scrollContainer.getBoundingClientRect().top
+                  const elementTop = targetElement.getBoundingClientRect().top
+                  const currentScroll = scrollContainer.scrollTop
+                  const targetScroll = currentScroll + (elementTop - containerTop) - 20 // 20px offset from top
+                  
+                  console.log('📱 Mobile calendar: Scrolling to position:', targetScroll)
+                  
+                  // Use smooth scroll with calculated position
+                  scrollContainer.scrollTo({
+                    top: Math.max(0, targetScroll), // Ensure non-negative scroll position
+                    behavior: 'smooth'
                   })
                   
-                  // Verify scroll completion
+                  // Verify and retry if needed
                   setTimeout(() => {
-                    if (scrollContainerRef.current) {
-                      const scrollTop = scrollContainerRef.current.scrollTop
-                      const elementTop = targetElement.offsetTop
-                      console.log('📱 Mobile calendar: Scroll completed. Position:', scrollTop, 'Target:', elementTop)
+                    if (scrollContainer) {
+                      const finalScrollTop = scrollContainer.scrollTop
+                      const difference = Math.abs(finalScrollTop - targetScroll)
+                      
+                      console.log('📱 Mobile calendar: Final position:', finalScrollTop, 'Target was:', targetScroll, 'Difference:', difference)
+                      
+                      // Retry if scroll position is significantly off (>50px)
+                      if (difference > 50) {
+                        console.log('📱 Mobile calendar: Retrying scroll positioning')
+                        scrollContainer.scrollTo({
+                          top: Math.max(0, targetScroll),
+                          behavior: 'auto' // Instant fallback
+                        })
+                      }
                     }
-                  }, 1000)
+                  }, 800)
                   
                 } else {
                   console.warn('📱 Mobile calendar: Target month element not found')
+                  console.log('📱 Mobile calendar: Available elements:', monthElements?.length)
                 }
               } catch (error) {
                 console.error('📱 Mobile calendar: Auto-scroll failed:', error)
               }
-            }, 300) // Allow drawer animation to complete
+            }, 500) // Increased delay to ensure drawer animation completes
           })
         }
 
