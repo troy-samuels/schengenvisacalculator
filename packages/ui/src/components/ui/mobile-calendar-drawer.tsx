@@ -50,18 +50,36 @@ export function MobileCalendarDrawer({
   // Generate months from January 2024 to 12 months forward for travel planning
   const months = useMemo(() => {
     const monthsArray = []
-    const startDate = new Date(2024, 0, 1) // January 2024 as requested
     const currentDate = new Date()
+    const currentMonthStart = startOfMonth(currentDate)
+    
+    // Always start from January 2024 as baseline, but ensure current month is included
+    const baselineStart = new Date(2024, 0, 1)
+    const actualStart = currentMonthStart < baselineStart ? currentMonthStart : baselineStart
     const endDate = addMonths(currentDate, 12) // 12 months forward from today
     
-    let monthDate = startDate
+    let monthDate = actualStart
     while (monthDate <= endDate) {
       monthsArray.push(new Date(monthDate))
       monthDate = addMonths(monthDate, 1)
     }
     
+    // Verify current month is included
+    const currentMonthIncluded = monthsArray.some(month => 
+      month.getFullYear() === currentDate.getFullYear() && 
+      month.getMonth() === currentDate.getMonth()
+    )
+    
     console.log('Mobile calendar: Generated', monthsArray.length, 'months from', 
       format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'))
+    console.log('Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'included:', currentMonthIncluded)
+    
+    // Force add current month if somehow it's missing
+    if (!currentMonthIncluded) {
+      console.warn('Mobile calendar: Force adding current month to array')
+      monthsArray.push(currentMonthStart)
+      monthsArray.sort((a, b) => a.getTime() - b.getTime())
+    }
     
     return monthsArray
   }, [])
@@ -160,10 +178,21 @@ export function MobileCalendarDrawer({
           })
         }
 
-        // Start auto-scroll with improved timing
-        setTimeout(() => scrollToCurrentMonth(), 300) // Increased delay for proper drawer rendering
+        // Multiple scroll attempts with different timing strategies
+        // Immediate attempt (for fast devices)
+        scrollToCurrentMonth()
+        
+        // Delayed attempts (for drawer animation completion)
+        setTimeout(() => scrollToCurrentMonth(), 100)
+        setTimeout(() => scrollToCurrentMonth(), 300)
+        setTimeout(() => scrollToCurrentMonth(), 600) // Final attempt after full animation
       } else {
         console.warn('Mobile calendar: Current month not found in generated months array')
+        console.log('Mobile calendar: Looking for:', format(currentDate, 'yyyy-MM (MMMM yyyy)'))
+        console.log('Mobile calendar: Available months:')
+        months.forEach((month, index) => {
+          console.log(`  [${index}] ${format(month, 'yyyy-MM (MMMM yyyy)')}`)
+        })
       }
     }
   }, [isOpen, months])
