@@ -242,6 +242,70 @@ describe('EU Official Cumulative Rolling Calculations', () => {
       // CLAUDE.md requirement: <50ms per calculation
       const avgTimePerCalculation = totalTime / trips.length
       expect(avgTimePerCalculation).toBeLessThan(50) // <50ms per calculation
+      
+      // Enhanced logging for performance monitoring
+      console.log(`⚡ Performance: ${avgTimePerCalculation.toFixed(2)}ms avg (target: <50ms)`)
+    })
+    
+    it('should meet optimized performance target with safety margin', () => {
+      // PERFORMANCE REGRESSION TEST: Stricter timing to ensure optimizations work
+      const trips = Array.from({ length: 12 }, (_, i) => 
+        createTrip(
+          `opt-trip-${i}`,
+          'Germany',
+          `2024-${String(i + 1).padStart(2, '0')}-01`,
+          `2024-${String(i + 1).padStart(2, '0')}-07`
+        )
+      )
+
+      const startTime = performance.now()
+      
+      // More intensive test - calculate for each cumulative position
+      trips.forEach((_, index) => {
+        const cumulativeTrips = trips.slice(0, index + 1)
+        RobustSchengenCalculator.calculateExactCompliance(
+          cumulativeTrips,
+          trips[index].endDate
+        )
+      })
+
+      const endTime = performance.now()
+      const totalTime = endTime - startTime
+      const avgTimePerCalculation = totalTime / trips.length
+
+      // Optimized target: <30ms per calculation (40% improvement over original)
+      expect(avgTimePerCalculation).toBeLessThan(30)
+      expect(totalTime).toBeLessThan(360) // Total time < 360ms for 12 calculations
+      
+      console.log(`🚀 Optimized Performance: ${avgTimePerCalculation.toFixed(2)}ms avg (target: <30ms), 12 trips`)
+    })
+    
+    it('should handle complex multi-year scenarios efficiently', () => {
+      // Test with complex, overlapping date ranges across multiple years
+      const complexTrips = [
+        createTrip('complex1', 'Germany', '2023-12-15', '2024-01-15'), // 32 days
+        createTrip('complex2', 'France', '2024-02-01', '2024-02-20'),   // 20 days  
+        createTrip('complex3', 'Spain', '2024-03-10', '2024-04-10'),    // 32 days
+        createTrip('complex4', 'Italy', '2024-05-01', '2024-05-15'),    // 15 days
+        createTrip('complex5', 'Austria', '2024-07-20', '2024-08-05'),  // 17 days
+      ]
+
+      const startTime = performance.now()
+      
+      // Calculate compliance for final state (most complex calculation)
+      const result = RobustSchengenCalculator.calculateExactCompliance(
+        complexTrips,
+        complexTrips[complexTrips.length - 1].endDate
+      )
+
+      const endTime = performance.now()
+      const calculationTime = endTime - startTime
+
+      // Complex calculations should still be fast
+      expect(calculationTime).toBeLessThan(100) // <100ms for complex multi-year calculation
+      expect(result.totalDaysUsed).toBeGreaterThan(0) // Ensure calculation is correct
+      
+      console.log(`🧮 Complex calculation: ${calculationTime.toFixed(2)}ms (target: <100ms)`)
     })
   })
 
