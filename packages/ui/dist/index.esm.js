@@ -8905,17 +8905,28 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     // Generate months from January 2024 to 12 months forward for travel planning
     const months = useMemo(()=>{
         const monthsArray = [];
-        const startDate = new Date(2024, 0, 1) // January 2024 as requested
-        ;
         const currentDate = new Date();
+        const currentMonthStart = startOfMonth(currentDate);
+        // Always start from January 2024 as baseline, but ensure current month is included
+        const baselineStart = new Date(2024, 0, 1);
+        const actualStart = currentMonthStart < baselineStart ? currentMonthStart : baselineStart;
         const endDate = addMonths(currentDate, 12) // 12 months forward from today
         ;
-        let monthDate = startDate;
+        let monthDate = actualStart;
         while(monthDate <= endDate){
             monthsArray.push(new Date(monthDate));
             monthDate = addMonths(monthDate, 1);
         }
-        console.log('Mobile calendar: Generated', monthsArray.length, 'months from', format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'));
+        // Verify current month is included
+        const currentMonthIncluded = monthsArray.some((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+        console.log('📱 Mobile calendar: Generated', monthsArray.length, 'months from', format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'));
+        console.log('📱 Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'included:', currentMonthIncluded);
+        // Force add current month if somehow it's missing
+        if (!currentMonthIncluded) {
+            console.warn('📱 Mobile calendar: Force adding current month to array');
+            monthsArray.push(currentMonthStart);
+            monthsArray.sort((a, b)=>a.getTime() - b.getTime());
+        }
         return monthsArray;
     }, []);
     // Reset when drawer opens/closes
@@ -8931,26 +8942,57 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         isOpen,
         initialRange
     ]);
-    // Auto-scroll to current month when drawer opens
+    // Simplified and more reliable auto-scroll to current month when drawer opens
     useEffect(()=>{
         if (isOpen && scrollContainerRef.current && months.length > 0) {
             const currentDate = new Date();
             const currentMonthIndex = months.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+            console.log('📱 Mobile calendar: Opening drawer');
+            console.log('📱 Mobile calendar: Current month:', format(currentDate, 'MMMM yyyy'));
+            console.log('📱 Mobile calendar: Found current month at index:', currentMonthIndex);
             if (currentMonthIndex !== -1) {
-                // Add a small delay to ensure the drawer is fully rendered
-                setTimeout(()=>{
-                    if (scrollContainerRef.current) {
-                        // Calculate scroll position for current month
-                        const monthHeight = 400 // Approximate height per month
-                        ;
-                        const scrollPosition = currentMonthIndex * monthHeight;
-                        console.log('Mobile calendar: Auto-scrolling to current month', format(currentDate, 'MMMM yyyy'), 'at index', currentMonthIndex);
-                        scrollContainerRef.current.scrollTo({
-                            top: scrollPosition,
-                            behavior: 'smooth'
-                        });
+                // Simplified auto-scroll with reliable scrollIntoView method
+                const scrollToCurrentMonth = ()=>{
+                    if (!scrollContainerRef.current) {
+                        console.warn('📱 Mobile calendar: Scroll container not available');
+                        return;
                     }
-                }, 100);
+                    // Wait for DOM elements to be fully rendered
+                    requestAnimationFrame(()=>{
+                        setTimeout(()=>{
+                            try {
+                                const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]');
+                                if (monthElements && monthElements[currentMonthIndex]) {
+                                    const targetElement = monthElements[currentMonthIndex];
+                                    console.log('📱 Mobile calendar: Scrolling to current month element');
+                                    // Use scrollIntoView for reliable positioning
+                                    targetElement.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start',
+                                        inline: 'nearest'
+                                    });
+                                    // Verify scroll completion
+                                    setTimeout(()=>{
+                                        if (scrollContainerRef.current) {
+                                            const scrollTop = scrollContainerRef.current.scrollTop;
+                                            const elementTop = targetElement.offsetTop;
+                                            console.log('📱 Mobile calendar: Scroll completed. Position:', scrollTop, 'Target:', elementTop);
+                                        }
+                                    }, 1000);
+                                } else {
+                                    console.warn('📱 Mobile calendar: Target month element not found');
+                                }
+                            } catch (error) {
+                                console.error('📱 Mobile calendar: Auto-scroll failed:', error);
+                            }
+                        }, 300); // Allow drawer animation to complete
+                    });
+                };
+                // Execute scroll with proper timing
+                scrollToCurrentMonth();
+            } else {
+                console.warn('📱 Mobile calendar: Current month not found in generated months array');
+                console.log('📱 Mobile calendar: Available months:', months.map((m, i)=>`[${i}] ${format(m, 'MMM yyyy')}`).join(', '));
             }
         }
     }, [
@@ -8974,7 +9016,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
             }
             return;
         }
-        console.log('Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', {
+        console.log('📱 Mobile calendar: Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', {
             startDate: selectedRange.startDate ? format(selectedRange.startDate, 'yyyy-MM-dd') : null,
             endDate: selectedRange.endDate ? format(selectedRange.endDate, 'yyyy-MM-dd') : null
         });
@@ -8986,12 +9028,12 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                 endDate: null
             });
             setSelectingEnd(true);
-            console.log('✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'));
+            console.log('📱 ✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'));
         } else if (!selectedRange.endDate) {
             // Second click: set end date or reset
             if (cleanDate.getTime() === selectedRange.startDate.getTime()) {
                 // Clicking same date - do nothing or could deselect
-                console.log('Same date clicked, ignoring');
+                console.log('📱 Same date clicked, ignoring');
                 return;
             } else if (cleanDate > selectedRange.startDate) {
                 // Valid end date - show range
@@ -9000,7 +9042,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                     endDate: cleanDate
                 });
                 setSelectingEnd(false);
-                console.log('✓ End date set:', format(cleanDate, 'yyyy-MM-dd'));
+                console.log('📱 ✓ End date set:', format(cleanDate, 'yyyy-MM-dd'));
             } else {
                 // Before start date - reset with new start
                 setSelectedRange({
@@ -9008,7 +9050,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                     endDate: null
                 });
                 setSelectingEnd(true);
-                console.log('↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'));
+                console.log('📱 ↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'));
             }
         } else {
             // Both dates already selected - reset with new start
@@ -9017,7 +9059,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                 endDate: null
             });
             setSelectingEnd(true);
-            console.log('↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'));
+            console.log('📱 ↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'));
         }
     };
     // Check if date is disabled - identical to desktop
@@ -9094,7 +9136,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         return /*#__PURE__*/ React__default.createElement("div", {
             className: "px-4"
         }, /*#__PURE__*/ React__default.createElement("div", {
-            className: "text-center font-bold text-xl mb-6 text-gray-900 pt-6"
+            className: "text-center font-bold text-sm mb-6 text-gray-900 pt-6"
         }, format(monthDate, 'MMMM yyyy')), isFirstMonth && /*#__PURE__*/ React__default.createElement("div", {
             className: "grid grid-cols-7 gap-1 mb-3"
         }, [
@@ -9125,10 +9167,10 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                 onClick: ()=>{
                     // Allow clicks on any non-disabled, non-occupied date (past, present, future)
                     if (!disabled && !occupied) {
-                        console.log('Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'));
+                        console.log('📱 Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'));
                         handleDateClick(date);
                     } else {
-                        console.log('Click blocked - disabled:', disabled, 'occupied:', occupied);
+                        console.log('📱 Click blocked - disabled:', disabled, 'occupied:', occupied);
                     }
                 },
                 disabled: disabled || occupied,
@@ -9190,7 +9232,8 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "pb-8"
     }, months.map((month, index)=>/*#__PURE__*/ React__default.createElement("div", {
-            key: index
+            key: index,
+            "data-month-index": index
         }, renderSeamlessMonth(month, index === 0)))))), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center justify-between p-6 border-t border-gray-200 bg-white"
     }, /*#__PURE__*/ React__default.createElement(Button$1, {

@@ -868,6 +868,172 @@ RobustSchengenCalculator.ROLLING_PERIOD_DAYS = 180;
 }
 
 /**
+ * Validates that cumulative calculation matches RobustSchengenCalculator
+ * This is the CRITICAL cross-validation function for EU compliance
+ */ function validateCumulativeCalculation(chronologicalTrips, rowIndex, actualResult) {
+    try {
+        // Input validation
+        if (rowIndex < 0 || rowIndex >= chronologicalTrips.length) {
+            return {
+                isValid: false,
+                expectedResult: createFallbackResult(),
+                errorMessage: `Invalid row index: ${rowIndex}. Must be between 0 and ${chronologicalTrips.length - 1}`,
+                validationDetails: {
+                    rowIndex,
+                    tripsCount: chronologicalTrips.length,
+                    referenceDate: 'invalid',
+                    totalDaysUsed: 0,
+                    daysRemaining: 90
+                }
+            };
+        }
+        // Get cumulative trips up to this row (chronologically)
+        const tripsUpToRow = chronologicalTrips.slice(0, rowIndex + 1);
+        const referenceDate = chronologicalTrips[rowIndex].endDate;
+        // Calculate expected result using RobustSchengenCalculator (source of truth)
+        const expectedResult = RobustSchengenCalculator.calculateExactCompliance(tripsUpToRow, referenceDate);
+        const validationDetails = {
+            rowIndex,
+            tripsCount: tripsUpToRow.length,
+            referenceDate: referenceDate.toISOString(),
+            totalDaysUsed: expectedResult.totalDaysUsed,
+            daysRemaining: expectedResult.daysRemaining
+        };
+        // If no actual result provided, just return expected (for preview/debug)
+        if (!actualResult) {
+            return {
+                isValid: true,
+                expectedResult,
+                validationDetails
+            };
+        }
+        // Cross-validate actual vs expected results
+        const isValid = actualResult.totalDaysUsed === expectedResult.totalDaysUsed && actualResult.daysRemaining === expectedResult.daysRemaining && actualResult.isCompliant === expectedResult.isCompliant && actualResult.overstayDays === expectedResult.overstayDays;
+        if (!isValid) {
+            return {
+                isValid: false,
+                expectedResult,
+                actualResult,
+                errorMessage: `Cumulative calculation mismatch at row ${rowIndex}. Expected: ${expectedResult.totalDaysUsed} used, ${expectedResult.daysRemaining} remaining. Actual: ${actualResult.totalDaysUsed} used, ${actualResult.daysRemaining} remaining.`,
+                validationDetails
+            };
+        }
+        return {
+            isValid: true,
+            expectedResult,
+            actualResult,
+            validationDetails
+        };
+    } catch (error) {
+        return {
+            isValid: false,
+            expectedResult: createFallbackResult(),
+            errorMessage: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            validationDetails: {
+                rowIndex,
+                tripsCount: chronologicalTrips.length,
+                referenceDate: 'error',
+                totalDaysUsed: 0,
+                daysRemaining: 90
+            }
+        };
+    }
+}
+/**
+ * Validates the entire chronological sequence for consistency
+ * Ensures cumulative totals never decrease unexpectedly within same 180-day period
+ */ function validateChronologicalSequence(chronologicalTrips) {
+    const errors = [];
+    const warnings = [];
+    if (chronologicalTrips.length === 0) {
+        return {
+            isValid: true,
+            errors,
+            warnings
+        };
+    }
+    let previousResult = null;
+    for(let i = 0; i < chronologicalTrips.length; i++){
+        const validation = validateCumulativeCalculation(chronologicalTrips, i);
+        if (!validation.isValid) {
+            errors.push(`Row ${i}: ${validation.errorMessage}`);
+            continue;
+        }
+        const currentResult = validation.expectedResult;
+        // Check for unexpected decreases in cumulative totals
+        if (previousResult && currentResult) {
+            const daysBetweenReferences = Math.abs(previousResult.referenceDate.getTime() - currentResult.referenceDate.getTime()) / (1000 * 60 * 60 * 24);
+            // If within same 180-day period, totals should generally not decrease
+            if (daysBetweenReferences < 180 && currentResult.totalDaysUsed < previousResult.totalDaysUsed) {
+                warnings.push(`Row ${i}: Cumulative total decreased from ${previousResult.totalDaysUsed} to ${currentResult.totalDaysUsed} ` + `within ${Math.round(daysBetweenReferences)} days. This may indicate trips falling outside rolling window.`);
+            }
+        }
+        previousResult = currentResult;
+    }
+    return {
+        isValid: errors.length === 0,
+        errors,
+        warnings
+    };
+}
+/**
+ * Mobile-specific validation helper
+ * Adds mobile debugging context for CLAUDE.md compliance
+ */ function validateMobileCumulativeCalculation(chronologicalTrips, rowIndex, actualResult) {
+    const validation = validateCumulativeCalculation(chronologicalTrips, rowIndex, actualResult);
+    // Mobile-specific debugging (CLAUDE.md requirement)
+    console.log(`📱 Mobile validation for row ${rowIndex}:`, {
+        isValid: validation.isValid,
+        tripsCount: validation.validationDetails.tripsCount,
+        totalDaysUsed: validation.validationDetails.totalDaysUsed,
+        daysRemaining: validation.validationDetails.daysRemaining,
+        errorMessage: validation.errorMessage || 'No errors'
+    });
+    return validation;
+}
+/**
+ * Performance benchmark for cumulative calculations
+ * CLAUDE.md requirement: <50ms per calculation
+ */ function benchmarkCumulativePerformance(chronologicalTrips) {
+    if (chronologicalTrips.length === 0) {
+        return {
+            avgTimePerCalculation: 0,
+            maxTime: 0,
+            isWithinBenchmark: true
+        };
+    }
+    const times = [];
+    chronologicalTrips.forEach((_, index)=>{
+        const startTime = performance.now();
+        validateCumulativeCalculation(chronologicalTrips, index);
+        const endTime = performance.now();
+        times.push(endTime - startTime);
+    });
+    const avgTime = times.reduce((sum, time)=>sum + time, 0) / times.length;
+    const maxTime = Math.max(...times);
+    return {
+        avgTimePerCalculation: avgTime,
+        maxTime,
+        isWithinBenchmark: avgTime < 50 && maxTime < 100 // <50ms avg, <100ms max
+    };
+}
+/**
+ * Helper to create fallback compliance result
+ */ function createFallbackResult() {
+    const now = new Date();
+    return {
+        totalDaysUsed: 0,
+        daysRemaining: 90,
+        isCompliant: true,
+        overstayDays: 0,
+        referenceDate: now,
+        periodStart: new Date(now.getTime() - 179 * 24 * 60 * 60 * 1000),
+        periodEnd: now,
+        detailedBreakdown: []
+    };
+}
+
+/**
  * Schengen Area Countries Data
  * Complete list of all 27 Schengen countries with flags and metadata
  * Updated as of 2024 - includes all current member states
@@ -1190,9 +1356,13 @@ exports.DateOverlapValidator = DateOverlapValidator;
 exports.RobustSchengenCalculator = RobustSchengenCalculator;
 exports.SCHENGEN_COUNTRIES = SCHENGEN_COUNTRIES;
 exports.SCHENGEN_COUNTRIES_COUNT = SCHENGEN_COUNTRIES_COUNT;
+exports.benchmarkPerformance = benchmarkCumulativePerformance;
 exports.getCountriesForSelect = getCountriesForSelect;
 exports.getCountryByCode = getCountryByCode;
 exports.getCountryByName = getCountryByName;
 exports.getEUMemberCountries = getEUMemberCountries;
 exports.getNonEUSchengenCountries = getNonEUSchengenCountries;
+exports.validateCumulative = validateCumulativeCalculation;
+exports.validateMobile = validateMobileCumulativeCalculation;
+exports.validateSequence = validateChronologicalSequence;
 //# sourceMappingURL=index.cjs.js.map

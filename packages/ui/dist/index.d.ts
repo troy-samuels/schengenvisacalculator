@@ -142,11 +142,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 declare const Input: React.ForwardRefExoticComponent<InputProps & React.RefAttributes<HTMLInputElement>>;
 
 declare const labelVariants: (props?: ({
-    variant?: "required" | "default" | "optional" | null | undefined;
+    variant?: "default" | "required" | "optional" | null | undefined;
     size?: "default" | "sm" | "lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelProps & React.RefAttributes<HTMLLabelElement>, "ref"> & VariantProps<(props?: ({
-    variant?: "required" | "default" | "optional" | null | undefined;
+    variant?: "default" | "required" | "optional" | null | undefined;
     size?: "default" | "sm" | "lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 

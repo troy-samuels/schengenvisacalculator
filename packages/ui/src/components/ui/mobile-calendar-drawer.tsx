@@ -70,13 +70,13 @@ export function MobileCalendarDrawer({
       month.getMonth() === currentDate.getMonth()
     )
     
-    console.log('Mobile calendar: Generated', monthsArray.length, 'months from', 
+    console.log('📱 Mobile calendar: Generated', monthsArray.length, 'months from', 
       format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'))
-    console.log('Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'included:', currentMonthIncluded)
+    console.log('📱 Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'included:', currentMonthIncluded)
     
     // Force add current month if somehow it's missing
     if (!currentMonthIncluded) {
-      console.warn('Mobile calendar: Force adding current month to array')
+      console.warn('📱 Mobile calendar: Force adding current month to array')
       monthsArray.push(currentMonthStart)
       monthsArray.sort((a, b) => a.getTime() - b.getTime())
     }
@@ -92,7 +92,7 @@ export function MobileCalendarDrawer({
     }
   }, [isOpen, initialRange])
 
-  // Enhanced auto-scroll to current month when drawer opens
+  // Simplified and more reliable auto-scroll to current month when drawer opens
   useEffect(() => {
     if (isOpen && scrollContainerRef.current && months.length > 0) {
       const currentDate = new Date()
@@ -101,98 +101,60 @@ export function MobileCalendarDrawer({
         month.getMonth() === currentDate.getMonth()
       )
       
+      console.log('📱 Mobile calendar: Opening drawer')
+      console.log('📱 Mobile calendar: Current month:', format(currentDate, 'MMMM yyyy'))
+      console.log('📱 Mobile calendar: Found current month at index:', currentMonthIndex)
+      
       if (currentMonthIndex !== -1) {
-        console.log('Mobile calendar: Found current month', format(currentDate, 'MMMM yyyy'), 'at index', currentMonthIndex)
-        
-        // Enhanced auto-scroll with dynamic height calculation and retry logic
-        const scrollToCurrentMonth = (attempt = 1, maxAttempts = 3) => {
+        // Simplified auto-scroll with reliable scrollIntoView method
+        const scrollToCurrentMonth = () => {
           if (!scrollContainerRef.current) {
-            console.warn('Mobile calendar: Scroll container not available on attempt', attempt)
+            console.warn('📱 Mobile calendar: Scroll container not available')
             return
           }
 
-          // Use requestAnimationFrame for better timing coordination
+          // Wait for DOM elements to be fully rendered
           requestAnimationFrame(() => {
-            if (!scrollContainerRef.current) return
-
-            try {
-              // Dynamic height calculation - find actual month elements
-              const monthElements = scrollContainerRef.current.querySelectorAll('[data-month-index]')
-              
-              if (monthElements.length > currentMonthIndex) {
-                // Use actual DOM element position for accurate scrolling
-                const targetMonthElement = monthElements[currentMonthIndex] as HTMLElement
-                const scrollPosition = targetMonthElement.offsetTop
+            setTimeout(() => {
+              try {
+                const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]')
                 
-                console.log('Mobile calendar: Using actual DOM height - scrolling to position', scrollPosition, 'px')
-                
-                scrollContainerRef.current.scrollTo({
-                  top: scrollPosition,
-                  behavior: 'smooth'
-                })
-                
-                // Verify scroll completion after animation
-                setTimeout(() => {
-                  if (scrollContainerRef.current) {
-                    const actualScrollTop = scrollContainerRef.current.scrollTop
-                    console.log('Mobile calendar: Scroll completed at position', actualScrollTop, 'target was', scrollPosition)
-                    
-                    // Retry if scroll didn't work and we have attempts left
-                    if (Math.abs(actualScrollTop - scrollPosition) > 50 && attempt < maxAttempts) {
-                      console.log('Mobile calendar: Scroll verification failed, retrying attempt', attempt + 1)
-                      setTimeout(() => scrollToCurrentMonth(attempt + 1, maxAttempts), 200)
+                if (monthElements && monthElements[currentMonthIndex]) {
+                  const targetElement = monthElements[currentMonthIndex] as HTMLElement
+                  
+                  console.log('📱 Mobile calendar: Scrolling to current month element')
+                  
+                  // Use scrollIntoView for reliable positioning
+                  targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                  })
+                  
+                  // Verify scroll completion
+                  setTimeout(() => {
+                    if (scrollContainerRef.current) {
+                      const scrollTop = scrollContainerRef.current.scrollTop
+                      const elementTop = targetElement.offsetTop
+                      console.log('📱 Mobile calendar: Scroll completed. Position:', scrollTop, 'Target:', elementTop)
                     }
-                  }
-                }, 800) // Allow time for smooth scroll animation
-              } else {
-                // Fallback to calculated height if DOM elements not ready
-                const monthHeight = 380 // Refined estimate based on actual rendered height
-                const scrollPosition = currentMonthIndex * monthHeight
-                
-                console.log('Mobile calendar: Using calculated height fallback - scrolling to position', scrollPosition, 'px')
-                
-                scrollContainerRef.current.scrollTo({
-                  top: scrollPosition,
-                  behavior: 'smooth'
-                })
-              }
-            } catch (error) {
-              console.error('Mobile calendar: Auto-scroll error on attempt', attempt, error)
-              
-              // Final fallback - try scrollIntoView method
-              if (attempt === maxAttempts) {
-                try {
-                  const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]')
-                  if (monthElements && monthElements[currentMonthIndex]) {
-                    console.log('Mobile calendar: Using scrollIntoView fallback')
-                    ;(monthElements[currentMonthIndex] as HTMLElement).scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start'
-                    })
-                  }
-                } catch (fallbackError) {
-                  console.error('Mobile calendar: All scroll methods failed', fallbackError)
+                  }, 1000)
+                  
+                } else {
+                  console.warn('📱 Mobile calendar: Target month element not found')
                 }
+              } catch (error) {
+                console.error('📱 Mobile calendar: Auto-scroll failed:', error)
               }
-            }
+            }, 300) // Allow drawer animation to complete
           })
         }
 
-        // Multiple scroll attempts with different timing strategies
-        // Immediate attempt (for fast devices)
+        // Execute scroll with proper timing
         scrollToCurrentMonth()
-        
-        // Delayed attempts (for drawer animation completion)
-        setTimeout(() => scrollToCurrentMonth(), 100)
-        setTimeout(() => scrollToCurrentMonth(), 300)
-        setTimeout(() => scrollToCurrentMonth(), 600) // Final attempt after full animation
       } else {
-        console.warn('Mobile calendar: Current month not found in generated months array')
-        console.log('Mobile calendar: Looking for:', format(currentDate, 'yyyy-MM (MMMM yyyy)'))
-        console.log('Mobile calendar: Available months:')
-        months.forEach((month, index) => {
-          console.log(`  [${index}] ${format(month, 'yyyy-MM (MMMM yyyy)')}`)
-        })
+        console.warn('📱 Mobile calendar: Current month not found in generated months array')
+        console.log('📱 Mobile calendar: Available months:', months.map((m, i) => `[${i}] ${format(m, 'MMM yyyy')}`).join(', '))
       }
     }
   }, [isOpen, months])
@@ -217,7 +179,7 @@ export function MobileCalendarDrawer({
       return
     }
 
-    console.log('Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', { 
+    console.log('📱 Mobile calendar: Selecting date:', format(cleanDate, 'yyyy-MM-dd'), 'Current state:', { 
       startDate: selectedRange.startDate ? format(selectedRange.startDate, 'yyyy-MM-dd') : null,
       endDate: selectedRange.endDate ? format(selectedRange.endDate, 'yyyy-MM-dd') : null
     })
@@ -227,29 +189,29 @@ export function MobileCalendarDrawer({
       // First click: set start date (black circle)
       setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
-      console.log('✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'))
+      console.log('📱 ✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'))
     } else if (!selectedRange.endDate) {
       // Second click: set end date or reset
       if (cleanDate.getTime() === selectedRange.startDate.getTime()) {
         // Clicking same date - do nothing or could deselect
-        console.log('Same date clicked, ignoring')
+        console.log('📱 Same date clicked, ignoring')
         return
       } else if (cleanDate > selectedRange.startDate) {
         // Valid end date - show range
         setSelectedRange({ ...selectedRange, endDate: cleanDate })
         setSelectingEnd(false)
-        console.log('✓ End date set:', format(cleanDate, 'yyyy-MM-dd'))
+        console.log('📱 ✓ End date set:', format(cleanDate, 'yyyy-MM-dd'))
       } else {
         // Before start date - reset with new start
         setSelectedRange({ startDate: cleanDate, endDate: null })
         setSelectingEnd(true)
-        console.log('↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'))
+        console.log('📱 ↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'))
       }
     } else {
       // Both dates already selected - reset with new start
       setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
-      console.log('↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'))
+      console.log('📱 ↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'))
     }
   }
 
@@ -335,8 +297,8 @@ export function MobileCalendarDrawer({
 
     return (
       <div className="px-4">
-        {/* Month header - centered like Airbnb */}
-        <div className="text-center font-bold text-xl mb-6 text-gray-900 pt-6">
+        {/* Month header - centered and 2 font sizes smaller */}
+        <div className="text-center font-bold text-sm mb-6 text-gray-900 pt-6">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
@@ -369,10 +331,10 @@ export function MobileCalendarDrawer({
                 onClick={() => {
                   // Allow clicks on any non-disabled, non-occupied date (past, present, future)
                   if (!disabled && !occupied) {
-                    console.log('Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'))
+                    console.log('📱 Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'))
                     handleDateClick(date)
                   } else {
-                    console.log('Click blocked - disabled:', disabled, 'occupied:', occupied)
+                    console.log('📱 Click blocked - disabled:', disabled, 'occupied:', occupied)
                   }
                 }}
                 disabled={disabled || occupied}

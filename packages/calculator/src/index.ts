@@ -2,6 +2,14 @@
 export { RobustSchengenCalculator } from './calculator/robust-schengen-calculator'
 export { DateOverlapValidator } from './validators/date-overlap-validator'
 
+// Cumulative validation exports (CLAUDE.md cross-validation requirement)
+export {
+  validateCumulative,
+  validateSequence,
+  validateMobile,
+  benchmarkPerformance
+} from './validators/cumulative-validation'
+
 // Country data
 export * from './data/countries'
 
@@ -23,3 +31,7 @@ export type {
   ConflictDetail,
   OverlapPreventionConfig
 } from './validators/date-overlap-validator'
+
+export type {
+  CumulativeValidationResult
+} from './validators/cumulative-validation'

@@ -255,6 +255,55 @@ declare class DateOverlapValidator {
 }
 
 /**
+ * Cross-Validation Helper for Cumulative Rolling Calculations
+ *
+ * CLAUDE.md Compliant: Ensures cumulative calculations maintain
+ * 100% accuracy against RobustSchengenCalculator source of truth
+ */
+
+interface CumulativeValidationResult {
+    isValid: boolean;
+    expectedResult: ComplianceResult;
+    actualResult?: ComplianceResult;
+    errorMessage?: string;
+    validationDetails: {
+        rowIndex: number;
+        tripsCount: number;
+        referenceDate: string;
+        totalDaysUsed: number;
+        daysRemaining: number;
+    };
+}
+/**
+ * Validates that cumulative calculation matches RobustSchengenCalculator
+ * This is the CRITICAL cross-validation function for EU compliance
+ */
+declare function validateCumulativeCalculation(chronologicalTrips: Trip[], rowIndex: number, actualResult?: ComplianceResult): CumulativeValidationResult;
+/**
+ * Validates the entire chronological sequence for consistency
+ * Ensures cumulative totals never decrease unexpectedly within same 180-day period
+ */
+declare function validateChronologicalSequence(chronologicalTrips: Trip[]): {
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+};
+/**
+ * Mobile-specific validation helper
+ * Adds mobile debugging context for CLAUDE.md compliance
+ */
+declare function validateMobileCumulativeCalculation(chronologicalTrips: Trip[], rowIndex: number, actualResult?: ComplianceResult): CumulativeValidationResult;
+/**
+ * Performance benchmark for cumulative calculations
+ * CLAUDE.md requirement: <50ms per calculation
+ */
+declare function benchmarkCumulativePerformance(chronologicalTrips: Trip[]): {
+    avgTimePerCalculation: number;
+    maxTime: number;
+    isWithinBenchmark: boolean;
+};
+
+/**
  * Schengen Area Countries Data
  * Complete list of all 27 Schengen countries with flags and metadata
  * Updated as of 2024 - includes all current member states
@@ -281,5 +330,5 @@ declare const getEUMemberCountries: () => SchengenCountry[];
 declare const getNonEUSchengenCountries: () => SchengenCountry[];
 declare const SCHENGEN_COUNTRIES_COUNT: number;
 
-export { DateOverlapValidator, RobustSchengenCalculator, SCHENGEN_COUNTRIES, SCHENGEN_COUNTRIES_COUNT, getCountriesForSelect, getCountryByCode, getCountryByName, getEUMemberCountries, getNonEUSchengenCountries };
-export type { ComplianceResult, ConflictDetail, DateRange, DayBreakdown, EnhancedTrip, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripValidationResult, ValidationError, ValidationResult };
+export { DateOverlapValidator, RobustSchengenCalculator, SCHENGEN_COUNTRIES, SCHENGEN_COUNTRIES_COUNT, benchmarkCumulativePerformance as benchmarkPerformance, getCountriesForSelect, getCountryByCode, getCountryByName, getEUMemberCountries, getNonEUSchengenCountries, validateCumulativeCalculation as validateCumulative, validateMobileCumulativeCalculation as validateMobile, validateChronologicalSequence as validateSequence };
+export type { ComplianceResult, ConflictDetail, CumulativeValidationResult, DateRange, DayBreakdown, EnhancedTrip, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripValidationResult, ValidationError, ValidationResult };

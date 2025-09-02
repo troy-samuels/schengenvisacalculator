@@ -487,8 +487,43 @@ export default function HomePage() {
       days: e.days
     })))
 
-    // Convert entries to Trip format for the calculator
-    const tripsForCalculation = entriesWithDays
+    // CRITICAL: Sort entries chronologically for cumulative rolling calculations
+    // This ensures "Total Used" and "Days Remaining" show progressive compliance
+    // Sort by start date first, then end date (CLAUDE.md mobile-first compliant)
+    const chronologicalEntries = [...entriesWithDays].sort((a, b) => {
+      // Incomplete entries (no dates) stay at bottom in original order
+      if (!a.startDate && !b.startDate) return 0
+      if (!a.startDate) return 1  // a goes after b
+      if (!b.startDate) return -1 // a goes before b
+      
+      // Primary sort: start date (earliest first)
+      if (a.startDate.getTime() !== b.startDate.getTime()) {
+        return a.startDate.getTime() - b.startDate.getTime()
+      }
+      
+      // Secondary sort: end date (if start dates are equal)
+      if (a.endDate && b.endDate) {
+        return a.endDate.getTime() - b.endDate.getTime()
+      }
+      
+      // Handle cases where only one has end date
+      if (!a.endDate && b.endDate) return 1   // a goes after b
+      if (a.endDate && !b.endDate) return -1  // a goes before b
+      
+      return 0 // Equal
+    })
+    
+    console.log('🗓️ Chronologically sorted entries:', chronologicalEntries.map((e, idx) => ({
+      displayIndex: idx,
+      id: e.id,
+      country: e.country,
+      startDate: e.startDate?.toDateString() || 'No start date',
+      endDate: e.endDate?.toDateString() || 'No end date',
+      days: e.days
+    })))
+
+    // Convert chronological entries to Trip format for the calculator
+    const tripsForCalculation = chronologicalEntries
       .filter((entry) => entry.country && entry.startDate && entry.endDate)
       .map((entry) => ({
         id: entry.id,
@@ -504,8 +539,9 @@ export default function HomePage() {
       ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallReferenceDate)
       : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
 
-    // Update each entry with calculated values
-    const entriesWithCalculations = entriesWithDays.map((entry, index) => {
+    // Update each chronologically sorted entry with calculated values
+    // This shows cumulative "Total Used" and "Days Remaining" based on chronological progression
+    const entriesWithCalculations = chronologicalEntries.map((entry, index) => {
       console.log(`\n🔍 ROW ${index}: Processing entry ${entry.country || 'incomplete'} (ID: ${entry.id})`)
 
       // Determine active column based on completion state
@@ -518,8 +554,9 @@ export default function HomePage() {
         activeColumn = "country"
       }
 
-      // Calculate cumulative days up to this row (including this row)
-      const tripsUpToThisRow = entriesWithDays.slice(0, index + 1)
+      // Calculate cumulative days up to this chronological row (including this row)
+      // Uses chronological order to show progressive compliance from earliest trip
+      const tripsUpToThisRow = chronologicalEntries.slice(0, index + 1)
         .filter(e => e.country && e.startDate && e.endDate)
         .map(e => ({
           id: e.id,
@@ -529,17 +566,21 @@ export default function HomePage() {
           days: e.days
         }))
 
-      console.log(`  📋 Trips up to this row (${tripsUpToThisRow.length} total):`, 
+      console.log(`  📋 Chronological trips up to this row (${tripsUpToThisRow.length} total):`, 
         tripsUpToThisRow.map(t => ({
           country: t.country,
           dates: `${t.startDate.toDateString()} → ${t.endDate.toDateString()}`,
           days: t.days
         })))
+      
+      // Mobile-specific debugging for chronological order (CLAUDE.md compliance)
+      console.log(`  📱 Mobile: Chronological row ${index} processing ${entry.country || 'incomplete'} with ${tripsUpToThisRow.length} cumulative trips`)
 
       // Sort trips chronologically by end date for proper rolling calculation
+      // (Input is already chronologically sorted by start date, this sorts by end date for rolling window)
       const sortedTrips = [...tripsUpToThisRow].sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
       
-      console.log(`  🗓️  Chronologically sorted trips:`, 
+      console.log(`  🗓️  End-date sorted trips for rolling window calculation:`, 
         sortedTrips.map(t => ({
           country: t.country,
           endDate: t.endDate.toDateString(),
