@@ -29,6 +29,20 @@ const external = [
   'os'
 ]
 
+// Warning suppression for clean builds
+const onwarn = (warning, warn) => {
+  // Suppress "use client" directive warnings - these are expected in Next.js components
+  if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+    return;
+  }
+  // Suppress sourcemap warnings from node_modules dependencies
+  if (warning.code === 'SOURCEMAP_ERROR' && warning.loc?.file?.includes('node_modules')) {
+    return;
+  }
+  // Show all other warnings
+  warn(warning);
+};
+
 export default [
   // Type declarations build
   {
@@ -38,7 +52,8 @@ export default [
       format: 'es'
     },
     plugins: [dts()],
-    external
+    external,
+    onwarn
   },
   // ES modules build
   {
@@ -82,7 +97,8 @@ export default [
         },
       })
     ],
-    external
+    external,
+    onwarn
   },
   // CommonJS build
   {
@@ -126,7 +142,8 @@ export default [
         },
       })
     ],
-    external
+    external,
+    onwarn
   },
   // Minified UMD build
   {
@@ -182,6 +199,7 @@ export default [
       }),
       terser()
     ],
-    external
+    external,
+    onwarn
   }
 ]

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
 import { Database } from '../lib/types/database'
+import { useRouter } from 'next/navigation'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
@@ -205,6 +206,9 @@ export default function HomePage() {
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [selectedEntryId, setSelectedEntryId] = useState<string>("")
+  
+  // Router for navigation
+  const router = useRouter()
   
   // Smart Floating Save Animation State
   const [showFloatingSave, setShowFloatingSave] = useState(false)
@@ -410,6 +414,11 @@ export default function HomePage() {
     } catch (error) {
       console.error('Signup error:', error)
     }
+  }
+
+  // Save button handler - redirect to sign-up landing page when not authenticated
+  const handleSaveClick = () => {
+    router.push('/save-progress')
   }
 
   // Get countries for dropdown
@@ -1138,7 +1147,7 @@ export default function HomePage() {
                     className="relative"
                   >
                     <Button
-                      onClick={user ? saveUserProgress : handleLoginClick}
+                      onClick={user ? saveUserProgress : handleSaveClick}
                       className={`flex items-center justify-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
@@ -1151,7 +1160,6 @@ export default function HomePage() {
                           repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
                           ease: "easeInOut" 
                         }}
-                        className="flex items-center justify-center"
                       >
                         <Save className="h-4 w-4 flex-shrink-0" />
                       </motion.div>
