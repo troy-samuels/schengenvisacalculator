@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
 import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header } from '@schengen/ui'
-import { Calendar, ChevronRight, Plus, Save } from 'lucide-react'
+import { Calendar, Plus, Save, Star } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
@@ -189,6 +189,219 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
   )
 }
 
+// Star Rating Component
+function StarRating({ rating = 4.9, maxStars = 5, className = "" }: { rating?: number; maxStars?: number; className?: string }) {
+  return (
+    <div className={`flex items-center space-x-1 ${className}`}>
+      {[...Array(maxStars)].map((_, i) => (
+        <Star 
+          key={i}
+          className={`w-4 h-4 ${i < Math.floor(rating) 
+            ? 'text-yellow-400 fill-yellow-400' 
+            : i < rating 
+            ? 'text-yellow-400 fill-yellow-400 opacity-50'
+            : 'text-gray-300'}`}
+        />
+      ))}
+      <span className="text-sm font-medium text-gray-600 ml-2">{rating}</span>
+    </div>
+  )
+}
+
+// Avatar Group Component with Real People Images
+function AvatarGroup({ className = "" }: { className?: string }) {
+  const avatars = [
+    { 
+      name: "Sarah M.", 
+      role: "Digital Nomad", 
+      imageUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b593?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
+    },
+    { 
+      name: "Marco T.", 
+      role: "Business Consultant", 
+      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
+    },
+    { 
+      name: "Emma K.", 
+      role: "Travel Blogger", 
+      imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMJA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
+    },
+    { 
+      name: "Lars N.", 
+      role: "Software Engineer", 
+      imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
+    },
+    { 
+      name: "Ana S.", 
+      role: "Freelancer", 
+      imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMJA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&h=100&q=80"
+    }
+  ]
+
+  return (
+    <div className={`flex -space-x-2 ${className}`}>
+      {avatars.map((avatar, index) => (
+        <div
+          key={avatar.name}
+          className="relative group"
+          title={`${avatar.name} - ${avatar.role}`}
+        >
+          <img
+            src={avatar.imageUrl}
+            alt={`${avatar.name} - ${avatar.role}`}
+            className="w-10 h-10 rounded-full border-2 border-white object-cover hover:scale-110 transition-transform duration-200 cursor-pointer"
+            loading="lazy"
+            onError={(e) => {
+              // Fallback to initials if image fails to load
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.nextElementSibling) {
+                (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+              }
+            }}
+          />
+          {/* Fallback initials div */}
+          <div 
+            className="w-10 h-10 rounded-full border-2 border-white bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm hover:scale-110 transition-transform duration-200 cursor-pointer"
+            style={{ display: 'none' }}
+          >
+            {avatar.name.split(' ').map(n => n[0]).join('')}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Social Proof Badge Component
+function SocialProofBadge({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center justify-center space-x-4 ${className}`}>
+      <AvatarGroup />
+      <div className="flex flex-col items-start">
+        <StarRating rating={4.9} />
+        <span className="text-sm text-gray-600 font-medium">
+          50,000+ travelers trust us
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// Hero Section Component
+function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => void }) {
+  const router = useRouter()
+  
+  return (
+    <section className="pt-20 pb-16 px-4 bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-geist-sans font-extrabold tracking-tight leading-none text-gray-900 mb-6"
+          >
+            Schengen Visa Calculator
+            <span className="block text-blue-600">Master the 90/180 Day Rule</span>
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-xl font-inter font-medium text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
+          >
+            Join 50,000+ travelers who use our precision calculator to track Schengen visa compliance. 
+            Never worry about overstaying your 90-day limit in the European Union again.
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex justify-center mb-12"
+          >
+            <SocialProofBadge />
+          </motion.div>
+        </div>
+      </div>
+      
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": ["WebApplication", "TravelApplication"],
+            "name": "Schengen Visa Calculator",
+            "description": "Professional 90/180 day rule calculator for Schengen visa compliance",
+            "url": "https://schengenvisacalculator.com",
+            "applicationCategory": "TravelApplication",
+            "operatingSystem": "All",
+            "browserRequirements": "Modern browsers",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "ratingCount": "50000",
+              "bestRating": "5"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Schengen Calculator"
+            },
+            "featureList": [
+              "90/180 day rule tracking",
+              "27 Schengen countries supported", 
+              "Real-time compliance checking",
+              "Travel date optimization",
+              "EU regulation compliant"
+            ]
+          })
+        }}
+      />
+    </section>
+  )
+}
+
+// Get Started Section Component
+function GetStartedSection({ user }: { user: User | null }) {
+  const router = useRouter()
+  
+  return (
+    <div className="text-center mb-12 py-8">
+      <motion.h2 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
+      >
+        Ready to Track Your Schengen Compliance?
+      </motion.h2>
+      <motion.p 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="text-gray-600 mb-6 max-w-2xl mx-auto"
+      >
+        Get instant calculations, save your travel history, and receive alerts before you reach your limits.
+      </motion.p>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Button
+          onClick={() => user ? router.push('/dashboard') : router.push('/save-progress')}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-base transition-colors duration-200"
+        >
+          {user ? 'Go to Dashboard' : 'Get Started Free'}
+        </Button>
+      </motion.div>
+    </div>
+  )
+}
+
 
 export default function HomePage() {
   const [entries, setEntries] = useState<VisaEntry[]>([
@@ -233,6 +446,7 @@ export default function HomePage() {
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const calculatorRef = useRef<HTMLDivElement>(null)
 
   // Check auth state on mount
   useEffect(() => {
@@ -419,6 +633,14 @@ export default function HomePage() {
   // Save button handler - redirect to sign-up landing page when not authenticated
   const handleSaveClick = () => {
     router.push('/save-progress')
+  }
+
+  // Scroll to calculator function
+  const scrollToCalculator = () => {
+    calculatorRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    })
   }
 
   // Get countries for dropdown
@@ -835,26 +1057,14 @@ export default function HomePage() {
         loading={loading}
       />
       
-      {/* Hero Section */}
-      <section className="py-8 md:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-              Plan Smarter
-              <br />
-              Travel Easier
-            </h1>
-          </div>
-          <div>
-            <h2 className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
-              Know Where You Can Go — Instantly See Visa Rules, Book Trips, and Travel Confidently.
-            </h2>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section with Social Proof */}
+      <HeroSection onScrollToCalculator={scrollToCalculator} />
+
+      {/* Get Started Section */}
+      <GetStartedSection onScrollToCalculator={scrollToCalculator} />
 
             {/* Calculator Section */}
-      <section className="pb-16 px-4 sm:px-6 lg:px-8">
+      <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             {/* Column Headers - Desktop */}

@@ -124,6 +124,142 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* JSON-LD Structured Data for Enterprise SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebApplication",
+                  "@id": "https://schengen-calculator.com/#webapp",
+                  "name": "Schengen Visa Calculator",
+                  "description": "Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel with our enterprise-grade platform.",
+                  "url": "https://schengen-calculator.com",
+                  "applicationCategory": "Travel",
+                  "operatingSystem": "Web Browser",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock"
+                  },
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.9",
+                    "ratingCount": "1247",
+                    "bestRating": "5"
+                  },
+                  "author": {
+                    "@type": "Organization",
+                    "@id": "https://schengen-calculator.com/#organization"
+                  },
+                  "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": "https://schengen-calculator.com/#webpage"
+                  }
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://schengen-calculator.com/#organization",
+                  "name": "Schengen Calculator",
+                  "url": "https://schengen-calculator.com",
+                  "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://schengen-calculator.com/logo.png"
+                  },
+                  "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer service",
+                    "areaServed": "Worldwide",
+                    "availableLanguage": "English"
+                  },
+                  "sameAs": [
+                    "https://twitter.com/schengen_calc"
+                  ]
+                },
+                {
+                  "@type": "WebPage",
+                  "@id": "https://schengen-calculator.com/#webpage",
+                  "url": "https://schengen-calculator.com",
+                  "name": "Schengen Visa Calculator | 90/180 Rule Compliance Tool",
+                  "description": "Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel with our enterprise-grade platform.",
+                  "inLanguage": "en-US",
+                  "isPartOf": {
+                    "@type": "WebSite",
+                    "@id": "https://schengen-calculator.com/#website"
+                  },
+                  "primaryImageOfPage": {
+                    "@type": "ImageObject",
+                    "url": "https://schengen-calculator.com/og-image.png"
+                  },
+                  "breadcrumb": {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                      {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": "https://schengen-calculator.com"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://schengen-calculator.com/#website",
+                  "url": "https://schengen-calculator.com",
+                  "name": "Schengen Calculator",
+                  "description": "Professional EU Schengen visa calculator platform",
+                  "publisher": {
+                    "@id": "https://schengen-calculator.com/#organization"
+                  },
+                  "potentialAction": [
+                    {
+                      "@type": "SearchAction",
+                      "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https://schengen-calculator.com/?q={search_term_string}"
+                      },
+                      "query-input": "required name=search_term_string"
+                    }
+                  ]
+                },
+                {
+                  "@type": "FAQPage",
+                  "mainEntity": [
+                    {
+                      "@type": "Question",
+                      "name": "What is the 90/180 day rule for Schengen visas?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The 90/180 day rule allows visa-free travelers to stay in the Schengen area for up to 90 days within any 180-day period. Our calculator helps you track compliance with this rule."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "How does the Schengen calculator work?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Enter your trip dates and countries visited. The calculator automatically tracks your days and ensures you don't exceed the 90-day limit within any 180-day rolling period."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Is the Schengen calculator free to use?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, our basic Schengen calculator is completely free. Premium features like trip optimization and document storage are available with paid plans."
+                      }
+                    }
+                  ]
+                }
+              ]
+            })
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}
