@@ -4,7 +4,7 @@ import * as React from 'react';
 import React__default, { useState, useEffect, forwardRef, createElement, createContext, useContext, useCallback, useRef, useLayoutEffect, useMemo } from 'react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { cva } from 'class-variance-authority';
-import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, eachDayOfInterval, isToday as isToday$1, subMonths } from 'date-fns';
+import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, subMonths, eachDayOfInterval, isToday as isToday$1 } from 'date-fns';
 import * as ReactDOM from 'react-dom';
 import ReactDOM__default, { createPortal } from 'react-dom';
 
@@ -8902,31 +8902,25 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     });
     const [selectingEnd, setSelectingEnd] = useState(false);
     const scrollContainerRef = useRef(null);
-    // Generate months from January 2024 to 12 months forward for travel planning
+    // Generate months: 12 months back + 12 months forward from current date (24 months total)
     const months = useMemo(()=>{
         const monthsArray = [];
         const currentDate = new Date();
         const currentMonthStart = startOfMonth(currentDate);
-        // Always start from January 2024 as baseline, but ensure current month is included
-        const baselineStart = new Date(2024, 0, 1);
-        const actualStart = currentMonthStart < baselineStart ? currentMonthStart : baselineStart;
-        const endDate = addMonths(currentDate, 12) // 12 months forward from today
+        // Dynamic range: 12 months back to 12 months forward from current date
+        const startDate = subMonths(currentMonthStart, 12) // 12 months back
         ;
-        let monthDate = actualStart;
+        const endDate = addMonths(currentMonthStart, 12) // 12 months forward
+        ;
+        let monthDate = startDate;
         while(monthDate <= endDate){
             monthsArray.push(new Date(monthDate));
             monthDate = addMonths(monthDate, 1);
         }
-        // Verify current month is included
-        const currentMonthIncluded = monthsArray.some((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+        // Find current month index (should be at index 12)
+        const currentMonthIndex = monthsArray.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
         console.log('📱 Mobile calendar: Generated', monthsArray.length, 'months from', format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'));
-        console.log('📱 Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'included:', currentMonthIncluded);
-        // Force add current month if somehow it's missing
-        if (!currentMonthIncluded) {
-            console.warn('📱 Mobile calendar: Force adding current month to array');
-            monthsArray.push(currentMonthStart);
-            monthsArray.sort((a, b)=>a.getTime() - b.getTime());
-        }
+        console.log('📱 Mobile calendar: Current month is', format(currentDate, 'MMMM yyyy'), 'at index:', currentMonthIndex);
         return monthsArray;
     }, []);
     // Reset when drawer opens/closes
@@ -8942,58 +8936,46 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         isOpen,
         initialRange
     ]);
-    // Simplified and more reliable auto-scroll to current month when drawer opens
+    // Simplified auto-scroll to current month (index 12) when drawer opens
     useEffect(()=>{
         if (isOpen && scrollContainerRef.current && months.length > 0) {
             const currentDate = new Date();
-            const currentMonthIndex = months.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+            const currentMonthIndex = 12 // Current month is always at index 12 in our 24-month array
+            ;
             console.log('📱 Mobile calendar: Opening drawer');
             console.log('📱 Mobile calendar: Current month:', format(currentDate, 'MMMM yyyy'));
-            console.log('📱 Mobile calendar: Found current month at index:', currentMonthIndex);
-            if (currentMonthIndex !== -1) {
-                // Simplified auto-scroll with reliable scrollIntoView method
-                const scrollToCurrentMonth = ()=>{
-                    if (!scrollContainerRef.current) {
-                        console.warn('📱 Mobile calendar: Scroll container not available');
-                        return;
-                    }
-                    // Wait for DOM elements to be fully rendered
-                    requestAnimationFrame(()=>{
-                        setTimeout(()=>{
-                            try {
-                                const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]');
-                                if (monthElements && monthElements[currentMonthIndex]) {
-                                    const targetElement = monthElements[currentMonthIndex];
-                                    console.log('📱 Mobile calendar: Scrolling to current month element');
-                                    // Use scrollIntoView for reliable positioning
-                                    targetElement.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start',
-                                        inline: 'nearest'
-                                    });
-                                    // Verify scroll completion
-                                    setTimeout(()=>{
-                                        if (scrollContainerRef.current) {
-                                            const scrollTop = scrollContainerRef.current.scrollTop;
-                                            const elementTop = targetElement.offsetTop;
-                                            console.log('📱 Mobile calendar: Scroll completed. Position:', scrollTop, 'Target:', elementTop);
-                                        }
-                                    }, 1000);
-                                } else {
-                                    console.warn('📱 Mobile calendar: Target month element not found');
-                                }
-                            } catch (error) {
-                                console.error('📱 Mobile calendar: Auto-scroll failed:', error);
+            console.log('📱 Mobile calendar: Scrolling to current month at index:', currentMonthIndex);
+            // Simplified auto-scroll since current month is predictably at index 12
+            const scrollToCurrentMonth = ()=>{
+                if (!scrollContainerRef.current) return;
+                // Wait for drawer animation and DOM rendering
+                requestAnimationFrame(()=>{
+                    setTimeout(()=>{
+                        try {
+                            const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]');
+                            if (monthElements && monthElements[currentMonthIndex]) {
+                                const targetElement = monthElements[currentMonthIndex];
+                                const scrollContainer = scrollContainerRef.current;
+                                // Calculate scroll position to show current month at top
+                                const containerTop = scrollContainer.getBoundingClientRect().top;
+                                const elementTop = targetElement.getBoundingClientRect().top;
+                                const currentScroll = scrollContainer.scrollTop;
+                                const targetScroll = currentScroll + (elementTop - containerTop) - 20;
+                                console.log('📱 Mobile calendar: Scrolling to current month position:', targetScroll);
+                                scrollContainer.scrollTo({
+                                    top: Math.max(0, targetScroll),
+                                    behavior: 'smooth'
+                                });
+                            } else {
+                                console.warn('📱 Mobile calendar: Current month element not found at index', currentMonthIndex);
                             }
-                        }, 300); // Allow drawer animation to complete
-                    });
-                };
-                // Execute scroll with proper timing
-                scrollToCurrentMonth();
-            } else {
-                console.warn('📱 Mobile calendar: Current month not found in generated months array');
-                console.log('📱 Mobile calendar: Available months:', months.map((m, i)=>`[${i}] ${format(m, 'MMM yyyy')}`).join(', '));
-            }
+                        } catch (error) {
+                            console.error('📱 Mobile calendar: Auto-scroll failed:', error);
+                        }
+                    }, 500);
+                });
+            };
+            scrollToCurrentMonth();
         }
     }, [
         isOpen,
@@ -9231,10 +9213,15 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         "data-testid": "scrollable-months"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "pb-8"
-    }, months.map((month, index)=>/*#__PURE__*/ React__default.createElement("div", {
-            key: index,
-            "data-month-index": index
-        }, renderSeamlessMonth(month, index === 0)))))), /*#__PURE__*/ React__default.createElement("div", {
+    }, months.map((month, index)=>{
+        const isCurrentMonth = month.getFullYear() === new Date().getFullYear() && month.getMonth() === new Date().getMonth();
+        return /*#__PURE__*/ React__default.createElement("div", {
+            key: `${month.getFullYear()}-${month.getMonth()}`,
+            "data-month-index": index,
+            className: isCurrentMonth ? 'current-month' : '',
+            "aria-label": isCurrentMonth ? `Current month: ${format(month, 'MMMM yyyy')}` : format(month, 'MMMM yyyy')
+        }, renderSeamlessMonth(month, index === 0));
+    })))), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center justify-between p-6 border-t border-gray-200 bg-white"
     }, /*#__PURE__*/ React__default.createElement(Button$1, {
         variant: "outline",

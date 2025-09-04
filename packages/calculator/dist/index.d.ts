@@ -113,14 +113,22 @@ declare class RobustSchengenCalculator {
     private static validateAndNormalizeTrips;
     /**
      * Create a map of daily stays for efficient lookup
+     * PERFORMANCE OPTIMIZED: Uses optimized date formatting while maintaining accuracy
      */
     private static createDailyStayMap;
     /**
+     * Optimized date key formatting - replaces .toISOString().split('T')[0]
+     * PERFORMANCE OPTIMIZED: Direct string construction instead of splitting
+     */
+    private static formatDateKey;
+    /**
      * Calculate rolling compliance check for every day in the period
+     * PERFORMANCE OPTIMIZED: Uses optimized date formatting while maintaining accuracy
      */
     private static calculateRollingComplianceForAllDays;
     /**
      * Generate detailed day-by-day breakdown
+     * PERFORMANCE OPTIMIZED: Reduced date object creation and string operations
      */
     private static generateDetailedBreakdown;
     /**

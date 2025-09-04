@@ -434,6 +434,7 @@ var dateFns = require('date-fns');
     }
     /**
    * Create a map of daily stays for efficient lookup
+   * PERFORMANCE OPTIMIZED: Uses optimized date formatting while maintaining accuracy
    */ static createDailyStayMap(trips, periodStart, periodEnd) {
         const dailyStays = new Map();
         for (const trip of trips){
@@ -442,10 +443,10 @@ var dateFns = require('date-fns');
             // Calculate the actual overlap
             const overlapStart = trip.startDate > periodStart ? trip.startDate : periodStart;
             const overlapEnd = trip.endDate < periodEnd ? trip.endDate : periodEnd;
-            // Add each day of the trip
+            // Add each day of the trip using optimized date iteration
             let currentDate = new Date(overlapStart);
             while(currentDate <= overlapEnd){
-                const dateKey = currentDate.toISOString().split('T')[0];
+                const dateKey = this.formatDateKey(currentDate);
                 if (!dailyStays.has(dateKey)) {
                     dailyStays.set(dateKey, []);
                 }
@@ -456,18 +457,28 @@ var dateFns = require('date-fns');
         return dailyStays;
     }
     /**
+   * Optimized date key formatting - replaces .toISOString().split('T')[0]
+   * PERFORMANCE OPTIMIZED: Direct string construction instead of splitting
+   */ static formatDateKey(date) {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    /**
    * Calculate rolling compliance check for every day in the period
+   * PERFORMANCE OPTIMIZED: Uses optimized date formatting while maintaining accuracy
    */ static calculateRollingComplianceForAllDays(dailyStays, periodStart, periodEnd) {
         const checks = [];
         let currentDate = new Date(periodStart);
         while(currentDate <= periodEnd){
             const windowStart = dateFns.subDays(currentDate, this.ROLLING_PERIOD_DAYS - 1);
             const windowEnd = new Date(currentDate);
-            // Count days in this 180-day window
+            // Count days in this 180-day window using optimized date key formatting
             let daysInWindow = 0;
             let checkDate = new Date(windowStart);
             while(checkDate <= windowEnd){
-                const dateKey = checkDate.toISOString().split('T')[0];
+                const dateKey = this.formatDateKey(checkDate);
                 if (dailyStays.has(dateKey)) {
                     daysInWindow++;
                 }
@@ -488,24 +499,31 @@ var dateFns = require('date-fns');
     }
     /**
    * Generate detailed day-by-day breakdown
+   * PERFORMANCE OPTIMIZED: Reduced date object creation and string operations
    */ static generateDetailedBreakdown(dailyStays, rollingChecks, periodStart, periodEnd) {
         const breakdown = [];
-        let currentDate = new Date(periodStart);
-        let checkIndex = 0;
-        while(currentDate <= periodEnd){
-            const dateKey = currentDate.toISOString().split('T')[0];
+        const msPerDay = 24 * 60 * 60 * 1000;
+        // Pre-calculate time boundaries
+        const periodStartTime = periodStart.getTime();
+        const periodEndTime = periodEnd.getTime();
+        const totalDays = Math.floor((periodEndTime - periodStartTime) / msPerDay) + 1;
+        // Pre-allocate array for better memory efficiency
+        breakdown.length = totalDays;
+        // Optimized loop using timestamp arithmetic
+        for(let dayIndex = 0; dayIndex < totalDays; dayIndex++){
+            const currentTime = periodStartTime + dayIndex * msPerDay;
+            const currentDate = new Date(currentTime);
+            const dateKey = this.formatDateKey(currentDate);
             const staysOnDate = dailyStays.get(dateKey) || [];
             const daysUsedOnDate = staysOnDate.length > 0 ? 1 : 0;
-            const rollingCheck = rollingChecks[checkIndex];
-            breakdown.push({
-                date: new Date(currentDate),
+            const rollingCheck = rollingChecks[dayIndex];
+            breakdown[dayIndex] = {
+                date: currentDate,
                 daysUsedOnDate,
                 cumulativeDaysInWindow: rollingCheck.daysInWindow,
                 isViolation: !rollingCheck.isCompliant,
                 contributingTrips: staysOnDate
-            });
-            currentDate = dateFns.addDays(currentDate, 1);
-            checkIndex++;
+            };
         }
         return breakdown;
     }

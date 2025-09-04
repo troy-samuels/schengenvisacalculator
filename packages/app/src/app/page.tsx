@@ -14,6 +14,9 @@ import { useRouter } from 'next/navigation'
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
 
+// Entry limitation constants
+const MAX_FREE_ENTRIES = 5
+
 interface VisaEntry {
   id: string
   country: string
@@ -452,6 +455,7 @@ export default function HomePage() {
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showConversionModal, setShowConversionModal] = useState(false)
   const calculatorRef = useRef<HTMLDivElement>(null)
 
   // Check auth state on mount
@@ -659,6 +663,11 @@ export default function HomePage() {
 
   const canAddNewRow = (): boolean => {
     if (entries.length === 0) return true // Allow first row
+    
+    // Check if user has reached free entry limit
+    if (!user && entries.length >= MAX_FREE_ENTRIES) {
+      return false // Block anonymous users at limit
+    }
     
     const lastEntry = entries[entries.length - 1]
     return isRowComplete(lastEntry)
@@ -869,6 +878,12 @@ export default function HomePage() {
   }
 
   const addEntry = () => {
+    // Check if user has reached free limit and show conversion modal
+    if (!user && entries.length >= MAX_FREE_ENTRIES) {
+      setShowConversionModal(true)
+      return
+    }
+
     const newEntry: VisaEntry = {
       id: Date.now().toString(),
       country: "",
@@ -1364,7 +1379,7 @@ export default function HomePage() {
                   >
                     <Button
                       onClick={user ? saveUserProgress : handleSaveClick}
-                      className={`flex items-center justify-center space-x-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
+                      className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
                       style={{ backgroundColor: "#FA9937" }}
@@ -1376,11 +1391,13 @@ export default function HomePage() {
                           repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
                           ease: "easeInOut" 
                         }}
-                        className="flex items-center"
+                        className="flex items-center flex-shrink-0"
                       >
-                        <Save className="h-4 w-4 flex-shrink-0" />
+                        <Save className="h-4 w-4" />
                       </motion.div>
-                      {user ? 'Save Progress' : 'Login to Save'}
+                      <span className="font-dm-sans font-medium">
+                        {user ? 'Save Progress' : 'Login to Save'}
+                      </span>
                       
                       {/* Static visual indicator for reduced motion users */}
                       {showFloatingSave && (
@@ -1424,6 +1441,101 @@ export default function HomePage() {
         minDate={new Date(new Date().getFullYear() - 10, 0, 1)} // 10 years ago
         maxDate={new Date(new Date().getFullYear() + 5, 11, 31)} // 5 years in future
         />
+
+      {/* Conversion Modal */}
+      <AnimatePresence>
+        {showConversionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowConversionModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 px-6 py-8 text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Save className="w-8 h-8 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-2">
+                  Save Your Progress & Continue
+                </h2>
+                <p className="text-gray-600 font-dm-sans">
+                  Keep building your travel timeline with unlimited entries
+                </p>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-6">
+                {/* Current Progress */}
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <h3 className="text-sm font-medium text-blue-900 mb-2">Your Current Progress</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-blue-600">{entries.length}</span>
+                    <span className="text-sm text-blue-700">trips calculated</span>
+                  </div>
+                </div>
+
+                {/* Benefits */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-3">
+                    Unlock with free account:
+                  </h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <Plus className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-gray-700 font-dm-sans">Unlimited trip entries</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <Calendar className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-gray-700 font-dm-sans">Analytics dashboard</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                        <Save className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-gray-700 font-dm-sans">Progress auto-saved</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* CTA Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => router.push('/save-progress')}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-poppins font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                  >
+                    Create Free Account
+                  </Button>
+                  <Button
+                    onClick={() => setShowConversionModal(false)}
+                    variant="ghost"
+                    className="w-full text-gray-600 hover:text-gray-800 font-dm-sans py-2"
+                  >
+                    Maybe later
+                  </Button>
+                </div>
+
+                {/* Trust indicator */}
+                <p className="text-xs text-gray-500 text-center mt-4 font-dm-sans">
+                  No credit card required • Join 50,000+ travelers
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       </div>
   )
