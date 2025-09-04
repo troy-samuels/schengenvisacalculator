@@ -1,24 +1,20 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist, Geist_Mono } from 'next/font/google'
+import { DM_Sans, Poppins } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-dm-sans',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 })
 
-const geistSans = Geist({
+const poppins = Poppins({
   subsets: ['latin'],
-  variable: '--font-geist-sans',
+  variable: '--font-poppins',
   display: 'swap',
-})
-
-const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  variable: '--font-geist-mono',
-  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -262,7 +258,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body
-        className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}
+        className={`${dmSans.variable} ${poppins.variable} min-h-screen bg-background font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider

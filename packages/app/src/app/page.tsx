@@ -203,7 +203,7 @@ function StarRating({ rating = 4.9, maxStars = 5, className = "" }: { rating?: n
             : 'text-gray-300'}`}
         />
       ))}
-      <span className="text-sm font-medium text-gray-600 ml-2">{rating}</span>
+      <span className="text-sm font-dm-sans font-normal text-gray-600 ml-2">{rating}</span>
     </div>
   )
 }
@@ -279,7 +279,7 @@ function SocialProofBadge({ className = "" }: { className?: string }) {
       <AvatarGroup />
       <div className="flex flex-col items-start">
         <StarRating rating={4.9} />
-        <span className="text-sm text-gray-600 font-medium">
+        <span className="text-sm text-gray-600 font-dm-sans font-normal">
           50,000+ travelers trust us
         </span>
       </div>
@@ -299,7 +299,7 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-geist-sans font-extrabold tracking-tight leading-none text-gray-900 mb-6"
+            className="text-4xl md:text-5xl lg:text-6xl font-poppins font-bold tracking-tight leading-none text-gray-900 mb-6"
           >
             Schengen Visa Calculator
             <span className="block text-blue-600">Master the 90/180 Day Rule</span>
@@ -309,7 +309,7 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl font-inter font-medium text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
+            className="text-xl font-dm-sans font-normal text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
           >
             Join 50,000+ travelers who use our precision calculator to track Schengen visa compliance. 
             Never worry about overstaying your 90-day limit in the European Union again.
@@ -379,7 +379,7 @@ function GetStartedSection({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
+        className="text-2xl md:text-3xl font-poppins font-semibold text-gray-900 mb-4"
       >
         Ready to Track Your Schengen Compliance?
       </motion.h2>
@@ -387,7 +387,7 @@ function GetStartedSection({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="text-gray-600 mb-6 max-w-2xl mx-auto"
+        className="text-gray-600 mb-6 max-w-2xl mx-auto font-dm-sans font-normal"
       >
         Get instant calculations, save your travel history, and receive alerts before you reach your limits.
       </motion.p>
@@ -399,7 +399,7 @@ function GetStartedSection({
       >
         <Button
           onClick={() => user ? router.push('/dashboard') : router.push('/save-progress')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-base transition-colors duration-200"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-dm-sans font-medium text-base transition-colors duration-200"
         >
           {user ? 'Go to Dashboard' : 'Get Started Free'}
         </Button>
@@ -1054,7 +1054,7 @@ export default function HomePage() {
   const occupiedDateInfo = useMemo(() => getOccupiedDateInfo(), [getOccupiedDateInfo])
 
   return (
-    <div className="min-h-screen font-['Onest',sans-serif]" style={{ backgroundColor: "#F4F2ED" }}>
+    <div className="min-h-screen font-dm-sans" style={{ backgroundColor: "#F4F2ED" }}>
       {/* Header Navigation */}
       <Header 
         onLoginClick={handleLoginClick}
@@ -1079,21 +1079,21 @@ export default function HomePage() {
               style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
             >
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900">Country</h3>
+                <h3 className="font-dm-sans font-semibold text-gray-900">Country</h3>
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900">Date Range</h3>
+                <h3 className="font-dm-sans font-semibold text-gray-900">Date Range</h3>
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900">This Trip</h3>
+                <h3 className="font-dm-sans font-semibold text-gray-900">This Trip</h3>
                 <p className="text-xs text-gray-500">Days</p>
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900 text-sm">Total Used</h3>
+                <h3 className="font-dm-sans font-semibold text-gray-900 text-sm">Total Used</h3>
                 <p className="text-xs text-gray-500">Last 180 days</p>
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-gray-900">Remaining</h3>
+                <h3 className="font-dm-sans font-semibold text-gray-900">Remaining</h3>
                 <p className="text-xs text-gray-500">Out of 90</p>
               </div>
             </div>
