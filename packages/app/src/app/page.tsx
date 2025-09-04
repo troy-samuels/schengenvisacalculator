@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
 import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header } from '@schengen/ui'
-import { Calendar, Plus, Save, Star } from 'lucide-react'
+import { Calendar, ChevronRight, Plus, Save, Star } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
