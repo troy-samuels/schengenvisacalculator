@@ -47,15 +47,22 @@ export function MobileCalendarDrawer({
   const [selectingEnd, setSelectingEnd] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  // Generate months: 12 months back + 12 months forward from current date (24 months total)
+  // Generate months: 12 months back + 12 months forward from current date (25 months total)
   const months = useMemo(() => {
     const monthsArray = []
     const currentDate = new Date()
     const currentMonthStart = startOfMonth(currentDate)
     
+    console.log('📱 DEBUG: Raw current date:', currentDate)
+    console.log('📱 DEBUG: Current date formatted:', format(currentDate, 'MMMM yyyy dd'))
+    console.log('📱 DEBUG: Current month start:', format(currentMonthStart, 'MMMM yyyy dd'))
+    
     // Dynamic range: 12 months back to 12 months forward from current date
     const startDate = subMonths(currentMonthStart, 12) // 12 months back
     const endDate = addMonths(currentMonthStart, 12)   // 12 months forward
+    
+    console.log('📱 DEBUG: Start date (12 months back):', format(startDate, 'MMMM yyyy dd'))
+    console.log('📱 DEBUG: End date (12 months forward):', format(endDate, 'MMMM yyyy dd'))
     
     let monthDate = startDate
     while (monthDate <= endDate) {
@@ -63,11 +70,18 @@ export function MobileCalendarDrawer({
       monthDate = addMonths(monthDate, 1)
     }
     
-    // Find current month index (should be at index 12)
+    // Find current month index
     const currentMonthIndex = monthsArray.findIndex(month => 
       month.getFullYear() === currentDate.getFullYear() && 
       month.getMonth() === currentDate.getMonth()
     )
+    
+    console.log('📱 DEBUG: Generated months array:')
+    monthsArray.forEach((month, index) => {
+      const isCurrent = month.getFullYear() === currentDate.getFullYear() && 
+                       month.getMonth() === currentDate.getMonth()
+      console.log(`📱 DEBUG:   [${index}] ${format(month, 'MMMM yyyy')} ${isCurrent ? '← CURRENT' : ''}`)
+    })
     
     console.log('📱 Mobile calendar: Generated', monthsArray.length, 'months from', 
       format(monthsArray[0], 'MMMM yyyy'), 'to', format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'))
@@ -84,19 +98,33 @@ export function MobileCalendarDrawer({
     }
   }, [isOpen, initialRange])
 
-  // Simplified auto-scroll to current month (index 12) when drawer opens
+  // Auto-scroll to current month when drawer opens
   useEffect(() => {
     if (isOpen && scrollContainerRef.current && months.length > 0) {
       const currentDate = new Date()
-      const currentMonthIndex = 12 // Current month is always at index 12 in our 24-month array
       
-      console.log('📱 Mobile calendar: Opening drawer')
-      console.log('📱 Mobile calendar: Current month:', format(currentDate, 'MMMM yyyy'))
-      console.log('📱 Mobile calendar: Scrolling to current month at index:', currentMonthIndex)
+      // Find the actual current month index instead of assuming it's at index 12
+      const actualCurrentMonthIndex = months.findIndex(month => 
+        month.getFullYear() === currentDate.getFullYear() && 
+        month.getMonth() === currentDate.getMonth()
+      )
       
-      // Simplified auto-scroll since current month is predictably at index 12
+      console.log('📱 DEBUG: Auto-scroll triggered')
+      console.log('📱 DEBUG: Drawer opened - current date:', format(currentDate, 'MMMM yyyy dd'))
+      console.log('📱 DEBUG: Months array length:', months.length)
+      console.log('📱 DEBUG: Actual current month index:', actualCurrentMonthIndex)
+      if (actualCurrentMonthIndex >= 0) {
+        console.log('📱 DEBUG: Target month:', format(months[actualCurrentMonthIndex], 'MMMM yyyy'))
+      }
+      
+      // Auto-scroll to actual current month
       const scrollToCurrentMonth = () => {
-        if (!scrollContainerRef.current) return
+        if (!scrollContainerRef.current || actualCurrentMonthIndex < 0) {
+          console.warn('📱 DEBUG: Cannot scroll - container or month index invalid')
+          return
+        }
+
+        console.log('📱 DEBUG: Starting scroll animation...')
 
         // Wait for drawer animation and DOM rendering
         requestAnimationFrame(() => {
@@ -104,8 +132,11 @@ export function MobileCalendarDrawer({
             try {
               const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]')
               
-              if (monthElements && monthElements[currentMonthIndex]) {
-                const targetElement = monthElements[currentMonthIndex] as HTMLElement
+              console.log('📱 DEBUG: Found month elements:', monthElements?.length)
+              console.log('📱 DEBUG: Looking for element at index:', actualCurrentMonthIndex)
+              
+              if (monthElements && monthElements[actualCurrentMonthIndex]) {
+                const targetElement = monthElements[actualCurrentMonthIndex] as HTMLElement
                 const scrollContainer = scrollContainerRef.current
                 
                 // Calculate scroll position to show current month at top
@@ -114,18 +145,25 @@ export function MobileCalendarDrawer({
                 const currentScroll = scrollContainer.scrollTop
                 const targetScroll = currentScroll + (elementTop - containerTop) - 20
                 
-                console.log('📱 Mobile calendar: Scrolling to current month position:', targetScroll)
+                console.log('📱 DEBUG: Scroll calculation:')
+                console.log('📱 DEBUG:   Container top:', containerTop)
+                console.log('📱 DEBUG:   Element top:', elementTop)
+                console.log('📱 DEBUG:   Current scroll:', currentScroll)
+                console.log('📱 DEBUG:   Target scroll:', targetScroll)
                 
                 scrollContainer.scrollTo({
                   top: Math.max(0, targetScroll),
                   behavior: 'smooth'
                 })
                 
+                console.log('📱 DEBUG: Scroll command executed')
+                
               } else {
-                console.warn('📱 Mobile calendar: Current month element not found at index', currentMonthIndex)
+                console.warn('📱 DEBUG: Current month element not found at index', actualCurrentMonthIndex)
+                console.warn('📱 DEBUG: Available elements:', monthElements?.length)
               }
             } catch (error) {
-              console.error('📱 Mobile calendar: Auto-scroll failed:', error)
+              console.error('📱 DEBUG: Auto-scroll failed:', error)
             }
           }, 500)
         })

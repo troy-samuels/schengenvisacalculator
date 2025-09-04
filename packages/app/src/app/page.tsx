@@ -1160,10 +1160,11 @@ export default function HomePage() {
                           repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
                           ease: "easeInOut" 
                         }}
+                        className="flex items-center"
                       >
                         <Save className="h-4 w-4 flex-shrink-0" />
                       </motion.div>
-                      <span className="flex items-center">{user ? 'Save Progress' : 'Login to Save'}</span>
+                      {user ? 'Save Progress' : 'Login to Save'}
                       
                       {/* Static visual indicator for reduced motion users */}
                       {showFloatingSave && (
