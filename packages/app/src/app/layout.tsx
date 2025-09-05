@@ -1,13 +1,39 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Sans, Poppins } from 'next/font/google'
+import { Poppins } from 'next/font/google'
+import localFont from 'next/font/local'
 import { ThemeProvider } from 'next-themes'
 import './globals.css'
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
+const dmSans = localFont({
+  src: [
+    {
+      path: './../../public/fonts/dm-sans/DMSans-ExtraLight.ttf',
+      weight: '200',
+      style: 'normal',
+    },
+    {
+      path: './../../public/fonts/dm-sans/DMSans-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './../../public/fonts/dm-sans/DMSans-Medium.ttf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: './../../public/fonts/dm-sans/DMSans-SemiBold.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: './../../public/fonts/dm-sans/DMSans-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   variable: '--font-dm-sans',
   display: 'swap',
-  weight: ['200', '400', '500', '600', '700'],
 })
 
 const poppins = Poppins({

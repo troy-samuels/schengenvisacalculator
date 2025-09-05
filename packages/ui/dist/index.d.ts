@@ -108,7 +108,7 @@ interface CalendarDateRange {
 }
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "link" | "ghost" | "brand" | "cream" | null | undefined;
+    variant?: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -151,7 +151,7 @@ declare const Label: React.ForwardRefExoticComponent<Omit<LabelPrimitive.LabelPr
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string> & React.RefAttributes<HTMLLabelElement>>;
 
 declare const badgeVariants: (props?: ({
-    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "warning" | "info" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
 }

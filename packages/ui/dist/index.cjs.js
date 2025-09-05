@@ -8950,23 +8950,33 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     });
     const [selectingEnd, setSelectingEnd] = React.useState(false);
     const scrollContainerRef = React.useRef(null);
-    // Generate months: 12 months back + 12 months forward from current date (24 months total)
+    // Generate months: 12 months back + 12 months forward from current date (25 months total)
     const months = React.useMemo(()=>{
         const monthsArray = [];
         const currentDate = new Date();
         const currentMonthStart = dateFns.startOfMonth(currentDate);
+        console.log('📱 DEBUG: Raw current date:', currentDate);
+        console.log('📱 DEBUG: Current date formatted:', dateFns.format(currentDate, 'MMMM yyyy dd'));
+        console.log('📱 DEBUG: Current month start:', dateFns.format(currentMonthStart, 'MMMM yyyy dd'));
         // Dynamic range: 12 months back to 12 months forward from current date
         const startDate = dateFns.subMonths(currentMonthStart, 12) // 12 months back
         ;
         const endDate = dateFns.addMonths(currentMonthStart, 12) // 12 months forward
         ;
+        console.log('📱 DEBUG: Start date (12 months back):', dateFns.format(startDate, 'MMMM yyyy dd'));
+        console.log('📱 DEBUG: End date (12 months forward):', dateFns.format(endDate, 'MMMM yyyy dd'));
         let monthDate = startDate;
         while(monthDate <= endDate){
             monthsArray.push(new Date(monthDate));
             monthDate = dateFns.addMonths(monthDate, 1);
         }
-        // Find current month index (should be at index 12)
+        // Find current month index
         const currentMonthIndex = monthsArray.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+        console.log('📱 DEBUG: Generated months array:');
+        monthsArray.forEach((month, index)=>{
+            const isCurrent = month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth();
+            console.log(`📱 DEBUG:   [${index}] ${dateFns.format(month, 'MMMM yyyy')} ${isCurrent ? '← CURRENT' : ''}`);
+        });
         console.log('📱 Mobile calendar: Generated', monthsArray.length, 'months from', dateFns.format(monthsArray[0], 'MMMM yyyy'), 'to', dateFns.format(monthsArray[monthsArray.length - 1], 'MMMM yyyy'));
         console.log('📱 Mobile calendar: Current month is', dateFns.format(currentDate, 'MMMM yyyy'), 'at index:', currentMonthIndex);
         return monthsArray;
@@ -8984,43 +8994,100 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         isOpen,
         initialRange
     ]);
-    // Simplified auto-scroll to current month (index 12) when drawer opens
+    // Auto-scroll to current month when drawer opens
     React.useEffect(()=>{
         if (isOpen && scrollContainerRef.current && months.length > 0) {
             const currentDate = new Date();
-            const currentMonthIndex = 12 // Current month is always at index 12 in our 24-month array
-            ;
-            console.log('📱 Mobile calendar: Opening drawer');
-            console.log('📱 Mobile calendar: Current month:', dateFns.format(currentDate, 'MMMM yyyy'));
-            console.log('📱 Mobile calendar: Scrolling to current month at index:', currentMonthIndex);
-            // Simplified auto-scroll since current month is predictably at index 12
-            const scrollToCurrentMonth = ()=>{
-                if (!scrollContainerRef.current) return;
+            // Find the actual current month index instead of assuming it's at index 12
+            const actualCurrentMonthIndex = months.findIndex((month)=>month.getFullYear() === currentDate.getFullYear() && month.getMonth() === currentDate.getMonth());
+            console.log('📱 DEBUG: Auto-scroll triggered');
+            console.log('📱 DEBUG: Drawer opened - current date:', dateFns.format(currentDate, 'MMMM yyyy dd'));
+            console.log('📱 DEBUG: Months array length:', months.length);
+            console.log('📱 DEBUG: Actual current month index:', actualCurrentMonthIndex);
+            if (actualCurrentMonthIndex >= 0) {
+                console.log('📱 DEBUG: Target month:', dateFns.format(months[actualCurrentMonthIndex], 'MMMM yyyy'));
+            }
+            // Auto-scroll to actual current month with retry mechanism
+            const scrollToCurrentMonth = (attempt = 1, maxAttempts = 3)=>{
+                if (!scrollContainerRef.current || actualCurrentMonthIndex < 0) {
+                    console.warn('📱 DEBUG: Cannot scroll - container or month index invalid');
+                    return;
+                }
+                console.log(`📱 DEBUG: Starting scroll animation... (attempt ${attempt}/${maxAttempts})`);
+                // Progressive delay: 800ms, 1200ms, 1600ms
+                const delay = 400 + 400 * attempt;
                 // Wait for drawer animation and DOM rendering
                 requestAnimationFrame(()=>{
                     setTimeout(()=>{
                         try {
                             const monthElements = scrollContainerRef.current?.querySelectorAll('[data-month-index]');
-                            if (monthElements && monthElements[currentMonthIndex]) {
-                                const targetElement = monthElements[currentMonthIndex];
+                            console.log('📱 DEBUG: Found month elements:', monthElements?.length);
+                            console.log('📱 DEBUG: Looking for element at index:', actualCurrentMonthIndex);
+                            if (monthElements && monthElements[actualCurrentMonthIndex]) {
+                                const targetElement = monthElements[actualCurrentMonthIndex];
                                 const scrollContainer = scrollContainerRef.current;
-                                // Calculate scroll position to show current month at top
-                                const containerTop = scrollContainer.getBoundingClientRect().top;
-                                const elementTop = targetElement.getBoundingClientRect().top;
-                                const currentScroll = scrollContainer.scrollTop;
-                                const targetScroll = currentScroll + (elementTop - containerTop) - 20;
-                                console.log('📱 Mobile calendar: Scrolling to current month position:', targetScroll);
-                                scrollContainer.scrollTo({
-                                    top: Math.max(0, targetScroll),
-                                    behavior: 'smooth'
-                                });
+                                // Method 1: Try precise scroll calculation (primary approach)
+                                try {
+                                    const containerTop = scrollContainer.getBoundingClientRect().top;
+                                    const elementTop = targetElement.getBoundingClientRect().top;
+                                    const currentScroll = scrollContainer.scrollTop;
+                                    const targetScroll = currentScroll + (elementTop - containerTop) - 20;
+                                    console.log('📱 DEBUG: Scroll calculation:');
+                                    console.log('📱 DEBUG:   Container top:', containerTop);
+                                    console.log('📱 DEBUG:   Element top:', elementTop);
+                                    console.log('📱 DEBUG:   Current scroll:', currentScroll);
+                                    console.log('📱 DEBUG:   Target scroll:', targetScroll);
+                                    scrollContainer.scrollTo({
+                                        top: Math.max(0, targetScroll),
+                                        behavior: 'smooth'
+                                    });
+                                    console.log('📱 DEBUG: Primary scroll method executed');
+                                    // Verify scroll worked after a delay
+                                    setTimeout(()=>{
+                                        const finalScroll = scrollContainer.scrollTop;
+                                        const scrollSuccess = Math.abs(finalScroll - targetScroll) < 100 // Allow 100px tolerance
+                                        ;
+                                        console.log('📱 DEBUG: Scroll verification - Final:', finalScroll, 'Target:', targetScroll, 'Success:', scrollSuccess);
+                                        if (!scrollSuccess && attempt < maxAttempts) {
+                                            console.log('📱 DEBUG: Primary method failed, retrying...');
+                                            scrollToCurrentMonth(attempt + 1, maxAttempts);
+                                        } else if (!scrollSuccess && attempt === maxAttempts) {
+                                            console.log('📱 DEBUG: All primary attempts failed, trying fallback...');
+                                            // Fallback: scrollIntoView
+                                            targetElement.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'start'
+                                            });
+                                            console.log('📱 DEBUG: Fallback scrollIntoView executed');
+                                        }
+                                    }, 1000);
+                                } catch (calcError) {
+                                    console.warn('📱 DEBUG: Scroll calculation failed, using fallback:', calcError);
+                                    // Immediate fallback to scrollIntoView
+                                    targetElement.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                    console.log('📱 DEBUG: Immediate fallback scrollIntoView executed');
+                                }
                             } else {
-                                console.warn('📱 Mobile calendar: Current month element not found at index', currentMonthIndex);
+                                console.warn('📱 DEBUG: Current month element not found at index', actualCurrentMonthIndex);
+                                console.warn('📱 DEBUG: Available elements:', monthElements?.length);
+                                // Retry if elements not found and attempts remaining
+                                if (attempt < maxAttempts) {
+                                    console.log(`📱 DEBUG: Elements not found, retrying in ${delay + 200}ms...`);
+                                    setTimeout(()=>scrollToCurrentMonth(attempt + 1, maxAttempts), delay + 200);
+                                }
                             }
                         } catch (error) {
-                            console.error('📱 Mobile calendar: Auto-scroll failed:', error);
+                            console.error(`📱 DEBUG: Auto-scroll failed on attempt ${attempt}:`, error);
+                            // Retry if attempts remaining
+                            if (attempt < maxAttempts) {
+                                console.log(`📱 DEBUG: Retrying due to error in ${delay + 200}ms...`);
+                                setTimeout(()=>scrollToCurrentMonth(attempt + 1, maxAttempts), delay + 200);
+                            }
                         }
-                    }, 500);
+                    }, delay);
                 });
             };
             scrollToCurrentMonth();

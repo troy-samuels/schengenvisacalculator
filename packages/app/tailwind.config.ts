@@ -72,8 +72,10 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui'],
+        sans: ['var(--font-dm-sans)', 'ui-sans-serif', 'system-ui'],
         mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular'],
+        'dm-sans': ['var(--font-dm-sans)', 'sans-serif'],
+        'poppins': ['var(--font-poppins)', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {
