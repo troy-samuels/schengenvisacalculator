@@ -318,6 +318,18 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             Never worry about overstaying your 90-day limit in the European Union again.
           </motion.p>
           
+          {/* Test DM Sans ExtraLight 200 weight */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="mb-6"
+          >
+            <p className="text-lg font-dm-sans font-extralight text-gray-500 max-w-2xl mx-auto">
+              Precise • Reliable • EU Compliant
+            </p>
+          </motion.div>
+          
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
