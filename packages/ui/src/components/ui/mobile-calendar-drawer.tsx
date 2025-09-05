@@ -117,14 +117,17 @@ export function MobileCalendarDrawer({
         console.log('📱 DEBUG: Target month:', format(months[actualCurrentMonthIndex], 'MMMM yyyy'))
       }
       
-      // Auto-scroll to actual current month
-      const scrollToCurrentMonth = () => {
+      // Auto-scroll to actual current month with retry mechanism
+      const scrollToCurrentMonth = (attempt = 1, maxAttempts = 3) => {
         if (!scrollContainerRef.current || actualCurrentMonthIndex < 0) {
           console.warn('📱 DEBUG: Cannot scroll - container or month index invalid')
           return
         }
 
-        console.log('📱 DEBUG: Starting scroll animation...')
+        console.log(`📱 DEBUG: Starting scroll animation... (attempt ${attempt}/${maxAttempts})`)
+
+        // Progressive delay: 800ms, 1200ms, 1600ms
+        const delay = 400 + (400 * attempt)
 
         // Wait for drawer animation and DOM rendering
         requestAnimationFrame(() => {
@@ -139,33 +142,77 @@ export function MobileCalendarDrawer({
                 const targetElement = monthElements[actualCurrentMonthIndex] as HTMLElement
                 const scrollContainer = scrollContainerRef.current
                 
-                // Calculate scroll position to show current month at top
-                const containerTop = scrollContainer.getBoundingClientRect().top
-                const elementTop = targetElement.getBoundingClientRect().top
-                const currentScroll = scrollContainer.scrollTop
-                const targetScroll = currentScroll + (elementTop - containerTop) - 20
-                
-                console.log('📱 DEBUG: Scroll calculation:')
-                console.log('📱 DEBUG:   Container top:', containerTop)
-                console.log('📱 DEBUG:   Element top:', elementTop)
-                console.log('📱 DEBUG:   Current scroll:', currentScroll)
-                console.log('📱 DEBUG:   Target scroll:', targetScroll)
-                
-                scrollContainer.scrollTo({
-                  top: Math.max(0, targetScroll),
-                  behavior: 'smooth'
-                })
-                
-                console.log('📱 DEBUG: Scroll command executed')
+                // Method 1: Try precise scroll calculation (primary approach)
+                try {
+                  const containerTop = scrollContainer.getBoundingClientRect().top
+                  const elementTop = targetElement.getBoundingClientRect().top
+                  const currentScroll = scrollContainer.scrollTop
+                  const targetScroll = currentScroll + (elementTop - containerTop) - 20
+                  
+                  console.log('📱 DEBUG: Scroll calculation:')
+                  console.log('📱 DEBUG:   Container top:', containerTop)
+                  console.log('📱 DEBUG:   Element top:', elementTop)
+                  console.log('📱 DEBUG:   Current scroll:', currentScroll)
+                  console.log('📱 DEBUG:   Target scroll:', targetScroll)
+                  
+                  scrollContainer.scrollTo({
+                    top: Math.max(0, targetScroll),
+                    behavior: 'smooth'
+                  })
+                  
+                  console.log('📱 DEBUG: Primary scroll method executed')
+                  
+                  // Verify scroll worked after a delay
+                  setTimeout(() => {
+                    const finalScroll = scrollContainer.scrollTop
+                    const scrollSuccess = Math.abs(finalScroll - targetScroll) < 100 // Allow 100px tolerance
+                    
+                    console.log('📱 DEBUG: Scroll verification - Final:', finalScroll, 'Target:', targetScroll, 'Success:', scrollSuccess)
+                    
+                    if (!scrollSuccess && attempt < maxAttempts) {
+                      console.log('📱 DEBUG: Primary method failed, retrying...')
+                      scrollToCurrentMonth(attempt + 1, maxAttempts)
+                    } else if (!scrollSuccess && attempt === maxAttempts) {
+                      console.log('📱 DEBUG: All primary attempts failed, trying fallback...')
+                      // Fallback: scrollIntoView
+                      targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                      })
+                      console.log('📱 DEBUG: Fallback scrollIntoView executed')
+                    }
+                  }, 1000)
+                  
+                } catch (calcError) {
+                  console.warn('📱 DEBUG: Scroll calculation failed, using fallback:', calcError)
+                  // Immediate fallback to scrollIntoView
+                  targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                  })
+                  console.log('📱 DEBUG: Immediate fallback scrollIntoView executed')
+                }
                 
               } else {
                 console.warn('📱 DEBUG: Current month element not found at index', actualCurrentMonthIndex)
                 console.warn('📱 DEBUG: Available elements:', monthElements?.length)
+                
+                // Retry if elements not found and attempts remaining
+                if (attempt < maxAttempts) {
+                  console.log(`📱 DEBUG: Elements not found, retrying in ${delay + 200}ms...`)
+                  setTimeout(() => scrollToCurrentMonth(attempt + 1, maxAttempts), delay + 200)
+                }
               }
             } catch (error) {
-              console.error('📱 DEBUG: Auto-scroll failed:', error)
+              console.error(`📱 DEBUG: Auto-scroll failed on attempt ${attempt}:`, error)
+              
+              // Retry if attempts remaining
+              if (attempt < maxAttempts) {
+                console.log(`📱 DEBUG: Retrying due to error in ${delay + 200}ms...`)
+                setTimeout(() => scrollToCurrentMonth(attempt + 1, maxAttempts), delay + 200)
+              }
             }
-          }, 500)
+          }, delay)
         })
       }
 

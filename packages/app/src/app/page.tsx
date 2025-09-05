@@ -1200,20 +1200,20 @@ export default function HomePage() {
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "dates")}`}>
                       <Button
                         variant="outline"
-                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
+                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-6 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
                         disabled={!entry.country}
                         onClick={() => handleOpenCalendar(entry.id)}
                       >
                         {entry.startDate && entry.endDate ? (
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-center gap-2">
                             <span className="font-medium text-gray-800">
                               {`${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`}
                             </span>
-                            <Calendar className="ml-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                            <Calendar className="h-4 w-4 flex-shrink-0 text-blue-600" />
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center">
-                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                          <div className="flex items-center justify-center gap-2">
+                            <Calendar className="h-4 w-4 flex-shrink-0 text-blue-600" />
                             <span className="font-medium text-gray-800">
                               {!entry.country ? "Select country first" : "Select dates"}
                             </span>
@@ -1288,20 +1288,20 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Travel Dates</label>
                       <Button
                         variant="outline"
-                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-4 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
+                        className="w-full justify-center items-center text-center font-normal bg-white h-12 text-sm px-6 border-0 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex hover:bg-white"
                         disabled={!entry.country}
                         onClick={() => handleOpenCalendar(entry.id)}
                       >
                         {entry.startDate && entry.endDate ? (
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-center gap-2">
                             <span className="font-medium text-gray-800">
                               {`${format(entry.startDate, "MMM dd")} - ${format(entry.endDate, "MMM dd")}`}
                             </span>
-                            <Calendar className="ml-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                            <Calendar className="h-4 w-4 flex-shrink-0 text-blue-600" />
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center">
-                            <Calendar className="mr-2 h-4 w-4 flex-shrink-0 text-blue-600" />
+                          <div className="flex items-center justify-center gap-2">
+                            <Calendar className="h-4 w-4 flex-shrink-0 text-blue-600" />
                             <span className="font-medium text-gray-800">
                               {!entry.country ? "Select country first" : "Select dates"}
                             </span>
