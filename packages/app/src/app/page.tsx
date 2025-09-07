@@ -1248,7 +1248,12 @@ export default function HomePage() {
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "results")}`}>
                       <div className="bg-white rounded-lg p-3 font-semibold text-base text-center border-0 shadow-sm h-12 flex items-center justify-center relative z-10">
                         <span className="font-medium text-gray-800 text-sm">
-                          {entry.days > 0 ? `${entry.days} days` : "Select dates first"}
+                          {entry.days > 0 ? `${entry.days} days` : (
+                            <>
+                              <span className="sm:hidden">Select dates</span>
+                              <span className="hidden sm:inline">Select dates first</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -1339,7 +1344,12 @@ export default function HomePage() {
                         <label className="block text-xs font-medium text-gray-500 mb-1 text-center">This Trip</label>
                         <div className="bg-white rounded-lg p-2 font-semibold text-sm text-center border-0 shadow-sm h-10 flex items-center justify-center">
                           <span className="font-medium text-gray-800 text-sm">
-                            {entry.days > 0 ? `${entry.days} days` : "Select dates first"}
+                            {entry.days > 0 ? `${entry.days} days` : (
+                              <>
+                                <span className="sm:hidden">Select dates</span>
+                                <span className="hidden sm:inline">Select dates first</span>
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1371,57 +1381,20 @@ export default function HomePage() {
                 <div className="flex flex-col items-center">
                   <button
                     onClick={isAtFreeLimitWithoutUser() ? () => setShowConversionModal(true) : addEntry}
-                    disabled={!canAddNewRow() && !isAtFreeLimitWithoutUser()}
+                    disabled={!canAddNewRow()}
                     className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-2 border min-h-[44px] touch-manipulation ${
                       canAddNewRow()
                         ? 'hover:bg-gray-50 bg-white border-gray-300 cursor-pointer'
-                        : isAtFreeLimitWithoutUser()
-                          ? 'hover:opacity-90 cursor-pointer border-orange-300 bg-gradient-to-r from-orange-50 to-orange-100'
-                          : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                        : 'bg-gray-100 border-gray-200 cursor-pointer opacity-50'
                     }`}
                     style={{ fontFamily: 'inherit' }}
                   >
-                    {isAtFreeLimitWithoutUser() ? (
-                      <>
-                        <Save className="h-4 w-4 text-orange-600 flex-shrink-0" />
-                        <span className="font-medium text-xs sm:text-sm text-orange-600 text-center">Save Progress for Unlimited Entries</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} flex-shrink-0`}>+</span>
-                        <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} text-center`}>Add Another Trip</span>
-                      </>
-                    )}
+                    <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} flex-shrink-0`}>+</span>
+                    <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} text-center`}>Add Another Trip</span>
                   </button>
                   {!canAddNewRow() && !isAtFreeLimitWithoutUser() && (
                     <div className="text-xs text-gray-500 mt-2 text-center max-w-48">
                       {getIncompleteRowMessage()}
-                    </div>
-                  )}
-                  
-                  {/* Free Limit Call-to-Action */}
-                  {isAtFreeLimitWithoutUser() && (
-                    <div className="mt-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200 max-w-sm mx-auto">
-                      <div className="text-center">
-                        <div className="flex flex-col sm:flex-row items-center justify-center mb-3">
-                          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mb-2 sm:mb-0 sm:mr-2">
-                            <span className="text-lg">🚀</span>
-                          </div>
-                          <h3 className="text-base sm:text-lg font-poppins font-bold text-gray-900 text-center sm:text-left">
-                            Add Unlimited Travel Dates
-                          </h3>
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 font-dm-sans mb-4 leading-relaxed">
-                          You've used your {MAX_FREE_ENTRIES} free entries. Save your progress to add unlimited trips and keep your calculations safe.
-                        </p>
-                        <button
-                          onClick={() => setShowConversionModal(true)}
-                          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 sm:py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 min-h-[44px] touch-manipulation"
-                        >
-                          <Save className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm sm:text-base">Save Progress to Continue</span>
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1531,7 +1504,7 @@ export default function HomePage() {
                   <Save className="w-8 h-8 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-2">
-                  Save Your Progress & Continue
+                  Add Unlimited Travel Dates
                 </h2>
                 <p className="text-gray-600 font-dm-sans">
                   Keep building your travel timeline with unlimited entries
