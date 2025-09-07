@@ -108,7 +108,7 @@ interface CalendarDateRange {
 }
 
 declare const buttonVariants: (props?: ({
-    variant?: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" | "brand" | "cream" | "success" | "warning" | null | undefined;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "brand" | "cream" | "success" | "warning" | null | undefined;
     size?: "default" | "sm" | "lg" | "xl" | "icon" | "mobile" | "mobile-sm" | "mobile-lg" | null | undefined;
 } & class_variance_authority_dist_types.ClassProp) | undefined) => string;
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
@@ -160,11 +160,24 @@ declare function Badge({ className, variant, ...props }: BadgeProps): react_jsx_
 interface HeaderProps {
     onLoginClick?: () => void;
     onSignupClick?: () => void;
+    onLogoutClick?: () => void;
+    onDashboardClick?: () => void;
     user?: any;
     loading?: boolean;
     className?: string;
 }
-declare function Header({ onLoginClick, onSignupClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
+declare function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
+
+interface LoginModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onEmailLogin: (email: string, password: string) => Promise<void>;
+    onGoogleLogin: () => Promise<void>;
+    onSignupClick: () => void;
+    loading?: boolean;
+    error?: string | null;
+}
+declare function LoginModal({ isOpen, onClose, onEmailLogin, onGoogleLogin, onSignupClick, loading, error }: LoginModalProps): react_jsx_runtime.JSX.Element;
 
 interface CircularProgressProps {
     /** Current value */
@@ -315,5 +328,5 @@ interface MobileCalendarDrawerProps {
 }
 declare function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: MobileCalendarDrawerProps): react_jsx_runtime.JSX.Element | null;
 
-export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, MobileCalendarDrawer, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useIsMobile, useMediaQuery };
-export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, MobileCalendarDrawerProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };
+export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, LoginModal, MobileCalendarDrawer, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useIsMobile, useMediaQuery };
+export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };

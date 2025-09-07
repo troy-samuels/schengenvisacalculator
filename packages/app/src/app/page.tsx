@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header } from '@schengen/ui'
+import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header, LoginModal } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -468,6 +468,8 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showConversionModal, setShowConversionModal] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
   const calculatorRef = useRef<HTMLDivElement>(null)
 
   // Check auth state on mount
@@ -624,32 +626,82 @@ export default function HomePage() {
   }, [entries, showFloatingSave])
 
   // Authentication handlers
-  const handleLoginClick = async () => {
+  const handleLoginClick = () => {
+    setAuthError(null)
+    setShowLoginModal(true)
+  }
+
+  const handleEmailLogin = async (email: string, password: string) => {
     try {
+      setAuthError(null)
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      if (error) {
+        setAuthError(error.message)
+        throw error
+      }
+      setShowLoginModal(false)
+    } catch (error: any) {
+      console.error('Email login error:', error)
+      setAuthError(error.message || 'Login failed. Please try again.')
+      throw error
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      setAuthError(null)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}`
         }
       })
-      if (error) console.error('Login error:', error)
-    } catch (error) {
-      console.error('Login error:', error)
+      if (error) {
+        setAuthError(error.message)
+        throw error
+      }
+    } catch (error: any) {
+      console.error('Google login error:', error)
+      setAuthError(error.message || 'Google login failed. Please try again.')
+      throw error
     }
   }
 
   const handleSignupClick = async () => {
     try {
+      setAuthError(null)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}`
         }
       })
-      if (error) console.error('Signup error:', error)
-    } catch (error) {
+      if (error) {
+        setAuthError(error.message)
+        console.error('Signup error:', error)
+      }
+    } catch (error: any) {
       console.error('Signup error:', error)
+      setAuthError(error.message || 'Signup failed. Please try again.')
     }
+  }
+
+  const handleLogoutClick = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Logout error:', error)
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
+  const handleDashboardClick = () => {
+    router.push('/dashboard')
   }
 
   // Save button handler - redirect to sign-up landing page when not authenticated
@@ -1103,6 +1155,8 @@ export default function HomePage() {
       <Header 
         onLoginClick={handleLoginClick}
         onSignupClick={handleSignupClick}
+        onLogoutClick={handleLogoutClick}
+        onDashboardClick={handleDashboardClick}
         user={user}
         loading={loading}
       />
@@ -1624,6 +1678,17 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onEmailLogin={handleEmailLogin}
+        onGoogleLogin={handleGoogleLogin}
+        onSignupClick={() => router.push('/save-progress')}
+        loading={loading}
+        error={authError}
+      />
 
       </div>
   )

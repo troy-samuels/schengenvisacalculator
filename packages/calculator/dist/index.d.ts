@@ -338,5 +338,42 @@ declare const getEUMemberCountries: () => SchengenCountry[];
 declare const getNonEUSchengenCountries: () => SchengenCountry[];
 declare const SCHENGEN_COUNTRIES_COUNT: number;
 
-export { DateOverlapValidator, RobustSchengenCalculator, SCHENGEN_COUNTRIES, SCHENGEN_COUNTRIES_COUNT, benchmarkCumulativePerformance as benchmarkPerformance, getCountriesForSelect, getCountryByCode, getCountryByName, getEUMemberCountries, getNonEUSchengenCountries, validateCumulativeCalculation as validateCumulative, validateMobileCumulativeCalculation as validateMobile, validateChronologicalSequence as validateSequence };
-export type { ComplianceResult, ConflictDetail, CumulativeValidationResult, DateRange, DayBreakdown, EnhancedTrip, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripValidationResult, ValidationError, ValidationResult };
+/**
+ * Countries Affected by Schengen 90/180 Day Rule
+ * Based on EU Regulation 2018/1806 Annex II (complete official list)
+ * Updated: 2024 - includes all current visa-exempt countries
+ */
+interface CountryClassification {
+    code: string;
+    name: string;
+    flag: string;
+    category: 'affected_by_90_180' | 'eu_eea_swiss' | 'requires_visa';
+    region?: string;
+}
+declare const COUNTRIES_AFFECTED_BY_90_180: CountryClassification[];
+declare const EU_EEA_SWISS_COUNTRIES: CountryClassification[];
+declare const ALL_COUNTRIES_FOR_CITIZENSHIP: CountryClassification[];
+declare const getCountryClassification: (countryCode: string) => CountryClassification | undefined;
+declare const isSubjectTo90180Rule: (countryCodes: string[]) => boolean;
+declare const getRuleApplicability: (countryCodes: string[]) => {
+    isSubjectToRule: boolean;
+    exemptionReason: string;
+    message: string;
+} | {
+    isSubjectToRule: boolean;
+    exemptionReason: null;
+    message: string;
+};
+declare const getCountriesForCitizenshipSelect: () => {
+    value: string;
+    label: string;
+    country: CountryClassification;
+    category: "requires_visa" | "affected_by_90_180" | "eu_eea_swiss";
+    region: string | undefined;
+}[];
+declare const AFFECTED_COUNTRIES_COUNT: number;
+declare const EU_EEA_SWISS_COUNT: number;
+declare const TOTAL_COUNTRIES_COUNT: number;
+
+export { AFFECTED_COUNTRIES_COUNT, ALL_COUNTRIES_FOR_CITIZENSHIP, COUNTRIES_AFFECTED_BY_90_180, DateOverlapValidator, EU_EEA_SWISS_COUNT, EU_EEA_SWISS_COUNTRIES, RobustSchengenCalculator, SCHENGEN_COUNTRIES, SCHENGEN_COUNTRIES_COUNT, TOTAL_COUNTRIES_COUNT, benchmarkCumulativePerformance as benchmarkPerformance, getCountriesForCitizenshipSelect, getCountriesForSelect, getCountryByCode, getCountryByName, getCountryClassification, getEUMemberCountries, getNonEUSchengenCountries, getRuleApplicability, isSubjectTo90180Rule, validateCumulativeCalculation as validateCumulative, validateMobileCumulativeCalculation as validateMobile, validateChronologicalSequence as validateSequence };
+export type { ComplianceResult, ConflictDetail, CountryClassification, CumulativeValidationResult, DateRange, DayBreakdown, EnhancedTrip, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripValidationResult, ValidationError, ValidationResult };

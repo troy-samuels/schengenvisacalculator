@@ -19,8 +19,15 @@ import {
   Activity,
   Gauge,
   CheckCircle,
-  Star
+  Star,
+  Info,
+  Shield
 } from 'lucide-react'
+import { 
+  getCountriesForCitizenshipSelect, 
+  getRuleApplicability, 
+  isSubjectTo90180Rule 
+} from '@schengen/calculator'
 
 interface TimelineData {
   date: string;
@@ -69,9 +76,15 @@ export default function SaveProgressPage() {
   const [formData, setFormData] = useState({
     email: '',
     name: '',
-    password: ''
+    password: '',
+    primaryCitizenship: '',
+    additionalCitizenships: [] as string[]
   })
   const [loading, setLoading] = useState(false)
+  const [showAdditionalCitizenships, setShowAdditionalCitizenships] = useState(false)
+
+  // Get countries list for dropdown
+  const countriesForSelect = getCountriesForCitizenshipSelect()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -81,13 +94,41 @@ export default function SaveProgressPage() {
     }))
   }
 
+  const handleCountrySelect = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      primaryCitizenship: countryCode
+    }))
+  }
+
+  const handleAdditionalCitizenshipToggle = (countryCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalCitizenships: prev.additionalCitizenships.includes(countryCode)
+        ? prev.additionalCitizenships.filter(code => code !== countryCode)
+        : [...prev.additionalCitizenships, countryCode]
+    }))
+  }
+
+  // Calculate rule applicability
+  const allCitizenships = formData.primaryCitizenship 
+    ? [formData.primaryCitizenship, ...formData.additionalCitizenships]
+    : []
+  
+  const ruleApplicability = allCitizenships.length > 0 
+    ? getRuleApplicability(allCitizenships) 
+    : null
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     
     try {
       // TODO: Implement actual signup logic with Supabase
-      console.log('Signup data:', formData)
+      console.log('Signup data:', {
+        ...formData,
+        ruleApplicability
+      })
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
@@ -101,7 +142,7 @@ export default function SaveProgressPage() {
     }
   }
 
-  const isFormValid = formData.email && formData.name && formData.password.length >= 8
+  const isFormValid = formData.email && formData.name && formData.password.length >= 8 && formData.primaryCitizenship
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -483,6 +524,111 @@ export default function SaveProgressPage() {
                   </div>
 
                   <div>
+                    <Label htmlFor="primaryCitizenship" className="text-sm font-medium text-gray-700">
+                      Country of Citizenship
+                    </Label>
+                    <select
+                      id="primaryCitizenship"
+                      name="primaryCitizenship"
+                      value={formData.primaryCitizenship}
+                      onChange={(e) => handleCountrySelect(e.target.value)}
+                      required
+                      className="mt-1 w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      data-testid="citizenship-select"
+                    >
+                      <option value="" disabled>Select your country of citizenship</option>
+                      {countriesForSelect.map(({ value, label, category, region }) => (
+                        <option key={value} value={value} className="py-2">
+                          {label} {category === 'affected_by_90_180' ? '(90/180 rule applies)' : 
+                           category === 'eu_eea_swiss' ? '(EU/EEA/Swiss citizen)' : '(Visa required)'}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This helps us determine which travel rules apply to you
+                    </p>
+                  </div>
+
+                  {/* Rule Applicability Display */}
+                  {ruleApplicability && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-4 rounded-lg border ${
+                        ruleApplicability.isSubjectToRule 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : ruleApplicability.exemptionReason === 'eu_citizen'
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-yellow-50 border-yellow-200'
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        {ruleApplicability.isSubjectToRule ? (
+                          <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        ) : ruleApplicability.exemptionReason === 'eu_citizen' ? (
+                          <Shield className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div>
+                          <p className={`text-sm font-medium ${
+                            ruleApplicability.isSubjectToRule 
+                              ? 'text-blue-800' 
+                              : ruleApplicability.exemptionReason === 'eu_citizen'
+                                ? 'text-green-800'
+                                : 'text-yellow-800'
+                          }`}>
+                            {ruleApplicability.message}
+                          </p>
+                          {!ruleApplicability.isSubjectToRule && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              You can still use our travel planning tools to track your European travels.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Additional Citizenships */}
+                  {formData.primaryCitizenship && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setShowAdditionalCitizenships(!showAdditionalCitizenships)}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {showAdditionalCitizenships ? 'Hide' : 'Add'} additional citizenships (optional)
+                      </button>
+                      
+                      {showAdditionalCitizenships && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="mt-3 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3"
+                        >
+                          <p className="text-xs text-gray-600 mb-2">
+                            Select any additional citizenships or passports you hold:
+                          </p>
+                          {countriesForSelect
+                            .filter(country => country.value !== formData.primaryCitizenship)
+                            .map(({ value, label }) => (
+                            <label key={value} className="flex items-center space-x-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={formData.additionalCitizenships.includes(value)}
+                                onChange={() => handleAdditionalCitizenshipToggle(value)}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <span>{label}</span>
+                            </label>
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
+
+                  <div>
                     <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                       Password
                     </Label>
@@ -548,7 +694,7 @@ export default function SaveProgressPage() {
               </div>
               
               <div className="text-xs text-gray-500">
-                Trusted by travelers from 🇺🇸 🇬🇧 🇦🇺 🇨🇦 🇯🇵 and 40+ other countries
+                Trusted by travelers from 🇺🇸 🇬🇧 🇦🇺 🇨🇦 🇯🇵 and 66+ countries subject to the 90/180 rule
               </div>
             </div>
           </motion.div>

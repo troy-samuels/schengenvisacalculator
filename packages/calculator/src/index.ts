@@ -12,6 +12,7 @@ export {
 
 // Country data
 export * from './data/countries'
+export * from './data/affected-countries'
 
 // Type exports
 export type {
