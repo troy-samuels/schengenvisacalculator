@@ -1376,30 +1376,10 @@ export default function HomePage() {
                 </div>
               ))}
 
-              {/* Add Row Button */}
-              <div className="flex justify-center pt-4 space-x-4">
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={isAtFreeLimitWithoutUser() ? () => setShowConversionModal(true) : addEntry}
-                    disabled={!canAddNewRow()}
-                    className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-2 border min-h-[44px] touch-manipulation ${
-                      canAddNewRow()
-                        ? 'hover:bg-gray-50 bg-white border-gray-300 cursor-pointer'
-                        : 'bg-gray-100 border-gray-200 cursor-pointer opacity-50'
-                    }`}
-                    style={{ fontFamily: 'inherit' }}
-                  >
-                    <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} flex-shrink-0`}>+</span>
-                    <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} text-center`}>Add Another Trip</span>
-                  </button>
-                  {!canAddNewRow() && !isAtFreeLimitWithoutUser() && (
-                    <div className="text-xs text-gray-500 mt-2 text-center max-w-48">
-                      {getIncompleteRowMessage()}
-                    </div>
-                  )}
-                </div>
-
-                {totalDays > 0 && (
+              {/* Action Button - Single unified button */}
+              <div className="flex justify-center pt-4">
+                {isAtFreeLimitWithoutUser() ? (
+                  /* Save to Continue button at 5-entry limit */
                   <motion.div
                     animate={showFloatingSave && !prefersReducedMotion ? { 
                       scale: [1, 1.05, 1],
@@ -1417,25 +1397,15 @@ export default function HomePage() {
                     className="relative"
                   >
                     <Button
-                      onClick={user ? saveUserProgress : handleSaveClick}
-                      className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none ${
+                      onClick={() => setShowConversionModal(true)}
+                      className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
                       style={{ backgroundColor: "#FA9937" }}
                     >
-                      <motion.div
-                        animate={showFloatingSave && !prefersReducedMotion ? { rotate: [0, 5, -5, 0] } : {}}
-                        transition={{ 
-                          duration: prefersReducedMotion ? 0 : 1.5, 
-                          repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0, 
-                          ease: "easeInOut" 
-                        }}
-                        className="flex items-center flex-shrink-0"
-                      >
-                        <Save className="h-4 w-4" />
-                      </motion.div>
+                      <Save className="h-4 w-4 flex-shrink-0" />
                       <span className="font-dm-sans font-medium">
-                        {user ? 'Save Progress' : 'Login to Save'}
+                        Save to Continue
                       </span>
                       
                       {/* Static visual indicator for reduced motion users */}
@@ -1462,6 +1432,85 @@ export default function HomePage() {
                       />
                     )}
                   </motion.div>
+                ) : (
+                  /* Standard flow: Add Another Trip button + Login to Save */
+                  <div className="flex justify-center space-x-4">
+                    <div className="flex flex-col items-center">
+                      <button
+                        onClick={addEntry}
+                        disabled={!canAddNewRow()}
+                        className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-2 border min-h-[44px] touch-manipulation ${
+                          canAddNewRow()
+                            ? 'hover:bg-gray-50 bg-white border-gray-300 cursor-pointer'
+                            : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                        }`}
+                        style={{ fontFamily: 'inherit' }}
+                      >
+                        <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} flex-shrink-0`}>+</span>
+                        <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} text-center`}>Add Another Trip</span>
+                      </button>
+                      {!canAddNewRow() && (
+                        <div className="text-xs text-gray-500 mt-2 text-center max-w-48">
+                          {getIncompleteRowMessage()}
+                        </div>
+                      )}
+                    </div>
+
+                    {totalDays > 0 && (
+                      <motion.div
+                        animate={showFloatingSave && !prefersReducedMotion ? { 
+                          scale: [1, 1.05, 1],
+                          boxShadow: [
+                            "0 4px 14px 0 rgba(250, 153, 55, 0.3)",
+                            "0 8px 24px 0 rgba(250, 153, 55, 0.5)", 
+                            "0 4px 14px 0 rgba(250, 153, 55, 0.3)"
+                          ]
+                        } : {}}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : 2,
+                          repeat: showFloatingSave && !prefersReducedMotion ? Infinity : 0,
+                          ease: "easeInOut"
+                        }}
+                        className="relative"
+                      >
+                        <Button
+                          onClick={user ? saveUserProgress : handleSaveClick}
+                          className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] ${
+                            showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
+                          }`}
+                          style={{ backgroundColor: "#FA9937" }}
+                        >
+                          <Save className="h-4 w-4 flex-shrink-0" />
+                          <span className="font-dm-sans font-medium">
+                            {user ? 'Save Progress' : 'Login to Save'}
+                          </span>
+                          
+                          {/* Static visual indicator for reduced motion users */}
+                          {showFloatingSave && (
+                            <div className="hidden motion-reduce:block ml-2">
+                              <div className="w-2 h-2 bg-orange-300 rounded-full"></div>
+                            </div>
+                          )}
+                        </Button>
+                        
+                        {/* Pulsing ring animation for attention (hidden for reduced motion users) */}
+                        {showFloatingSave && !prefersReducedMotion && (
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-orange-400"
+                            animate={{
+                              scale: [1, 1.15, 1],
+                              opacity: [0.6, 0, 0.6]
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
                 )}
               </div>
                 </div>
