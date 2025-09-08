@@ -46,26 +46,72 @@ export function formatPrice(price: number): string {
   return price === 0 ? 'Free' : `$${price}/month`
 }
 
-// Stripe types stub
+// Stripe integration types
 export interface StripeSession {
-  id: string
+  sessionId: string
   url: string
+  tier: string
+  billingCycle: string
+  amount: number
 }
 
 export interface CreateCheckoutSessionRequest {
-  priceId: string
+  tier: 'premium' | 'pro' | 'business'
+  billingCycle?: 'monthly' | 'yearly'
   userId: string
-  successUrl: string
-  cancelUrl: string
+  userEmail: string
+  successUrl?: string
+  cancelUrl?: string
+  metadata?: Record<string, string>
 }
 
-// Stub functions for Stripe integration
+// Real Stripe integration functions
 export async function createCheckoutSession(request: CreateCheckoutSessionRequest): Promise<StripeSession> {
-  throw new Error('Stripe integration not implemented')
+  try {
+    const response = await fetch('/api/stripe/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create checkout session')
+    }
+
+    const data = await response.json()
+    return {
+      sessionId: data.sessionId,
+      url: data.url,
+      tier: data.tier,
+      billingCycle: data.billingCycle,
+      amount: data.amount
+    }
+  } catch (error) {
+    console.error('❌ Failed to create Stripe checkout session:', error)
+    throw error
+  }
 }
 
 export async function getSubscriptionStatus(userId: string): Promise<string> {
-  return 'free'
+  try {
+    // TODO: Implement actual subscription status check via API
+    // This would query your database for the user's current subscription
+    const response = await fetch(`/api/subscription/status?userId=${userId}`)
+    
+    if (!response.ok) {
+      console.warn('Failed to fetch subscription status, defaulting to free')
+      return 'free'
+    }
+    
+    const data = await response.json()
+    return data.status || 'free'
+  } catch (error) {
+    console.error('Error fetching subscription status:', error)
+    return 'free'
+  }
 }
 
 // Additional types and functions for payment modal
@@ -81,7 +127,17 @@ export function calculateYearlySavings(monthlyPrice: number): number {
 }
 
 export function getStripe() {
-  // Stripe instance placeholder
+  // Client-side Stripe initialization
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+    try {
+      // Dynamic import for client-side only
+      const { loadStripe } = require('@stripe/stripe-js')
+      return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+    } catch (error) {
+      console.error('Failed to load Stripe:', error)
+      return null
+    }
+  }
   return null
 }
 
@@ -95,4 +151,56 @@ export const TIER_PRICING = {
   premium: { monthly: 9.99, yearly: 99 },
   pro: { monthly: 19.99, yearly: 199 },
   business: { monthly: 49.99, yearly: 499 }
+}
+
+// Additional subscription management functions
+export interface SubscriptionData {
+  id: string
+  status: 'active' | 'inactive' | 'cancelled' | 'past_due'
+  tier: SubscriptionTier
+  billingCycle: BillingCycle
+  currentPeriodEnd: Date
+  customerId: string
+  priceId?: string
+}
+
+export function redirectToStripeCheckout(sessionUrl: string) {
+  if (typeof window !== 'undefined') {
+    window.location.href = sessionUrl
+  }
+}
+
+export function formatSubscriptionPrice(tier: string, billingCycle: BillingCycle): string {
+  const pricing = TIER_PRICING[tier as keyof typeof TIER_PRICING]
+  if (!pricing) return 'Free'
+  
+  const price = billingCycle === BillingCycle.YEARLY ? pricing.yearly : pricing.monthly
+  const period = billingCycle === BillingCycle.YEARLY ? 'year' : 'month'
+  
+  return price === 0 ? 'Free' : `$${price}/${period}`
+}
+
+export function getUpgradeDiscount(tier: string): number {
+  // 20% discount for yearly subscriptions
+  const pricing = TIER_PRICING[tier as keyof typeof TIER_PRICING]
+  if (!pricing) return 0
+  
+  const monthlyTotal = pricing.monthly * 12
+  const yearlyPrice = pricing.yearly
+  
+  return monthlyTotal - yearlyPrice
+}
+
+export function getTierDisplayName(tier: string): string {
+  switch (tier.toLowerCase()) {
+    case 'premium':
+      return 'Premium'
+    case 'pro':
+      return 'Pro'
+    case 'business':
+      return 'Business'
+    case 'free':
+    default:
+      return 'Free'
+  }
 }

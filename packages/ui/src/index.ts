@@ -6,6 +6,8 @@ export * from "./lib/utils"
 
 // Hooks
 export * from "./hooks/useMediaQuery"
+export * from "./hooks/useFeatureAccess"
+export * from "./hooks/useConversionAnalytics"
 
 // Shared types
 export * from "./types/calendar"
@@ -19,6 +21,9 @@ export * from "./components/ui/label"
 export * from "./components/ui/badge"
 export * from "./components/ui/header"
 export * from "./components/ui/login-modal"
+export * from "./components/ui/feature-button"
+export * from "./components/ui/account-creation-modal"
+export * from "./components/ui/premium-upgrade-modal"
 export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
 export * from "./components/ui/mobile-calendar-drawer"
