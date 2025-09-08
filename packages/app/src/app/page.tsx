@@ -2,7 +2,24 @@
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { Button, CircularProgress, CalendarModal, DateOverlapValidator, useDateOverlapPrevention, Header, LoginModal } from '@schengen/ui'
+import { 
+  Button, 
+  CircularProgress, 
+  CalendarModal, 
+  DateOverlapValidator, 
+  useDateOverlapPrevention, 
+  Header, 
+  LoginModal,
+  FeatureButton,
+  ExportButton,
+  SaveTripButton,
+  CreateListButton,
+  SmartAlertsButton,
+  AccountCreationModal,
+  PremiumUpgradeModal,
+  useFeatureAccess,
+  SubscriptionTier
+} from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -293,6 +310,21 @@ function SocialProofBadge({ className = "" }: { className?: string }) {
 // Hero Section Component
 function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => void }) {
   const router = useRouter()
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    // Check if user prefers reduced motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    // Listen for changes
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
   
   return (
     <section className="pt-20 pb-16 px-4 bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -304,8 +336,23 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             transition={{ duration: 0.6 }}
             className="text-4xl md:text-5xl lg:text-6xl font-poppins font-bold tracking-tight leading-none text-gray-900 mb-6"
           >
-            Schengen Visa Calculator
-            <span className="block text-blue-600">Master the 90/180 Day Rule</span>
+            Travel Hassle-Free Across{' '}
+            <motion.span
+              animate={prefersReducedMotion ? {} : { 
+                rotateZ: [-1.5, 1.5, -1.5],
+                scale: [1, 1.02, 1]
+              }}
+              transition={prefersReducedMotion ? {} : {
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="inline-block origin-bottom"
+              style={prefersReducedMotion ? {} : { willChange: 'transform' }}
+            >
+              🇪🇺
+            </motion.span>
+            <span className="block text-blue-600">Never worry about visa limits again</span>
           </motion.h1>
           
           <motion.p 
@@ -378,50 +425,6 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
   )
 }
 
-// Get Started Section Component
-function GetStartedSection({ 
-  user, 
-  onScrollToCalculator 
-}: { 
-  user?: User | null; 
-  onScrollToCalculator?: () => void; 
-}) {
-  const router = useRouter()
-  
-  return (
-    <div className="text-center mb-12 py-8">
-      <motion.h2 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-2xl md:text-3xl font-poppins font-semibold text-gray-900 mb-4"
-      >
-        Ready to Track Your Schengen Compliance?
-      </motion.h2>
-      <motion.p 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="text-gray-600 mb-6 max-w-2xl mx-auto font-dm-sans font-normal"
-      >
-        Get instant calculations, save your travel history, and receive alerts before you reach your limits.
-      </motion.p>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <Button
-          onClick={() => user ? router.push('/dashboard') : router.push('/save-progress')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-dm-sans font-medium text-base transition-colors duration-200"
-        >
-          {user ? 'Go to Dashboard' : 'Get Started Free'}
-        </Button>
-      </motion.div>
-    </div>
-  )
-}
 
 
 export default function HomePage() {
@@ -469,7 +472,12 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [showConversionModal, setShowConversionModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showAccountCreationModal, setShowAccountCreationModal] = useState(false)
+  const [showPremiumUpgradeModal, setShowPremiumUpgradeModal] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [accountCreationTrigger, setAccountCreationTrigger] = useState<string>()
+  const [premiumUpgradeTrigger, setPremiumUpgradeTrigger] = useState<string>()
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(SubscriptionTier.FREE)
   const calculatorRef = useRef<HTMLDivElement>(null)
 
   // Check auth state on mount
@@ -702,6 +710,105 @@ export default function HomePage() {
 
   const handleDashboardClick = () => {
     router.push('/dashboard')
+  }
+
+  // New authentication-aware handlers
+  const handleAccountCreationRequired = (feature: string) => {
+    setAccountCreationTrigger(feature)
+    setShowAccountCreationModal(true)
+    
+    // Analytics tracking
+    console.log('Account creation required for feature:', feature)
+  }
+
+  const handlePremiumUpgradeRequired = (feature: string, currentTier: SubscriptionTier) => {
+    setPremiumUpgradeTrigger(feature)
+    setShowPremiumUpgradeModal(true)
+    
+    // Analytics tracking
+    console.log('Premium upgrade required for feature:', feature, 'from tier:', currentTier)
+  }
+
+  const handleAccountCreation = async (email: string, password: string, name: string) => {
+    try {
+      setAuthError(null)
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      })
+      if (error) {
+        setAuthError(error.message)
+        throw error
+      }
+      setShowAccountCreationModal(false)
+      setAccountCreationTrigger(undefined)
+    } catch (error: any) {
+      console.error('Account creation error:', error)
+      setAuthError(error.message || 'Account creation failed. Please try again.')
+      throw error
+    }
+  }
+
+  const handleGoogleAccountCreation = async () => {
+    try {
+      setAuthError(null)
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      })
+      if (error) {
+        setAuthError(error.message)
+        throw error
+      }
+    } catch (error: any) {
+      console.error('Google account creation error:', error)
+      setAuthError(error.message || 'Google account creation failed. Please try again.')
+      throw error
+    }
+  }
+
+  const handlePremiumUpgrade = async (tier: 'premium' | 'pro' | 'business', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
+    try {
+      setAuthError(null)
+      
+      // Ensure user is authenticated
+      if (!user?.email) {
+        throw new Error('User must be logged in to purchase subscription')
+      }
+
+      console.log(`🚀 Creating Stripe checkout for ${tier} (${billingCycle})`)
+
+      // Create Stripe checkout session using the payment package
+      const { createCheckoutSession, redirectToStripeCheckout } = await import('@schengen/payments')
+      
+      const session = await createCheckoutSession({
+        tier,
+        billingCycle,
+        userId: user.id,
+        userEmail: user.email,
+        metadata: {
+          feature: premiumUpgradeTrigger || 'general_upgrade',
+          currentTier: subscriptionTier,
+        }
+      })
+
+      console.log(`✅ Stripe checkout session created: ${session.sessionId}`)
+
+      // Redirect to Stripe Checkout
+      redirectToStripeCheckout(session.url)
+
+    } catch (error) {
+      console.error('❌ Premium upgrade error:', error)
+      setAuthError(error instanceof Error ? error.message : 'Failed to create payment session')
+      throw error
+    }
   }
 
   // Save button handler - redirect to sign-up landing page when not authenticated
@@ -1164,8 +1271,6 @@ export default function HomePage() {
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
-      {/* Get Started Section */}
-      <GetStartedSection user={user} onScrollToCalculator={scrollToCalculator} />
 
             {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
@@ -1495,13 +1600,13 @@ export default function HomePage() {
                         disabled={!canAddNewRow()}
                         className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-2 border min-h-[44px] touch-manipulation ${
                           canAddNewRow()
-                            ? 'hover:bg-gray-50 bg-white border-gray-300 cursor-pointer'
+                            ? 'hover:bg-blue-50 bg-blue-500 border-blue-500 text-white cursor-pointer hover:bg-blue-600'
                             : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
                         }`}
                         style={{ fontFamily: 'inherit' }}
                       >
-                        <span className={`font-medium text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} flex-shrink-0`}>+</span>
-                        <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-gray-800' : 'text-gray-400'} text-center`}>Add Another Trip</span>
+                        <span className={`font-medium text-sm ${canAddNewRow() ? 'text-white' : 'text-gray-400'} flex-shrink-0`}>+</span>
+                        <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-white' : 'text-gray-400'} text-center`}>Add Another Trip</span>
                       </button>
                       {!canAddNewRow() && (
                         <div className="text-xs text-gray-500 mt-2 text-center max-w-48">
@@ -1656,7 +1761,7 @@ export default function HomePage() {
                 <div className="space-y-3">
                   <Button
                     onClick={() => router.push('/save-progress')}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-poppins font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-poppins font-medium py-3 px-6 rounded-lg transition-colors duration-200"
                   >
                     Create Free Account
                   </Button>
@@ -1686,6 +1791,34 @@ export default function HomePage() {
         onEmailLogin={handleEmailLogin}
         onGoogleLogin={handleGoogleLogin}
         onSignupClick={() => router.push('/save-progress')}
+        loading={loading}
+        error={authError}
+      />
+
+      {/* Account Creation Modal */}
+      <AccountCreationModal
+        isOpen={showAccountCreationModal}
+        onClose={() => {
+          setShowAccountCreationModal(false)
+          setAccountCreationTrigger(undefined)
+        }}
+        trigger={accountCreationTrigger}
+        onEmailSignup={handleAccountCreation}
+        onGoogleSignup={handleGoogleAccountCreation}
+        loading={loading}
+        error={authError}
+      />
+
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal
+        isOpen={showPremiumUpgradeModal}
+        onClose={() => {
+          setShowPremiumUpgradeModal(false)
+          setPremiumUpgradeTrigger(undefined)
+        }}
+        feature={premiumUpgradeTrigger}
+        currentTier={subscriptionTier}
+        onUpgrade={handlePremiumUpgrade}
         loading={loading}
         error={authError}
       />
