@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import Link from 'next/link'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
 import { 
   Button, 
@@ -1271,6 +1272,97 @@ export default function HomePage() {
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
+      {/* Popular Travel Guides Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <h2 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-3">
+              Master European Travel
+            </h2>
+            <p className="text-gray-600 font-dm-sans">
+              Expert guides to help you travel confidently across Europe
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="grid md:grid-cols-3 gap-6"
+          >
+            <Link 
+              href="/blog/complete-90-180-day-rule-calculator-guide"
+              className="group bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  90/180 Day Rule Guide
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600 font-dm-sans">
+                Complete guide to understanding and calculating the Schengen 90/180 day rule
+              </p>
+            </Link>
+
+            <Link 
+              href="/blog/etias-2025-complete-guide"
+              className="group bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center">
+                  <Star className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">
+                  ETIAS 2025 Guide
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600 font-dm-sans">
+                Everything you need to know about the new European Travel Information System
+              </p>
+            </Link>
+
+            <Link 
+              href="/blog/digital-nomad-schengen-visa-guide"
+              className="group bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                  <Plus className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
+                  Digital Nomad Guide
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600 font-dm-sans">
+                Complete guide for digital nomads navigating Schengen visa requirements
+              </p>
+            </Link>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-center mt-8"
+          >
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              View All Travel Guides
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
 
             {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
