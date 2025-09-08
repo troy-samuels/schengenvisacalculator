@@ -60,7 +60,7 @@ export function Header({
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-foreground leading-none">
+                <span className="text-lg font-bold text-blue-600 leading-none">
                   Schengen Calculator
                 </span>
               </div>
@@ -88,21 +88,9 @@ export function Header({
           </nav>
 
           {/* Right side - Auth Buttons & Mobile Menu */}
-          <div className="flex items-center space-x-3">
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              {showMobileMenu ? (
-                <X className="h-5 w-5 text-gray-600" />
-              ) : (
-                <Menu className="h-5 w-5 text-gray-600" />
-              )}
-            </button>
-
-            {/* Auth Buttons */}
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Auth Buttons - shown before mobile menu */}
+            <div className="hidden sm:flex items-center space-x-3">
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
@@ -197,6 +185,38 @@ export function Header({
                 </>
               )}
             </div>
+            
+            {/* Mobile-only auth buttons - compact version */}
+            <div className="flex sm:hidden items-center space-x-2">
+              {!loading && !user && (
+                <>
+                  <button
+                    onClick={onLoginClick}
+                    className="text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors px-2 py-1"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={onSignupClick}
+                    className="bg-green-700 hover:bg-green-800 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
+                  >
+                    Start
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Mobile menu button - always on far right */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {showMobileMenu ? (
+                <X className="h-5 w-5 text-gray-600" />
+              ) : (
+                <Menu className="h-5 w-5 text-gray-600" />
+              )}
+            </button>
           </div>
         </div>
 

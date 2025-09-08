@@ -13,6 +13,8 @@ export interface BlogPost {
   seoTitle: string
   seoDescription: string
   keywords: string[]
+  image: string
+  imageAlt: string
 }
 
 export const blogPosts: BlogPost[] = [
@@ -30,6 +32,8 @@ export const blogPosts: BlogPost[] = [
     tags: ["ETIAS", "Travel Authorization", "Europe Travel", "Visa Requirements"],
     category: "Travel Requirements",
     featured: true,
+    image: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "European Union passport control with multiple passports and travel documents",
     content: `
 # ETIAS 2025: Complete Guide to Europe's New Travel Authorization System
 
@@ -165,6 +169,8 @@ Ready to plan your European adventure? Use our [Schengen Visa Calculator](/calcu
     tags: ["90/180 Rule", "Visa Calculator", "Schengen Compliance", "Travel Planning"],
     category: "Visa Compliance",
     featured: true,
+    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Calendar with passport and travel planning documents showing visa day calculations",
     content: `
 # 90/180 Day Rule Calculator: Never Overstay Your Schengen Visa Again
 
@@ -364,6 +370,8 @@ Ready to plan your perfect European journey? Use our [Schengen Visa Calculator](
     tags: ["Digital Nomad", "Remote Work", "Work Visas", "Europe Living"],
     category: "Work Visas",
     featured: true,
+    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Digital nomad working on laptop in a European café with city view",
     content: `
 # Digital Nomad Visa Guide 2025: Schengen Countries with Remote Work Permits
 
@@ -719,6 +727,8 @@ Ready to make Europe your remote work playground? Start with our compliance calc
     tags: ["Schengen Countries", "Europe Travel", "Visa Free", "Travel Planning"],
     category: "Travel Planning",
     featured: false,
+    image: "https://images.unsplash.com/photo-1494621930069-4fd4b2e24a11?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "European Union map with country flags showing Schengen Area coverage",
     content: `
 # Schengen Area Countries 2025: Complete List with Travel Tips
 
@@ -1111,6 +1121,8 @@ Ready to start planning? Use our free calculator to ensure perfect Schengen comp
     tags: ["First Time Europe", "Travel Tips", "Europe Guide", "Travel Planning"],
     category: "Travel Planning",
     featured: true,
+    image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Young traveler with backpack exploring European city with historic architecture",
     content: `
 # First Time Europe Travel Guide: 30 Essential Tips for 2025
 
@@ -1448,6 +1460,8 @@ Remember: The goal isn't to see everything on your first trip - it's to fall in 
     tags: ["EES", "Border Control", "Travel Technology", "Europe Travel"],
     category: "Travel Requirements",
     featured: false,
+    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Modern airport border control with digital passport scanning technology",
     content: `
 # Europe Entry/Exit System 2025: What Travelers Need to Know
 
@@ -1795,6 +1809,8 @@ The future of European travel is digital, secure, and more efficient than ever.
     tags: ["Budget Travel", "Money Saving", "Backpacking", "Europe Travel"],
     category: "Travel Planning",
     featured: true,
+    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Backpacker with budget travel gear exploring European city streets",
     content: `
 # Ultimate Europe Budget Travel Guide: Save Money in 27 Schengen Countries
 
@@ -2346,6 +2362,8 @@ Remember: The goal isn't to spend as little as possible - it's to have amazing e
     tags: ["Solo Female Travel", "Women Travel", "Safety Tips", "Europe Travel"],
     category: "Travel Safety",
     featured: false,
+    image: "https://images.unsplash.com/photo-1494790108755-2616c96285e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Confident solo female traveler exploring European city with travel bag",
     content: `
 # Solo Female Travel Europe: Safe Schengen Destinations + Visa Tips
 
@@ -2798,6 +2816,8 @@ The confidence, independence, and memories you'll gain from solo female travel i
     tags: ["Set-Jetting", "Film Tourism", "Netflix Travel", "Pop Culture"],
     category: "Entertainment Travel",
     featured: false,
+    image: "https://images.unsplash.com/photo-1527224857830-43a7acc85260?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Cinematic European filming location with historic architecture and dramatic lighting",
     content: `
 # Set-Jetting Europe 2025: Film Location Destinations + Visa Requirements
 
@@ -3179,6 +3199,8 @@ Ready to plan your cinematic European adventure? Use our Schengen Calculator to 
     tags: ["Wellness Tourism", "Spa Travel", "Health Tourism", "Luxury Travel"],
     category: "Wellness Travel",
     featured: false,
+    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    imageAlt: "Luxury European spa and wellness retreat with mountain scenery",
     content: `
 # European Health and Wellness Tourism Guide: Spa Destinations + Visa Planning
 

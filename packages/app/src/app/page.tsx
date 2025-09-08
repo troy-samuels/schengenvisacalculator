@@ -21,7 +21,7 @@ import {
   useFeatureAccess,
   SubscriptionTier
 } from '@schengen/ui'
-import { Calendar, ChevronRight, Plus, Save, Star } from 'lucide-react'
+import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
@@ -362,8 +362,8 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-xl font-dm-sans font-normal text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            Join 50,000+ travelers who use our precision calculator to track Schengen visa compliance. 
-            Never worry about overstaying your 90-day limit in the European Union again.
+            Navigate European travel with confidence using our precision compliance calculator. 
+            Trusted by 50,000+ travelers worldwide, our tool ensures you stay within legal limits while exploring Europe.
           </motion.p>
           
           {/* Test DM Sans ExtraLight 200 weight */}
@@ -374,7 +374,7 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             className="mb-6"
           >
             <p className="text-lg font-dm-sans font-extralight text-gray-500 max-w-2xl mx-auto">
-              Precise • Reliable • EU Compliant
+              Professional • Accurate • Legally Compliant
             </p>
           </motion.div>
           
@@ -427,6 +427,40 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
 }
 
 
+
+// FAQ Accordion Item Component
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className="border border-gray-200 rounded-lg bg-white">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+      >
+        <span className="font-poppins font-semibold text-gray-900 pr-4">{question}</span>
+        <ChevronDown 
+          className={`h-5 w-5 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-4">
+              <p className="text-gray-700 font-dm-sans leading-relaxed">{answer}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 export default function HomePage() {
   const [entries, setEntries] = useState<VisaEntry[]>([
@@ -1272,99 +1306,7 @@ export default function HomePage() {
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
-      {/* Popular Travel Guides Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8"
-          >
-            <h2 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-3">
-              Master European Travel
-            </h2>
-            <p className="text-gray-600 font-dm-sans">
-              Expert guides to help you travel confidently across Europe
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="grid md:grid-cols-3 gap-6"
-          >
-            <Link 
-              href="/blog/complete-90-180-day-rule-calculator-guide"
-              className="group bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                  90/180 Day Rule Guide
-                </h3>
-              </div>
-              <p className="text-sm text-gray-600 font-dm-sans">
-                Complete guide to understanding and calculating the Schengen 90/180 day rule
-              </p>
-            </Link>
-
-            <Link 
-              href="/blog/etias-2025-complete-guide"
-              className="group bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center">
-                  <Star className="h-5 w-5 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">
-                  ETIAS 2025 Guide
-                </h3>
-              </div>
-              <p className="text-sm text-gray-600 font-dm-sans">
-                Everything you need to know about the new European Travel Information System
-              </p>
-            </Link>
-
-            <Link 
-              href="/blog/digital-nomad-schengen-visa-guide"
-              className="group bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 hover:shadow-lg transition-all duration-300"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                  <Plus className="h-5 w-5 text-white" />
-                </div>
-                <h3 className="font-poppins font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
-                  Digital Nomad Guide
-                </h3>
-              </div>
-              <p className="text-sm text-gray-600 font-dm-sans">
-                Complete guide for digital nomads navigating Schengen visa requirements
-              </p>
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center mt-8"
-          >
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              View All Travel Guides
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-            {/* Calculator Section */}
+      {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -1766,6 +1708,77 @@ export default function HomePage() {
               </div>
                 </div>
               </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-poppins font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xl text-gray-600 font-dm-sans max-w-2xl mx-auto">
+              Get answers to the most common questions about the Schengen 90/180 day rule
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="space-y-4"
+          >
+            {[
+              {
+                question: "How does the 90/180 day rule actually work?",
+                answer: "The 90/180 day rule allows non-EU nationals to stay in the Schengen Area for a maximum of 90 days within any 180-day period. This is a rolling window - you must count backwards 180 days from any given day to see how many days you've spent in the Schengen Area during that period. The 90 days are cumulative, not consecutive."
+              },
+              {
+                question: "What happens if I overstay even by one day?",
+                answer: "Overstaying can have serious consequences including fines (often €500+ per day), deportation, and entry bans of 1-5 years across the entire Schengen Area. Even a single day overstay is recorded in computerized systems and will be flagged at future border crossings. Always ensure you leave before your permitted stay expires."
+              },
+              {
+                question: "Do days spent in different Schengen countries count together?",
+                answer: "Yes, absolutely. The Schengen Area is treated as one territory for visa purposes. Days spent in France, Germany, Spain, or any of the 27 Schengen countries all count towards your total 90-day allowance. Moving between countries does NOT reset your counter."
+              },
+              {
+                question: "Can I reset my 90 days by leaving briefly?",
+                answer: "No, this is a common misconception. The 90/180 rule uses a rolling 180-day window. Brief exits don't reset anything - you must wait until you have at least 90 consecutive days outside the Schengen Area before you can use your full 90-day allowance again."
+              },
+              {
+                question: "What are the most common mistakes travelers make?",
+                answer: "Common mistakes include: counting months instead of days (180 days ≠ 6 months), assuming each country has separate limits, thinking breaks reset the counter, not tracking days from previous trips, and believing they can work remotely on tourist visas. Always use official calculators and keep detailed records."
+              },
+              {
+                question: "Is this calculator legally binding?",
+                answer: "No calculator is legally binding. This tool is designed to help you understand the rules, but final decisions on entry and stay duration are always made by border officials and immigration authorities. Keep detailed records of your travels and consult official sources when in doubt."
+              },
+              {
+                question: "Can digital nomads work remotely while on tourist visas?",
+                answer: "Generally, no. Working remotely (even for a foreign employer) while on a Schengen tourist visa is not legally permitted in most countries. If caught, you may face fines, deportation, or bans. Consider digital nomad visas offered by countries like Portugal, Estonia, or other EU nations for legal remote work."
+              },
+              {
+                question: "How do I track my days manually?",
+                answer: "Keep a detailed spreadsheet or diary with entry/exit dates for each Schengen trip. For any given day, count backwards 180 days and sum all days spent in the Schengen Area during that period. This rolling calculation must never exceed 90 days. Save all boarding passes, hotel receipts, and other proof of your whereabouts."
+              },
+              {
+                question: "What if I don't have entry/exit stamps?",
+                answer: "Entry/exit stamps are crucial for proving compliance. If officials forget to stamp your passport, politely request it. Keep boarding passes, hotel receipts, and other documentation as backup proof. The new Entry/Exit System (EES) will digitally track movements, but until then, stamps remain the primary proof."
+              },
+              {
+                question: "Are there ways to stay longer than 90 days legally?",
+                answer: "Yes, several options exist: apply for a long-stay national visa (Type D) for specific countries, obtain a residence permit, use digital nomad visas where available, or alternate between Schengen and non-Schengen European countries (like UK, Ireland, Romania, Bulgaria) which have separate 90-day allowances."
+              }
+            ].map((faq, index) => (
+              <FAQItem key={index} question={faq.question} answer={faq.answer} />
+            ))}
+          </motion.div>
         </div>
       </section>
 
