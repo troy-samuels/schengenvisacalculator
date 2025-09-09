@@ -104,7 +104,7 @@ const nextConfig = {
 
   // Environment Variables Configuration
   env: {
-    NEXT_PUBLIC_APP_NAME: 'Schengen Visa Calculator',
+    NEXT_PUBLIC_APP_NAME: 'ETIAS Calculator',
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '2.0.0',
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
   },

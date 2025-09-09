@@ -1359,7 +1359,7 @@ export default function HomePage() {
             
             {/* Mobile Header */}
             <div className="md:hidden p-4 bg-gray-50 border-b">
-              <h3 className="font-semibold text-gray-900 text-center">Schengen Visa Calculator</h3>
+              <h3 className="font-semibold text-gray-900 text-center">ETIAS Calculator</h3>
               <p className="text-xs text-gray-500 text-center mt-1">Track your 90/180 day rule compliance</p>
             </div>
 

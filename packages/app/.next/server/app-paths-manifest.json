@@ -4,10 +4,10 @@
   "/api/stripe/create-checkout-session/route": "app/api/stripe/create-checkout-session/route.js",
   "/api/stripe/verify-session/route": "app/api/stripe/verify-session/route.js",
   "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/blog/page": "app/blog/page.js",
   "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/payment-cancelled/page": "app/payment-cancelled/page.js",
+  "/blog/page": "app/blog/page.js",
   "/payment-success/page": "app/payment-success/page.js",
   "/save-progress/page": "app/save-progress/page.js",
   "/blog/[slug]/page": "app/blog/[slug]/page.js"
