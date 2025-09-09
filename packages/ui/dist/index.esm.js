@@ -841,7 +841,7 @@ const createLucideIcon = (iconName, iconNode)=>{
     return Component;
 };
 
-const __iconNode$q = [
+const __iconNode$t = [
     [
         "path",
         {
@@ -857,9 +857,9 @@ const __iconNode$q = [
         }
     ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$q);
+const Bell = createLucideIcon("bell", __iconNode$t);
 
-const __iconNode$p = [
+const __iconNode$s = [
     [
         "path",
         {
@@ -875,9 +875,9 @@ const __iconNode$p = [
         }
     ]
 ];
-const BookOpen = createLucideIcon("book-open", __iconNode$p);
+const BookOpen = createLucideIcon("book-open", __iconNode$s);
 
-const __iconNode$o = [
+const __iconNode$r = [
     [
         "rect",
         {
@@ -959,9 +959,9 @@ const __iconNode$o = [
         }
     ]
 ];
-const Calculator = createLucideIcon("calculator", __iconNode$o);
+const Calculator = createLucideIcon("calculator", __iconNode$r);
 
-const __iconNode$n = [
+const __iconNode$q = [
     [
         "path",
         {
@@ -991,9 +991,9 @@ const __iconNode$n = [
         }
     ]
 ];
-const ChartColumn = createLucideIcon("chart-column", __iconNode$n);
+const ChartColumn = createLucideIcon("chart-column", __iconNode$q);
 
-const __iconNode$m = [
+const __iconNode$p = [
     [
         "path",
         {
@@ -1002,9 +1002,9 @@ const __iconNode$m = [
         }
     ]
 ];
-const Check = createLucideIcon("check", __iconNode$m);
+const Check = createLucideIcon("check", __iconNode$p);
 
-const __iconNode$l = [
+const __iconNode$o = [
     [
         "path",
         {
@@ -1013,9 +1013,9 @@ const __iconNode$l = [
         }
     ]
 ];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$l);
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$o);
 
-const __iconNode$k = [
+const __iconNode$n = [
     [
         "path",
         {
@@ -1024,9 +1024,9 @@ const __iconNode$k = [
         }
     ]
 ];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$k);
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$n);
 
-const __iconNode$j = [
+const __iconNode$m = [
     [
         "path",
         {
@@ -1035,9 +1035,9 @@ const __iconNode$j = [
         }
     ]
 ];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$j);
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$m);
 
-const __iconNode$i = [
+const __iconNode$l = [
     [
         "path",
         {
@@ -1078,9 +1078,9 @@ const __iconNode$i = [
         }
     ]
 ];
-const Chromium = createLucideIcon("chromium", __iconNode$i);
+const Chromium = createLucideIcon("chromium", __iconNode$l);
 
-const __iconNode$h = [
+const __iconNode$k = [
     [
         "rect",
         {
@@ -1103,9 +1103,9 @@ const __iconNode$h = [
         }
     ]
 ];
-const CreditCard = createLucideIcon("credit-card", __iconNode$h);
+const CreditCard = createLucideIcon("credit-card", __iconNode$k);
 
-const __iconNode$g = [
+const __iconNode$j = [
     [
         "path",
         {
@@ -1121,9 +1121,9 @@ const __iconNode$g = [
         }
     ]
 ];
-const Crown = createLucideIcon("crown", __iconNode$g);
+const Crown = createLucideIcon("crown", __iconNode$j);
 
-const __iconNode$f = [
+const __iconNode$i = [
     [
         "path",
         {
@@ -1153,9 +1153,9 @@ const __iconNode$f = [
         }
     ]
 ];
-const EyeOff = createLucideIcon("eye-off", __iconNode$f);
+const EyeOff = createLucideIcon("eye-off", __iconNode$i);
 
-const __iconNode$e = [
+const __iconNode$h = [
     [
         "path",
         {
@@ -1173,9 +1173,9 @@ const __iconNode$e = [
         }
     ]
 ];
-const Eye = createLucideIcon("eye", __iconNode$e);
+const Eye = createLucideIcon("eye", __iconNode$h);
 
-const __iconNode$d = [
+const __iconNode$g = [
     [
         "path",
         {
@@ -1212,9 +1212,9 @@ const __iconNode$d = [
         }
     ]
 ];
-const FileText = createLucideIcon("file-text", __iconNode$d);
+const FileText = createLucideIcon("file-text", __iconNode$g);
 
-const __iconNode$c = [
+const __iconNode$f = [
     [
         "path",
         {
@@ -1237,9 +1237,42 @@ const __iconNode$c = [
         }
     ]
 ];
-const History = createLucideIcon("history", __iconNode$c);
+const History = createLucideIcon("history", __iconNode$f);
 
-const __iconNode$b = [
+const __iconNode$e = [
+    [
+        "rect",
+        {
+            width: "20",
+            height: "20",
+            x: "2",
+            y: "2",
+            rx: "5",
+            ry: "5",
+            key: "2e1cvw"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z",
+            key: "9exkf1"
+        }
+    ],
+    [
+        "line",
+        {
+            x1: "17.5",
+            x2: "17.51",
+            y1: "6.5",
+            y2: "6.5",
+            key: "r4j83e"
+        }
+    ]
+];
+const Instagram = createLucideIcon("instagram", __iconNode$e);
+
+const __iconNode$d = [
     [
         "path",
         {
@@ -1283,9 +1316,9 @@ const __iconNode$b = [
         }
     ]
 ];
-const List = createLucideIcon("list", __iconNode$b);
+const List = createLucideIcon("list", __iconNode$d);
 
-const __iconNode$a = [
+const __iconNode$c = [
     [
         "rect",
         {
@@ -1306,9 +1339,9 @@ const __iconNode$a = [
         }
     ]
 ];
-const Lock = createLucideIcon("lock", __iconNode$a);
+const Lock = createLucideIcon("lock", __iconNode$c);
 
-const __iconNode$9 = [
+const __iconNode$b = [
     [
         "path",
         {
@@ -1331,9 +1364,9 @@ const __iconNode$9 = [
         }
     ]
 ];
-const LogOut = createLucideIcon("log-out", __iconNode$9);
+const LogOut = createLucideIcon("log-out", __iconNode$b);
 
-const __iconNode$8 = [
+const __iconNode$a = [
     [
         "path",
         {
@@ -1353,9 +1386,29 @@ const __iconNode$8 = [
         }
     ]
 ];
-const Mail = createLucideIcon("mail", __iconNode$8);
+const Mail = createLucideIcon("mail", __iconNode$a);
 
-const __iconNode$7 = [
+const __iconNode$9 = [
+    [
+        "path",
+        {
+            d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",
+            key: "1r0f0z"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "12",
+            cy: "10",
+            r: "3",
+            key: "ilqhr7"
+        }
+    ]
+];
+const MapPin = createLucideIcon("map-pin", __iconNode$9);
+
+const __iconNode$8 = [
     [
         "path",
         {
@@ -1378,9 +1431,9 @@ const __iconNode$7 = [
         }
     ]
 ];
-const Menu = createLucideIcon("menu", __iconNode$7);
+const Menu = createLucideIcon("menu", __iconNode$8);
 
-const __iconNode$6 = [
+const __iconNode$7 = [
     [
         "path",
         {
@@ -1429,9 +1482,9 @@ const __iconNode$6 = [
         }
     ]
 ];
-const Palette = createLucideIcon("palette", __iconNode$6);
+const Palette = createLucideIcon("palette", __iconNode$7);
 
-const __iconNode$5 = [
+const __iconNode$6 = [
     [
         "path",
         {
@@ -1454,9 +1507,9 @@ const __iconNode$5 = [
         }
     ]
 ];
-const Save = createLucideIcon("save", __iconNode$5);
+const Save = createLucideIcon("save", __iconNode$6);
 
-const __iconNode$4 = [
+const __iconNode$5 = [
     [
         "path",
         {
@@ -1474,7 +1527,18 @@ const __iconNode$4 = [
         }
     ]
 ];
-const Settings = createLucideIcon("settings", __iconNode$4);
+const Settings = createLucideIcon("settings", __iconNode$5);
+
+const __iconNode$4 = [
+    [
+        "path",
+        {
+            d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+            key: "oel41y"
+        }
+    ]
+];
+const Shield = createLucideIcon("shield", __iconNode$4);
 
 const __iconNode$3 = [
     [
@@ -3246,7 +3310,7 @@ const FOUR_WEEKS = 4;
  *
  * @group Components
  * @see https://daypicker.dev/guides/custom-components
- */ function Footer(props) {
+ */ function Footer$1(props) {
     return React__default.createElement("div", {
         ...props
     });
@@ -3532,7 +3596,7 @@ var components = /*#__PURE__*/Object.freeze({
   DayButton: DayButton,
   Dropdown: Dropdown,
   DropdownNav: DropdownNav,
-  Footer: Footer,
+  Footer: Footer$1,
   Month: Month,
   MonthCaption: MonthCaption,
   MonthGrid: MonthGrid,
@@ -12632,6 +12696,128 @@ function requireNavigation() {
 
 var navigationExports = requireNavigation();
 
+// Custom TikTok icon matching Lucide aesthetic
+function TikTokIcon({ className = "" }) {
+    return /*#__PURE__*/ React__default.createElement("svg", {
+        className: cn("w-4 h-4", className),
+        viewBox: "0 0 24 24",
+        fill: "currentColor",
+        "aria-label": "TikTok"
+    }, /*#__PURE__*/ React__default.createElement("path", {
+        d: "M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"
+    }));
+}
+function SocialMediaLinks({ variant = 'footer', size = 'md', showLabels = false, className = '', instagramHandle = 'etiascalculator', tiktokHandle = 'etiascalculator' }) {
+    // Size classes
+    const sizeClasses = {
+        sm: 'w-4 h-4',
+        md: 'w-5 h-5',
+        lg: 'w-6 h-6'
+    };
+    // Touch target classes for mobile (44px minimum per CLAUDE.md)
+    const touchTargetClasses = {
+        sm: 'min-w-[44px] min-h-[44px] p-3',
+        md: 'min-w-[44px] min-h-[44px] p-2.5',
+        lg: 'min-w-[44px] min-h-[44px] p-2'
+    };
+    // Variant-specific styling
+    const variantClasses = {
+        header: 'text-gray-500 hover:text-gray-700 transition-colors duration-200',
+        hero: 'text-gray-600 hover:text-gray-800 transition-colors duration-200',
+        footer: 'text-gray-400 hover:text-gray-600 transition-colors duration-200',
+        blog: 'text-gray-500 hover:text-gray-700 transition-colors duration-200',
+        modal: 'text-gray-400 hover:text-gray-600 transition-colors duration-200'
+    };
+    // Label classes
+    const labelClasses = {
+        header: 'text-sm font-medium',
+        hero: 'text-sm font-medium',
+        footer: 'text-sm',
+        blog: 'text-sm font-medium',
+        modal: 'text-xs'
+    };
+    const iconSize = sizeClasses[size];
+    const touchTarget = touchTargetClasses[size];
+    const baseClasses = variantClasses[variant];
+    const labelClass = labelClasses[variant];
+    const links = [
+        {
+            platform: 'Instagram',
+            handle: instagramHandle,
+            url: `https://instagram.com/${instagramHandle}`,
+            icon: Instagram,
+            hoverColor: 'hover:text-pink-500'
+        },
+        {
+            platform: 'TikTok',
+            handle: tiktokHandle,
+            url: `https://tiktok.com/@${tiktokHandle}`,
+            icon: TikTokIcon,
+            hoverColor: 'hover:text-black'
+        }
+    ];
+    return /*#__PURE__*/ React__default.createElement("div", {
+        className: cn('flex items-center', className)
+    }, showLabels && variant !== 'header' && /*#__PURE__*/ React__default.createElement("span", {
+        className: cn('mr-3 text-gray-600', labelClass)
+    }, "Follow us:"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2"
+    }, links.map((link)=>{
+        const IconComponent = link.icon;
+        return /*#__PURE__*/ React__default.createElement("a", {
+            key: link.platform,
+            href: link.url,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: cn('flex items-center justify-center rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2', baseClasses, link.hoverColor, touchTarget),
+            "aria-label": `Follow ETIAS Calculator on ${link.platform}`,
+            title: `Follow us on ${link.platform}`
+        }, /*#__PURE__*/ React__default.createElement(IconComponent, {
+            className: iconSize
+        }), showLabels && variant !== 'modal' && /*#__PURE__*/ React__default.createElement("span", {
+            className: cn('ml-2', labelClass)
+        }, link.platform));
+    })));
+}
+// Specific variant components for easy usage
+function HeaderSocialLinks({ className }) {
+    return /*#__PURE__*/ React__default.createElement(SocialMediaLinks, {
+        variant: "header",
+        size: "sm",
+        className: className
+    });
+}
+function HeroSocialLinks({ className }) {
+    return /*#__PURE__*/ React__default.createElement(SocialMediaLinks, {
+        variant: "hero",
+        size: "md",
+        showLabels: true,
+        className: className
+    });
+}
+function FooterSocialLinks({ className }) {
+    return /*#__PURE__*/ React__default.createElement(SocialMediaLinks, {
+        variant: "footer",
+        size: "sm",
+        className: className
+    });
+}
+function BlogSocialLinks({ className }) {
+    return /*#__PURE__*/ React__default.createElement(SocialMediaLinks, {
+        variant: "blog",
+        size: "sm",
+        showLabels: true,
+        className: className
+    });
+}
+function ModalSocialLinks({ className }) {
+    return /*#__PURE__*/ React__default.createElement(SocialMediaLinks, {
+        variant: "modal",
+        size: "sm",
+        className: className
+    });
+}
+
 function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, user, loading, className = "" }) {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -12679,7 +12865,7 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         className: "flex flex-col"
     }, /*#__PURE__*/ React__default.createElement("span", {
         className: "text-lg font-bold text-blue-600 leading-none"
-    }, "Schengen Calculator")))), /*#__PURE__*/ React__default.createElement("nav", {
+    }, "ETIAS Calculator")))), /*#__PURE__*/ React__default.createElement("nav", {
         className: "hidden md:flex items-center space-x-8"
     }, navigationLinks.map((link)=>{
         const IconComponent = link.icon;
@@ -12694,8 +12880,10 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
     })), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2 sm:space-x-3"
     }, /*#__PURE__*/ React__default.createElement("div", {
-        className: "hidden sm:flex items-center space-x-3"
-    }, loading ? /*#__PURE__*/ React__default.createElement("div", {
+        className: "hidden sm:flex items-center space-x-4"
+    }, /*#__PURE__*/ React__default.createElement(HeaderSocialLinks, {
+        className: "mr-2"
+    }), loading ? /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "h-8 w-8 rounded-full bg-gray-200 animate-pulse"
@@ -12789,7 +12977,11 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         }), /*#__PURE__*/ React__default.createElement("span", {
             className: "text-base font-medium"
         }, link.label));
-    }), !user && /*#__PURE__*/ React__default.createElement("div", {
+    }), /*#__PURE__*/ React__default.createElement("div", {
+        className: "pt-4 border-t border-gray-100"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "px-4 py-2"
+    }, /*#__PURE__*/ React__default.createElement(HeaderSocialLinks, null))), !user && /*#__PURE__*/ React__default.createElement("div", {
         className: "pt-4 border-t border-gray-100 space-y-2"
     }, /*#__PURE__*/ React__default.createElement("button", {
         onClick: ()=>{
@@ -27623,6 +27815,117 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
     }, "Done")))), document.body) : null;
 }
 
+function Footer({ className = '' }) {
+    const currentYear = new Date().getFullYear();
+    return /*#__PURE__*/ React__default.createElement("footer", {
+        className: `bg-gray-900 text-gray-300 ${className}`
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "container mx-auto px-4 py-12"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 md:grid-cols-4 gap-8"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "md:col-span-1"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "text-xl font-bold text-white mb-4"
+    }, "ETIAS Calculator"), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-gray-400 text-sm mb-4"
+    }, "Professional ETIAS and Schengen visa calculator trusted by 50,000+ travelers worldwide. Stay compliant with EU regulations."), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2 text-sm text-gray-400 mb-2"
+    }, /*#__PURE__*/ React__default.createElement(Mail, {
+        className: "w-4 h-4"
+    }), /*#__PURE__*/ React__default.createElement("a", {
+        href: "mailto:info@etiascalculator.com",
+        className: "hover:text-gray-200 transition-colors"
+    }, "info@etiascalculator.com")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2 text-sm text-gray-400"
+    }, /*#__PURE__*/ React__default.createElement(MapPin, {
+        className: "w-4 h-4"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "European Union"))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "text-lg font-semibold text-white mb-4"
+    }, "Resources"), /*#__PURE__*/ React__default.createElement("ul", {
+        className: "space-y-3"
+    }, /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/blog",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Travel Guides")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/blog/90-180-day-rule-calculator",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "90/180 Day Rule Guide")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/blog/schengen-area-countries-2025",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Schengen Countries")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/blog/digital-nomad-visa-guide-2025",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Digital Nomad Visas")))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "text-lg font-semibold text-white mb-4"
+    }, "Tools"), /*#__PURE__*/ React__default.createElement("ul", {
+        className: "space-y-3"
+    }, /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "ETIAS Calculator")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/save-progress",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Save Progress")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/dashboard",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Travel Dashboard")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-gray-500 text-sm"
+    }, "Premium Features")))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "text-lg font-semibold text-white mb-4"
+    }, "Connect"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mb-6"
+    }, /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-gray-400 text-sm mb-3"
+    }, "Follow us for daily ETIAS updates:"), /*#__PURE__*/ React__default.createElement(FooterSocialLinks, null)), /*#__PURE__*/ React__default.createElement("ul", {
+        className: "space-y-3"
+    }, /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("a", {
+        href: "/privacy-policy",
+        className: "flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, /*#__PURE__*/ React__default.createElement(Shield, {
+        className: "w-3 h-3"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Privacy Policy"))), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("a", {
+        href: "/terms-of-service",
+        className: "flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, /*#__PURE__*/ React__default.createElement(FileText, {
+        className: "w-3 h-3"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Terms of Service")))))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "border-t border-gray-800 mt-12 pt-8"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-gray-400"
+    }, "© ", currentYear, " ETIAS Calculator. All rights reserved."), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-4 text-xs text-gray-500"
+    }, /*#__PURE__*/ React__default.createElement("span", null, "🇪🇺 EU Regulation Compliant"), /*#__PURE__*/ React__default.createElement("span", null, "•"), /*#__PURE__*/ React__default.createElement("span", null, "✅ 100% Accurate Calculations"), /*#__PURE__*/ React__default.createElement("span", null, "•"), /*#__PURE__*/ React__default.createElement("span", null, "🔒 Secure & Private"))))), /*#__PURE__*/ React__default.createElement("script", {
+        type: "application/ld+json",
+        dangerouslySetInnerHTML: {
+            __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "ETIAS Calculator",
+                "url": "https://etiascalculator.com",
+                "logo": "https://etiascalculator.com/logo.png",
+                "sameAs": [
+                    "https://instagram.com/etiascalculator",
+                    "https://tiktok.com/@etiascalculator"
+                ],
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer service",
+                    "email": "info@etiascalculator.com",
+                    "areaServed": "Worldwide",
+                    "availableLanguage": "English"
+                },
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressRegion": "European Union"
+                }
+            })
+        }
+    }));
+}
+
 /**
  * Date Overlap Prevention System
  * CRITICAL: Prevents users from selecting dates that conflict with existing trips
@@ -27773,5 +28076,5 @@ function useDateOverlapPrevention({ existingTrips, excludeTripId }) {
     };
 }
 
-export { AccountCreationModal, Badge, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Header, Input, Label, LoginModal, MobileCalendarDrawer, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SubscriptionTier, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useConversionAnalytics, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
+export { AccountCreationModal, Badge, BlogSocialLinks, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useConversionAnalytics, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
 //# sourceMappingURL=index.esm.js.map

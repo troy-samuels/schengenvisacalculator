@@ -32,6 +32,12 @@ export { CalendarModal } from "./components/ui/calendar-modal"
 export type { MobileCalendarDrawerProps } from "./components/ui/mobile-calendar-drawer"
 export { MobileCalendarDrawer } from "./components/ui/mobile-calendar-drawer"
 
+// Social media links
+export * from "./components/ui/social-media-links"
+
+// Footer
+export * from "./components/ui/footer"
+
 // Date overlap prevention system (exports DateOverlapValidator and OccupiedDateInfo)
 export * from "./validators/date-overlap-validator"
 

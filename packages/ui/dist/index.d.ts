@@ -451,5 +451,38 @@ interface MobileCalendarDrawerProps {
 }
 declare function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: MobileCalendarDrawerProps): react_jsx_runtime.JSX.Element | null;
 
-export { AccountCreationModal, Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Header, Input, Label, LoginModal, MobileCalendarDrawer, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SubscriptionTier, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
-export type { AccountCreationModalProps, BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, FeatureAccessResult, FeatureButtonProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, PremiumUpgradeModalProps, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn, UseFeatureAccessProps };
+declare function TikTokIcon({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+interface SocialMediaLinksProps {
+    variant?: 'header' | 'hero' | 'footer' | 'blog' | 'modal';
+    size?: 'sm' | 'md' | 'lg';
+    showLabels?: boolean;
+    className?: string;
+    instagramHandle?: string;
+    tiktokHandle?: string;
+}
+declare function SocialMediaLinks({ variant, size, showLabels, className, instagramHandle, tiktokHandle }: SocialMediaLinksProps): react_jsx_runtime.JSX.Element;
+declare function HeaderSocialLinks({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+declare function HeroSocialLinks({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+declare function FooterSocialLinks({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+declare function BlogSocialLinks({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+declare function ModalSocialLinks({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+
+interface FooterProps {
+    className?: string;
+}
+declare function Footer({ className }: FooterProps): react_jsx_runtime.JSX.Element;
+
+export { AccountCreationModal, Badge, BlogSocialLinks, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
+export type { AccountCreationModalProps, BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, FeatureAccessResult, FeatureButtonProps, FooterProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, PremiumUpgradeModalProps, SocialMediaLinksProps, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn, UseFeatureAccessProps };
