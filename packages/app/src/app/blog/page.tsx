@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Search, Calendar, Clock, ArrowRight, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { blogPosts, getAllCategories, searchBlogPosts, getBlogPostsByCategory } from '@/lib/blog-data'
-import { Header } from '@schengen/ui'
+import { Header, Footer } from '@schengen/ui'
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -186,6 +186,9 @@ export default function BlogPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

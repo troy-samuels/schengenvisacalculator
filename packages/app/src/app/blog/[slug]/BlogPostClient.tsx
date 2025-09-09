@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Calendar, Clock, ArrowLeft, Share2, BookOpen, Calculator, ArrowRight, Tag, User } from 'lucide-react'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
-import { Header } from '@schengen/ui'
+import { Header, BlogSocialLinks, Footer } from '@schengen/ui'
 import { BlogPost, blogPosts } from '@/lib/blog-data'
 
 interface BlogPostClientProps {
@@ -251,6 +251,27 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
         </motion.section>
       )}
 
+      {/* Social Media Follow Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="py-12 px-4 bg-gradient-to-r from-gray-50 to-blue-50/50"
+      >
+        <div className="container mx-auto max-w-3xl text-center">
+          <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-4">
+            Follow for More Travel Guides
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Get daily ETIAS tips, visa updates, and European travel inspiration
+          </p>
+          <BlogSocialLinks className="justify-center" />
+          <p className="text-sm text-gray-500 mt-4">
+            Join 10,000+ travelers staying informed about EU travel regulations
+          </p>
+        </div>
+      </motion.section>
+
       {/* Newsletter Signup */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
@@ -277,6 +298,9 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           </div>
         </div>
       </motion.section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

@@ -19,7 +19,9 @@ import {
   AccountCreationModal,
   PremiumUpgradeModal,
   useFeatureAccess,
-  SubscriptionTier
+  SubscriptionTier,
+  HeroSocialLinks,
+  Footer
 } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
@@ -1306,6 +1308,26 @@ export default function HomePage() {
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
+      {/* Social Media Follow Section */}
+      <section className="py-8 bg-gradient-to-r from-gray-50 to-blue-50/50">
+        <div className="container mx-auto max-w-4xl px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <p className="text-sm font-dm-sans text-gray-600 mb-4">
+              Get daily ETIAS tips and travel updates
+            </p>
+            <HeroSocialLinks className="justify-center" />
+            <p className="text-xs text-gray-500 mt-3">
+              Join 10,000+ travelers following our expert advice
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -1927,6 +1949,9 @@ export default function HomePage() {
         loading={loading}
         error={authError}
       />
+
+      {/* Footer */}
+      <Footer />
 
       </div>
   )

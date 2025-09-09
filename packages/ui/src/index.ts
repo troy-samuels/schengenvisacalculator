@@ -27,6 +27,8 @@ export * from "./components/ui/premium-upgrade-modal"
 export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
 export * from "./components/ui/mobile-calendar-drawer"
+export * from "./components/ui/social-media-links"
+export * from "./components/ui/footer"
 export type { CalendarDateRange } from "./components/ui/calendar-modal"
 
 // Date overlap prevention system

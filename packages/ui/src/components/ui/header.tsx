@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from './button'
 import { User, ChevronDown, LogOut, Settings, BarChart3, Menu, X, BookOpen, Calculator, Home } from 'lucide-react'
+import { HeaderSocialLinks } from './social-media-links'
 
 export interface HeaderProps {
   onLoginClick?: () => void
@@ -61,7 +62,7 @@ export function Header({
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-blue-600 leading-none">
-                  Schengen Calculator
+                  ETIAS Calculator
                 </span>
               </div>
             </Link>
@@ -89,8 +90,10 @@ export function Header({
 
           {/* Right side - Auth Buttons & Mobile Menu */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Auth Buttons - shown before mobile menu */}
-            <div className="hidden sm:flex items-center space-x-3">
+            {/* Social Icons & Auth Buttons - Desktop */}
+            <div className="hidden sm:flex items-center space-x-4">
+              {/* Social Media Links */}
+              <HeaderSocialLinks className="mr-2" />
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
@@ -244,6 +247,13 @@ export function Header({
                   </Link>
                 )
               })}
+              
+              {/* Mobile Social Links */}
+              <div className="pt-4 border-t border-gray-100">
+                <div className="px-4 py-2">
+                  <HeaderSocialLinks />
+                </div>
+              </div>
               
               {/* Mobile auth actions */}
               {!user && (
