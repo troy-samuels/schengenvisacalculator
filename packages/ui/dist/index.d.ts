@@ -1,6 +1,8 @@
 import { ClassValue } from 'clsx';
+import { User } from '@supabase/supabase-js';
 import * as class_variance_authority_dist_types from 'class-variance-authority/dist/types';
 import * as React from 'react';
+import React__default from 'react';
 import { VariantProps } from 'class-variance-authority';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import { DayPickerProps } from 'react-day-picker';
@@ -99,6 +101,59 @@ declare function useMediaQuery(query: string): boolean;
  */
 declare function useIsMobile(): boolean;
 
+declare enum SubscriptionTier {
+    ANONYMOUS = "anonymous",
+    FREE = "free",
+    PREMIUM = "premium",
+    PRO = "pro",
+    BUSINESS = "business"
+}
+declare const FEATURES: {
+    readonly anonymous: readonly ["basic_calculator_only"];
+    readonly free: readonly ["basic_calculator", "single_trip_list", "screenshot_export", "basic_alerts", "trip_history"];
+    readonly premium: readonly ["smart_alerts", "unlimited_lists", "pdf_export", "dark_mode", "no_ads", "email_reports"];
+    readonly pro: readonly ["trip_optimizer_pro", "document_vault", "multi_person_tracking", "api_access_basic", "priority_support"];
+    readonly business: readonly ["team_management", "white_label", "api_access_full", "dedicated_support", "custom_integrations"];
+};
+declare const FREE_TIER_LIMITS: {
+    calculationDelay: number;
+    exportFormats: string[];
+    tripLists: number;
+    adsEnabled: boolean;
+    priorityCalculation: boolean;
+    alertsLimited: boolean;
+};
+interface FeatureAccessResult {
+    hasAccess: boolean;
+    requiresAccount: boolean;
+    requiresPremium: boolean;
+    currentTier: SubscriptionTier;
+    nextTier?: SubscriptionTier;
+    conversionAction: 'create_account' | 'upgrade_premium' | 'upgrade_pro' | 'upgrade_business' | null;
+}
+interface UseFeatureAccessProps {
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+}
+declare function useFeatureAccess({ user, subscriptionTier }: UseFeatureAccessProps): {
+    currentTier: SubscriptionTier;
+    hasFeature: (feature: string) => boolean;
+    getFeatureAccess: (feature: string) => FeatureAccessResult;
+    getLimitations: () => {
+        calculationDelay: number;
+        exportFormats: string[];
+        tripLists: number;
+        adsEnabled: boolean;
+        priorityCalculation: boolean;
+        alertsLimited: boolean;
+    };
+    trackFeatureAttempt: (feature: string, context?: Record<string, any>) => FeatureAccessResult;
+    isAnonymous: boolean;
+    isFreeUser: boolean;
+    isPremiumUser: boolean;
+};
+declare function getAvailableFeatures(tier: SubscriptionTier): string[];
+
 /**
  * Shared calendar types to prevent circular imports
  */
@@ -178,6 +233,74 @@ interface LoginModalProps {
     error?: string | null;
 }
 declare function LoginModal({ isOpen, onClose, onEmailLogin, onGoogleLogin, onSignupClick, loading, error }: LoginModalProps): react_jsx_runtime.JSX.Element;
+
+interface FeatureButtonProps {
+    feature: string;
+    children: React__default.ReactNode;
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+    onClick?: () => void;
+    onAccountCreationRequired?: (feature: string) => void;
+    onPremiumUpgradeRequired?: (feature: string, currentTier: SubscriptionTier) => void;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    size?: 'default' | 'sm' | 'lg' | 'icon';
+    className?: string;
+    showUpgradeHint?: boolean;
+    disabled?: boolean;
+    fullWidth?: boolean;
+}
+declare function FeatureButton({ feature, children, user, subscriptionTier, onClick, onAccountCreationRequired, onPremiumUpgradeRequired, variant, size, className, showUpgradeHint, disabled, fullWidth }: FeatureButtonProps): react_jsx_runtime.JSX.Element;
+declare function ExportButton({ user, subscriptionTier, onExportClick, onAccountRequired, onUpgradeRequired }: {
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+    onExportClick?: () => void;
+    onAccountRequired?: (feature: string) => void;
+    onUpgradeRequired?: (feature: string, tier: SubscriptionTier) => void;
+}): react_jsx_runtime.JSX.Element;
+declare function SaveTripButton({ user, subscriptionTier, onSaveClick, onAccountRequired, onUpgradeRequired }: {
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+    onSaveClick?: () => void;
+    onAccountRequired?: (feature: string) => void;
+    onUpgradeRequired?: (feature: string, tier: SubscriptionTier) => void;
+}): react_jsx_runtime.JSX.Element;
+declare function CreateListButton({ user, subscriptionTier, currentListCount, onCreateList, onAccountRequired, onUpgradeRequired }: {
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+    currentListCount?: number;
+    onCreateList?: () => void;
+    onAccountRequired?: (feature: string) => void;
+    onUpgradeRequired?: (feature: string, tier: SubscriptionTier) => void;
+}): react_jsx_runtime.JSX.Element;
+declare function SmartAlertsButton({ user, subscriptionTier, onSetupAlerts, onAccountRequired, onUpgradeRequired }: {
+    user: User | null;
+    subscriptionTier?: SubscriptionTier;
+    onSetupAlerts?: () => void;
+    onAccountRequired?: (feature: string) => void;
+    onUpgradeRequired?: (feature: string, tier: SubscriptionTier) => void;
+}): react_jsx_runtime.JSX.Element;
+
+interface AccountCreationModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    trigger?: string;
+    onEmailSignup: (email: string, password: string, name: string) => Promise<void>;
+    onGoogleSignup: () => Promise<void>;
+    loading?: boolean;
+    error?: string | null;
+}
+declare function AccountCreationModal({ isOpen, onClose, trigger, onEmailSignup, onGoogleSignup, loading, error }: AccountCreationModalProps): react_jsx_runtime.JSX.Element;
+
+interface PremiumUpgradeModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    feature?: string;
+    currentTier: SubscriptionTier;
+    onUpgrade: (tier: 'premium' | 'pro' | 'business', billingCycle: 'monthly' | 'yearly') => Promise<void>;
+    loading?: boolean;
+    error?: string | null;
+}
+declare function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade, loading, error }: PremiumUpgradeModalProps): react_jsx_runtime.JSX.Element;
 
 interface CircularProgressProps {
     /** Current value */
@@ -328,5 +451,5 @@ interface MobileCalendarDrawerProps {
 }
 declare function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange, disabledDates, occupiedDateInfo, minDate, maxDate, className }: MobileCalendarDrawerProps): react_jsx_runtime.JSX.Element | null;
 
-export { Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, LoginModal, MobileCalendarDrawer, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useIsMobile, useMediaQuery };
-export type { BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn };
+export { AccountCreationModal, Badge, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Header, Input, Label, LoginModal, MobileCalendarDrawer, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SubscriptionTier, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
+export type { AccountCreationModalProps, BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, FeatureAccessResult, FeatureButtonProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, PremiumUpgradeModalProps, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn, UseFeatureAccessProps };

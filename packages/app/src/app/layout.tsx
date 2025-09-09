@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://schengen-calculator.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://etiascalculator.com'),
   alternates: {
     canonical: '/',
   },
@@ -75,24 +75,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'Schengen Visa Calculator | 90/180 Rule Compliance Tool',
-    description: 'Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel.',
-    siteName: 'Schengen Calculator',
+    title: 'ETIAS Calculator | EU Schengen 90/180 Rule Compliance Tool',
+    description: 'Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel.',
+    siteName: 'ETIAS Calculator',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Schengen Visa Calculator',
+        alt: 'ETIAS Calculator',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Schengen Visa Calculator',
-    description: 'Professional EU Schengen visa calculator for the 90/180-day rule.',
+    title: 'ETIAS Calculator',
+    description: 'Professional ETIAS and Schengen visa calculator for the 90/180-day rule.',
     images: ['/og-image.png'],
-    creator: '@schengen_calc',
+    creator: '@etias_calc',
   },
   robots: {
     index: true,
@@ -156,10 +156,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
               "@graph": [
                 {
                   "@type": "WebApplication",
-                  "@id": "https://schengen-calculator.com/#webapp",
-                  "name": "Schengen Visa Calculator",
-                  "description": "Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel with our enterprise-grade platform.",
-                  "url": "https://schengen-calculator.com",
+                  "@id": "https://etiascalculator.com/#webapp",
+                  "name": "ETIAS Calculator",
+                  "description": "Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel with our enterprise-grade platform.",
+                  "url": "https://etiascalculator.com",
                   "applicationCategory": "Travel",
                   "operatingSystem": "Web Browser",
                   "offers": {
@@ -176,46 +176,47 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   },
                   "author": {
                     "@type": "Organization",
-                    "@id": "https://schengen-calculator.com/#organization"
+                    "@id": "https://etiascalculator.com/#organization"
                   },
                   "mainEntityOfPage": {
                     "@type": "WebPage",
-                    "@id": "https://schengen-calculator.com/#webpage"
+                    "@id": "https://etiascalculator.com/#webpage"
                   }
                 },
                 {
                   "@type": "Organization",
-                  "@id": "https://schengen-calculator.com/#organization",
-                  "name": "Schengen Calculator",
-                  "url": "https://schengen-calculator.com",
+                  "@id": "https://etiascalculator.com/#organization",
+                  "name": "ETIAS Calculator",
+                  "url": "https://etiascalculator.com",
                   "logo": {
                     "@type": "ImageObject",
-                    "url": "https://schengen-calculator.com/logo.png"
+                    "url": "https://etiascalculator.com/logo.png"
                   },
                   "contactPoint": {
                     "@type": "ContactPoint",
                     "contactType": "customer service",
+                    "email": "info@etiascalculator.com",
                     "areaServed": "Worldwide",
                     "availableLanguage": "English"
                   },
                   "sameAs": [
-                    "https://twitter.com/schengen_calc"
+                    "https://twitter.com/etias_calc"
                   ]
                 },
                 {
                   "@type": "WebPage",
-                  "@id": "https://schengen-calculator.com/#webpage",
-                  "url": "https://schengen-calculator.com",
-                  "name": "Schengen Visa Calculator | 90/180 Rule Compliance Tool",
-                  "description": "Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel with our enterprise-grade platform.",
+                  "@id": "https://etiascalculator.com/#webpage",
+                  "url": "https://etiascalculator.com",
+                  "name": "ETIAS Calculator | EU Schengen 90/180 Rule Compliance Tool",
+                  "description": "Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel with our enterprise-grade platform.",
                   "inLanguage": "en-US",
                   "isPartOf": {
                     "@type": "WebSite",
-                    "@id": "https://schengen-calculator.com/#website"
+                    "@id": "https://etiascalculator.com/#website"
                   },
                   "primaryImageOfPage": {
                     "@type": "ImageObject",
-                    "url": "https://schengen-calculator.com/og-image.png"
+                    "url": "https://etiascalculator.com/og-image.png"
                   },
                   "breadcrumb": {
                     "@type": "BreadcrumbList",
@@ -224,26 +225,26 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         "@type": "ListItem",
                         "position": 1,
                         "name": "Home",
-                        "item": "https://schengen-calculator.com"
+                        "item": "https://etiascalculator.com"
                       }
                     ]
                   }
                 },
                 {
                   "@type": "WebSite",
-                  "@id": "https://schengen-calculator.com/#website",
-                  "url": "https://schengen-calculator.com",
-                  "name": "Schengen Calculator",
-                  "description": "Professional EU Schengen visa calculator platform",
+                  "@id": "https://etiascalculator.com/#website",
+                  "url": "https://etiascalculator.com",
+                  "name": "ETIAS Calculator",
+                  "description": "Professional ETIAS and Schengen visa calculator platform",
                   "publisher": {
-                    "@id": "https://schengen-calculator.com/#organization"
+                    "@id": "https://etiascalculator.com/#organization"
                   },
                   "potentialAction": [
                     {
                       "@type": "SearchAction",
                       "target": {
                         "@type": "EntryPoint",
-                        "urlTemplate": "https://schengen-calculator.com/?q={search_term_string}"
+                        "urlTemplate": "https://etiascalculator.com/?q={search_term_string}"
                       },
                       "query-input": "required name=search_term_string"
                     }

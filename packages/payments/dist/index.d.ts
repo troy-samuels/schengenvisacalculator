@@ -23,14 +23,20 @@ declare function getTierComparison(currentTier: string, targetTier: string): {
 } | null;
 declare function formatPrice(price: number): string;
 interface StripeSession {
-    id: string;
+    sessionId: string;
     url: string;
+    tier: string;
+    billingCycle: string;
+    amount: number;
 }
 interface CreateCheckoutSessionRequest {
-    priceId: string;
+    tier: 'premium' | 'pro' | 'business';
+    billingCycle?: 'monthly' | 'yearly';
     userId: string;
-    successUrl: string;
-    cancelUrl: string;
+    userEmail: string;
+    successUrl?: string;
+    cancelUrl?: string;
+    metadata?: Record<string, string>;
 }
 declare function createCheckoutSession(request: CreateCheckoutSessionRequest): Promise<StripeSession>;
 declare function getSubscriptionStatus(userId: string): Promise<string>;
@@ -39,7 +45,7 @@ declare enum BillingCycle {
     YEARLY = "yearly"
 }
 declare function calculateYearlySavings(monthlyPrice: number): number;
-declare function getStripe(): null;
+declare function getStripe(): any;
 declare function getTierFeatures(tierId: string): string[];
 declare const TIER_PRICING: {
     free: {
@@ -59,6 +65,19 @@ declare const TIER_PRICING: {
         yearly: number;
     };
 };
+interface SubscriptionData {
+    id: string;
+    status: 'active' | 'inactive' | 'cancelled' | 'past_due';
+    tier: SubscriptionTier;
+    billingCycle: BillingCycle;
+    currentPeriodEnd: Date;
+    customerId: string;
+    priceId?: string;
+}
+declare function redirectToStripeCheckout(sessionUrl: string): void;
+declare function formatSubscriptionPrice(tier: string, billingCycle: BillingCycle): string;
+declare function getUpgradeDiscount(tier: string): number;
+declare function getTierDisplayName(tier: string): string;
 
-export { BillingCycle, PaymentProvider, SUBSCRIPTION_TIERS, SubscriptionTier, TIER_PRICING, calculateYearlySavings, checkFeatureAccess, createCheckoutSession, formatPrice, getStripe, getSubscriptionStatus, getTierComparison, getTierFeatures };
-export type { CreateCheckoutSessionRequest, StripeSession, SubscriptionTierData };
+export { BillingCycle, PaymentProvider, SUBSCRIPTION_TIERS, SubscriptionTier, TIER_PRICING, calculateYearlySavings, checkFeatureAccess, createCheckoutSession, formatPrice, formatSubscriptionPrice, getStripe, getSubscriptionStatus, getTierComparison, getTierDisplayName, getTierFeatures, getUpgradeDiscount, redirectToStripeCheckout };
+export type { CreateCheckoutSessionRequest, StripeSession, SubscriptionData, SubscriptionTierData };

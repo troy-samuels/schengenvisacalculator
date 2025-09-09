@@ -396,9 +396,9 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": ["WebApplication", "TravelApplication"],
-            "name": "Schengen Visa Calculator",
-            "description": "Professional 90/180 day rule calculator for Schengen visa compliance",
-            "url": "https://schengenvisacalculator.com",
+            "name": "ETIAS Calculator",
+            "description": "Professional 90/180 day rule calculator for ETIAS and Schengen visa compliance",
+            "url": "https://etiascalculator.com",
             "applicationCategory": "TravelApplication",
             "operatingSystem": "All",
             "browserRequirements": "Modern browsers",
@@ -410,7 +410,7 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             },
             "publisher": {
               "@type": "Organization",
-              "name": "Schengen Calculator"
+              "name": "ETIAS Calculator"
             },
             "featureList": [
               "90/180 day rule tracking",

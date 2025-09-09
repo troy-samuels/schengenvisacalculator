@@ -1,6 +1,14 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/stripe/create-checkout-session/route": "app/api/stripe/create-checkout-session/route.js",
+  "/api/stripe/verify-session/route": "app/api/stripe/verify-session/route.js",
+  "/api/subscription/status/route": "app/api/subscription/status/route.js",
+  "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
+  "/blog/page": "app/blog/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/page": "app/page.js",
+  "/payment-cancelled/page": "app/payment-cancelled/page.js",
+  "/payment-success/page": "app/payment-success/page.js",
   "/save-progress/page": "app/save-progress/page.js",
-  "/page": "app/page.js"
+  "/blog/[slug]/page": "app/blog/[slug]/page.js"
 }

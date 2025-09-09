@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   if (!post) {
     return {
-      title: 'Post Not Found | Schengen Calculator',
+      title: 'Post Not Found | ETIAS Calculator',
       description: 'The blog post you are looking for could not be found.'
     }
   }
@@ -71,17 +71,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Schengen Calculator',
+      name: 'ETIAS Calculator',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://schengenvisacalculator.com/logo.png',
+        url: 'https://etiascalculator.com/logo.png',
       },
     },
     datePublished: post.publishDate,
     dateModified: post.publishDate,
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://schengenvisacalculator.com/blog/${post.slug}`,
+      '@id': `https://etiascalculator.com/blog/${post.slug}`,
     },
     keywords: post.keywords.join(', '),
     articleSection: post.category,

@@ -377,6 +377,16 @@ MFA_SECRET=your_mfa_secret
 POSTHOG_API_KEY=your_posthog_key
 GOOGLE_ANALYTICS_ID=GA_MEASUREMENT_ID
 
+# Email Configuration (ETIAS Calculator)
+FROM_EMAIL=info@etiascalculator.com
+CONTACT_EMAIL=info@etiascalculator.com
+SUPPORT_EMAIL=info@etiascalculator.com
+ADMIN_EMAIL=info@etiascalculator.com
+SENDGRID_API_KEY=your_sendgrid_key
+
+# App Configuration
+NEXT_PUBLIC_APP_URL=https://etiascalculator.com
+
 # Affiliate Revenue
 SAFETYWING_API_KEY=your_safetywing_key
 WORLDNOMADS_API_KEY=your_worldnomads_key

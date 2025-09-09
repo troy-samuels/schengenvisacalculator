@@ -60,12 +60,48 @@ function getTierComparison(currentTier, targetTier) {
 function formatPrice(price) {
     return price === 0 ? 'Free' : `$${price}/month`;
 }
-// Stub functions for Stripe integration
+// Real Stripe integration functions
 async function createCheckoutSession(request) {
-    throw new Error('Stripe integration not implemented');
+    try {
+        const response = await fetch('/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(request)
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create checkout session');
+        }
+        const data = await response.json();
+        return {
+            sessionId: data.sessionId,
+            url: data.url,
+            tier: data.tier,
+            billingCycle: data.billingCycle,
+            amount: data.amount
+        };
+    } catch (error) {
+        console.error('❌ Failed to create Stripe checkout session:', error);
+        throw error;
+    }
 }
 async function getSubscriptionStatus(userId) {
-    return 'free';
+    try {
+        // TODO: Implement actual subscription status check via API
+        // This would query your database for the user's current subscription
+        const response = await fetch(`/api/subscription/status?userId=${userId}`);
+        if (!response.ok) {
+            console.warn('Failed to fetch subscription status, defaulting to free');
+            return 'free';
+        }
+        const data = await response.json();
+        return data.status || 'free';
+    } catch (error) {
+        console.error('Error fetching subscription status:', error);
+        return 'free';
+    }
 }
 // Additional types and functions for payment modal
 var BillingCycle = /*#__PURE__*/ function(BillingCycle) {
@@ -80,7 +116,17 @@ function calculateYearlySavings(monthlyPrice) {
     return monthlyCost - yearlyPrice;
 }
 function getStripe() {
-    // Stripe instance placeholder
+    // Client-side Stripe initialization
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        try {
+            // Dynamic import for client-side only
+            const { loadStripe } = require('@stripe/stripe-js');
+            return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        } catch (error) {
+            console.error('Failed to load Stripe:', error);
+            return null;
+        }
+    }
     return null;
 }
 function getTierFeatures(tierId) {
@@ -105,6 +151,39 @@ const TIER_PRICING = {
         yearly: 499
     }
 };
+function redirectToStripeCheckout(sessionUrl) {
+    if (typeof window !== 'undefined') {
+        window.location.href = sessionUrl;
+    }
+}
+function formatSubscriptionPrice(tier, billingCycle) {
+    const pricing = TIER_PRICING[tier];
+    if (!pricing) return 'Free';
+    const price = billingCycle === "yearly" ? pricing.yearly : pricing.monthly;
+    const period = billingCycle === "yearly" ? 'year' : 'month';
+    return price === 0 ? 'Free' : `$${price}/${period}`;
+}
+function getUpgradeDiscount(tier) {
+    // 20% discount for yearly subscriptions
+    const pricing = TIER_PRICING[tier];
+    if (!pricing) return 0;
+    const monthlyTotal = pricing.monthly * 12;
+    const yearlyPrice = pricing.yearly;
+    return monthlyTotal - yearlyPrice;
+}
+function getTierDisplayName(tier) {
+    switch(tier.toLowerCase()){
+        case 'premium':
+            return 'Premium';
+        case 'pro':
+            return 'Pro';
+        case 'business':
+            return 'Business';
+        case 'free':
+        default:
+            return 'Free';
+    }
+}
 
 exports.BillingCycle = BillingCycle;
 exports.PaymentProvider = PaymentProvider;
@@ -115,8 +194,12 @@ exports.calculateYearlySavings = calculateYearlySavings;
 exports.checkFeatureAccess = checkFeatureAccess;
 exports.createCheckoutSession = createCheckoutSession;
 exports.formatPrice = formatPrice;
+exports.formatSubscriptionPrice = formatSubscriptionPrice;
 exports.getStripe = getStripe;
 exports.getSubscriptionStatus = getSubscriptionStatus;
 exports.getTierComparison = getTierComparison;
+exports.getTierDisplayName = getTierDisplayName;
 exports.getTierFeatures = getTierFeatures;
+exports.getUpgradeDiscount = getUpgradeDiscount;
+exports.redirectToStripeCheckout = redirectToStripeCheckout;
 //# sourceMappingURL=index.js.map

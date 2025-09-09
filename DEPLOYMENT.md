@@ -34,7 +34,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 # Required - For Blog Scheduler
 CRON_SECRET=generate-secure-key-here
-NEXT_PUBLIC_APP_URL=https://your-vercel-app.vercel.app
+NEXT_PUBLIC_APP_URL=https://etiascalculator.com
 ```
 
 5. **Click "Deploy"**

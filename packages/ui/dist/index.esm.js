@@ -1,8 +1,8 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import * as React from 'react';
-import React__default, { useState, useEffect, forwardRef, createElement, createContext, useContext, useCallback, useRef, useLayoutEffect, useMemo, useId as useId$1, useInsertionEffect as useInsertionEffect$1, Children, isValidElement, Fragment as Fragment$1, Component } from 'react';
-import { jsx, Fragment, jsxs } from 'react/jsx-runtime';
+import React__default, { useState, useEffect, useCallback, forwardRef, createElement, createContext, useContext, useRef, useLayoutEffect, useMemo, useId as useId$1, useInsertionEffect as useInsertionEffect$1, Children, isValidElement, Fragment as Fragment$1, Component } from 'react';
+import require$$1, { jsx, Fragment, jsxs } from 'react/jsx-runtime';
 import { cva } from 'class-variance-authority';
 import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, subMonths, eachDayOfInterval, isToday as isToday$1 } from 'date-fns';
 import * as ReactDOM from 'react-dom';
@@ -202,6 +202,363 @@ import ReactDOM__default, { createPortal } from 'react-dom';
  * Returns true when screen width is 768px or less
  */ function useIsMobile() {
     return useMediaQuery('(max-width: 768px)');
+}
+
+// Subscription tiers from CLAUDE.md
+var SubscriptionTier = /*#__PURE__*/ function(SubscriptionTier) {
+    SubscriptionTier["ANONYMOUS"] = "anonymous";
+    SubscriptionTier["FREE"] = "free";
+    SubscriptionTier["PREMIUM"] = "premium";
+    SubscriptionTier["PRO"] = "pro";
+    SubscriptionTier["BUSINESS"] = "business";
+    return SubscriptionTier;
+}({});
+// Feature flags by tier (from CLAUDE.md)
+const FEATURES = {
+    ["anonymous"]: [
+        'basic_calculator_only' // Only basic calculation, no saving/export/lists
+    ],
+    ["free"]: [
+        'basic_calculator',
+        'single_trip_list',
+        'screenshot_export',
+        'basic_alerts',
+        'trip_history'
+    ],
+    ["premium"]: [
+        'smart_alerts',
+        'unlimited_lists',
+        'pdf_export',
+        'dark_mode',
+        'no_ads',
+        'email_reports'
+    ],
+    ["pro"]: [
+        'trip_optimizer_pro',
+        'document_vault',
+        'multi_person_tracking',
+        'api_access_basic',
+        'priority_support'
+    ],
+    ["business"]: [
+        'team_management',
+        'white_label',
+        'api_access_full',
+        'dedicated_support',
+        'custom_integrations'
+    ]
+};
+// Free tier artificial limitations (from CLAUDE.md)
+const FREE_TIER_LIMITS = {
+    calculationDelay: 2000,
+    exportFormats: [
+        'screenshot'
+    ],
+    tripLists: 1,
+    adsEnabled: true,
+    priorityCalculation: false,
+    alertsLimited: true // Only basic alerts
+};
+function useFeatureAccess({ user, subscriptionTier }) {
+    // Determine current tier
+    const getCurrentTier = ()=>{
+        if (!user) return "anonymous";
+        return subscriptionTier || "free";
+    };
+    const currentTier = getCurrentTier();
+    // Check if user has access to a specific feature
+    const hasFeature = (feature)=>{
+        // Check current tier features
+        if (FEATURES[currentTier]?.includes(feature)) {
+            return true;
+        }
+        // Check inherited features from lower tiers
+        switch(currentTier){
+            case "business":
+                if (FEATURES["pro"]?.includes(feature)) return true;
+            case "pro":
+                if (FEATURES["premium"]?.includes(feature)) return true;
+            case "premium":
+                if (FEATURES["free"]?.includes(feature)) return true;
+                break;
+        }
+        return false;
+    };
+    // Get feature access details
+    const getFeatureAccess = (feature)=>{
+        const hasAccess = hasFeature(feature);
+        if (hasAccess) {
+            return {
+                hasAccess: true,
+                requiresAccount: false,
+                requiresPremium: false,
+                currentTier,
+                conversionAction: null
+            };
+        }
+        // Check what tier is needed for this feature
+        let requiredTier = null;
+        if (FEATURES["free"]?.includes(feature)) {
+            requiredTier = "free";
+        } else if (FEATURES["premium"]?.includes(feature)) {
+            requiredTier = "premium";
+        } else if (FEATURES["pro"]?.includes(feature)) {
+            requiredTier = "pro";
+        } else if (FEATURES["business"]?.includes(feature)) {
+            requiredTier = "business";
+        }
+        if (!requiredTier) {
+            return {
+                hasAccess: false,
+                requiresAccount: false,
+                requiresPremium: false,
+                currentTier,
+                conversionAction: null
+            };
+        }
+        // Determine conversion action needed
+        let conversionAction = null;
+        if (currentTier === "anonymous") {
+            conversionAction = 'create_account';
+        } else if (requiredTier === "premium" && currentTier === "free") {
+            conversionAction = 'upgrade_premium';
+        } else if (requiredTier === "pro") {
+            conversionAction = 'upgrade_pro';
+        } else if (requiredTier === "business") {
+            conversionAction = 'upgrade_business';
+        }
+        return {
+            hasAccess: false,
+            requiresAccount: currentTier === "anonymous",
+            requiresPremium: requiredTier !== "free",
+            currentTier,
+            nextTier: requiredTier,
+            conversionAction
+        };
+    };
+    // Get limitations for current tier
+    const getLimitations = ()=>{
+        if (currentTier === "free") {
+            return FREE_TIER_LIMITS;
+        }
+        return {
+            calculationDelay: 0,
+            exportFormats: [
+                'screenshot',
+                'pdf',
+                'excel'
+            ],
+            tripLists: Infinity,
+            adsEnabled: false,
+            priorityCalculation: true,
+            alertsLimited: false
+        };
+    };
+    // Analytics helper
+    const trackFeatureAttempt = (feature, context)=>{
+        const access = getFeatureAccess(feature);
+        // This would integrate with analytics service
+        console.log('Feature Access Attempt:', {
+            feature,
+            currentTier,
+            hasAccess: access.hasAccess,
+            conversionAction: access.conversionAction,
+            userId: user?.id || 'anonymous',
+            timestamp: new Date(),
+            context
+        });
+        return access;
+    };
+    return {
+        currentTier,
+        hasFeature,
+        getFeatureAccess,
+        getLimitations,
+        trackFeatureAttempt,
+        isAnonymous: currentTier === "anonymous",
+        isFreeUser: currentTier === "free",
+        isPremiumUser: [
+            "premium",
+            "pro",
+            "business"
+        ].includes(currentTier)
+    };
+}
+// Utility function to get all features available to a tier
+function getAvailableFeatures(tier) {
+    let features = [];
+    switch(tier){
+        case "business":
+            features.push(...FEATURES["business"]);
+        case "pro":
+            features.push(...FEATURES["pro"]);
+        case "premium":
+            features.push(...FEATURES["premium"]);
+        case "free":
+            features.push(...FEATURES["free"]);
+            break;
+        case "anonymous":
+            features.push(...FEATURES["anonymous"]);
+            break;
+    }
+    return [
+        ...new Set(features)
+    ] // Remove duplicates
+    ;
+}
+
+function useConversionAnalytics() {
+    const trackEvent = useCallback((event)=>{
+        // Analytics implementation - PostHog, GA4, or custom analytics
+        if (typeof window !== 'undefined') {
+            // Track to PostHog (when configured)
+            if (window.posthog) {
+                window.posthog.capture(event.event, {
+                    feature: event.feature,
+                    currentTier: event.currentTier,
+                    targetTier: event.targetTier,
+                    timestamp: event.timestamp,
+                    ...event.metadata
+                });
+            }
+            // Track to Google Analytics (when configured)
+            if (window.gtag) {
+                window.gtag('event', event.event, {
+                    event_category: 'conversion_funnel',
+                    event_label: event.feature,
+                    custom_parameter_tier: event.currentTier,
+                    custom_parameter_target: event.targetTier
+                });
+            }
+            // Console tracking for development
+            if (process.env.NODE_ENV === 'development') {
+                console.log('🔥 Conversion Event:', event);
+            }
+        }
+    }, []);
+    const trackFeatureAttempt = useCallback((feature, currentTier)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'feature_attempt_blocked',
+            feature,
+            currentTier,
+            timestamp: new Date(),
+            metadata: {
+                conversionFunnelStep: 'feature_attempt',
+                blockedReason: currentTier === SubscriptionTier.ANONYMOUS ? 'needs_account' : 'needs_upgrade'
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackAccountCreationPrompt = useCallback((feature, currentTier)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'account_creation_prompt_shown',
+            feature,
+            currentTier,
+            targetTier: SubscriptionTier.FREE,
+            timestamp: new Date(),
+            metadata: {
+                conversionFunnelStep: 'account_prompt',
+                triggerFeature: feature
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackAccountCreated = useCallback((feature, method)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'account_created_success',
+            feature,
+            currentTier: SubscriptionTier.FREE,
+            timestamp: new Date(),
+            metadata: {
+                conversionFunnelStep: 'account_created',
+                signupMethod: method,
+                triggerFeature: feature
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackPremiumPrompt = useCallback((feature, currentTier)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'premium_upgrade_prompt_shown',
+            feature,
+            currentTier,
+            targetTier: SubscriptionTier.PREMIUM,
+            timestamp: new Date(),
+            metadata: {
+                conversionFunnelStep: 'premium_prompt',
+                triggerFeature: feature
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackPremiumSubscribed = useCallback((feature, plan, amount)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'premium_subscribed_success',
+            feature,
+            currentTier: SubscriptionTier.PREMIUM,
+            timestamp: new Date(),
+            metadata: {
+                conversionFunnelStep: 'premium_subscribed',
+                subscriptionPlan: plan,
+                revenue: amount,
+                triggerFeature: feature
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackModalDismissed = useCallback((modalType, feature, reason)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: `${modalType}_modal_dismissed`,
+            feature,
+            currentTier: modalType === 'account' ? SubscriptionTier.ANONYMOUS : SubscriptionTier.FREE,
+            timestamp: new Date(),
+            metadata: {
+                dismissalReason: reason,
+                conversionLoss: true
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    const trackRevenue = useCallback((amount, feature, tier)=>{
+        trackEvent({
+            sessionId: generateSessionId(),
+            event: 'revenue_generated',
+            feature,
+            currentTier: tier,
+            timestamp: new Date(),
+            metadata: {
+                revenue: amount,
+                currency: 'USD',
+                revenueType: tier === SubscriptionTier.PREMIUM ? 'subscription' : 'one_time'
+            }
+        });
+    }, [
+        trackEvent
+    ]);
+    return {
+        trackFeatureAttempt,
+        trackAccountCreationPrompt,
+        trackAccountCreated,
+        trackPremiumPrompt,
+        trackPremiumSubscribed,
+        trackModalDismissed,
+        trackRevenue
+    };
+}
+function generateSessionId() {
+    return `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 }
 
 // packages/react/compose-refs/src/compose-refs.tsx
@@ -484,7 +841,127 @@ const createLucideIcon = (iconName, iconNode)=>{
     return Component;
 };
 
-const __iconNode$c = [
+const __iconNode$q = [
+    [
+        "path",
+        {
+            d: "M10.268 21a2 2 0 0 0 3.464 0",
+            key: "vwvbt9"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326",
+            key: "11g9vi"
+        }
+    ]
+];
+const Bell = createLucideIcon("bell", __iconNode$q);
+
+const __iconNode$p = [
+    [
+        "path",
+        {
+            d: "M12 7v14",
+            key: "1akyts"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z",
+            key: "ruj8y"
+        }
+    ]
+];
+const BookOpen = createLucideIcon("book-open", __iconNode$p);
+
+const __iconNode$o = [
+    [
+        "rect",
+        {
+            width: "16",
+            height: "20",
+            x: "4",
+            y: "2",
+            rx: "2",
+            key: "1nb95v"
+        }
+    ],
+    [
+        "line",
+        {
+            x1: "8",
+            x2: "16",
+            y1: "6",
+            y2: "6",
+            key: "x4nwl0"
+        }
+    ],
+    [
+        "line",
+        {
+            x1: "16",
+            x2: "16",
+            y1: "14",
+            y2: "18",
+            key: "wjye3r"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 10h.01",
+            key: "1m94wz"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 10h.01",
+            key: "1nrarc"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 10h.01",
+            key: "19clt8"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 14h.01",
+            key: "1etili"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 14h.01",
+            key: "6423bh"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 18h.01",
+            key: "mhygvu"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 18h.01",
+            key: "lrp35t"
+        }
+    ]
+];
+const Calculator = createLucideIcon("calculator", __iconNode$o);
+
+const __iconNode$n = [
     [
         "path",
         {
@@ -514,9 +991,20 @@ const __iconNode$c = [
         }
     ]
 ];
-const ChartColumn = createLucideIcon("chart-column", __iconNode$c);
+const ChartColumn = createLucideIcon("chart-column", __iconNode$n);
 
-const __iconNode$b = [
+const __iconNode$m = [
+    [
+        "path",
+        {
+            d: "M20 6 9 17l-5-5",
+            key: "1gmf2c"
+        }
+    ]
+];
+const Check = createLucideIcon("check", __iconNode$m);
+
+const __iconNode$l = [
     [
         "path",
         {
@@ -525,9 +1013,9 @@ const __iconNode$b = [
         }
     ]
 ];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$b);
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$l);
 
-const __iconNode$a = [
+const __iconNode$k = [
     [
         "path",
         {
@@ -536,9 +1024,9 @@ const __iconNode$a = [
         }
     ]
 ];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$a);
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$k);
 
-const __iconNode$9 = [
+const __iconNode$j = [
     [
         "path",
         {
@@ -547,9 +1035,9 @@ const __iconNode$9 = [
         }
     ]
 ];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$9);
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$j);
 
-const __iconNode$8 = [
+const __iconNode$i = [
     [
         "path",
         {
@@ -590,9 +1078,52 @@ const __iconNode$8 = [
         }
     ]
 ];
-const Chromium = createLucideIcon("chromium", __iconNode$8);
+const Chromium = createLucideIcon("chromium", __iconNode$i);
 
-const __iconNode$7 = [
+const __iconNode$h = [
+    [
+        "rect",
+        {
+            width: "20",
+            height: "14",
+            x: "2",
+            y: "5",
+            rx: "2",
+            key: "ynyp8z"
+        }
+    ],
+    [
+        "line",
+        {
+            x1: "2",
+            x2: "22",
+            y1: "10",
+            y2: "10",
+            key: "1b3vmo"
+        }
+    ]
+];
+const CreditCard = createLucideIcon("credit-card", __iconNode$h);
+
+const __iconNode$g = [
+    [
+        "path",
+        {
+            d: "M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z",
+            key: "1vdc57"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M5 21h14",
+            key: "11awu3"
+        }
+    ]
+];
+const Crown = createLucideIcon("crown", __iconNode$g);
+
+const __iconNode$f = [
     [
         "path",
         {
@@ -622,9 +1153,9 @@ const __iconNode$7 = [
         }
     ]
 ];
-const EyeOff = createLucideIcon("eye-off", __iconNode$7);
+const EyeOff = createLucideIcon("eye-off", __iconNode$f);
 
-const __iconNode$6 = [
+const __iconNode$e = [
     [
         "path",
         {
@@ -642,9 +1173,119 @@ const __iconNode$6 = [
         }
     ]
 ];
-const Eye = createLucideIcon("eye", __iconNode$6);
+const Eye = createLucideIcon("eye", __iconNode$e);
 
-const __iconNode$5 = [
+const __iconNode$d = [
+    [
+        "path",
+        {
+            d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z",
+            key: "1rqfz7"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M14 2v4a2 2 0 0 0 2 2h4",
+            key: "tnqrlb"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M10 9H8",
+            key: "b1mrlr"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 13H8",
+            key: "t4e002"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 17H8",
+            key: "z1uh3a"
+        }
+    ]
+];
+const FileText = createLucideIcon("file-text", __iconNode$d);
+
+const __iconNode$c = [
+    [
+        "path",
+        {
+            d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
+            key: "1357e3"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 3v5h5",
+            key: "1xhq8a"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 7v5l4 2",
+            key: "1fdv2h"
+        }
+    ]
+];
+const History = createLucideIcon("history", __iconNode$c);
+
+const __iconNode$b = [
+    [
+        "path",
+        {
+            d: "M3 12h.01",
+            key: "nlz23k"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 18h.01",
+            key: "1tta3j"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 6h.01",
+            key: "1rqtza"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 12h13",
+            key: "1za7za"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 18h13",
+            key: "1lx6n3"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 6h13",
+            key: "ik3vkj"
+        }
+    ]
+];
+const List = createLucideIcon("list", __iconNode$b);
+
+const __iconNode$a = [
     [
         "rect",
         {
@@ -665,9 +1306,9 @@ const __iconNode$5 = [
         }
     ]
 ];
-const Lock = createLucideIcon("lock", __iconNode$5);
+const Lock = createLucideIcon("lock", __iconNode$a);
 
-const __iconNode$4 = [
+const __iconNode$9 = [
     [
         "path",
         {
@@ -690,9 +1331,9 @@ const __iconNode$4 = [
         }
     ]
 ];
-const LogOut = createLucideIcon("log-out", __iconNode$4);
+const LogOut = createLucideIcon("log-out", __iconNode$9);
 
-const __iconNode$3 = [
+const __iconNode$8 = [
     [
         "path",
         {
@@ -712,9 +1353,110 @@ const __iconNode$3 = [
         }
     ]
 ];
-const Mail = createLucideIcon("mail", __iconNode$3);
+const Mail = createLucideIcon("mail", __iconNode$8);
 
-const __iconNode$2 = [
+const __iconNode$7 = [
+    [
+        "path",
+        {
+            d: "M4 12h16",
+            key: "1lakjw"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M4 18h16",
+            key: "19g7jn"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M4 6h16",
+            key: "1o0s65"
+        }
+    ]
+];
+const Menu = createLucideIcon("menu", __iconNode$7);
+
+const __iconNode$6 = [
+    [
+        "path",
+        {
+            d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z",
+            key: "e79jfc"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "13.5",
+            cy: "6.5",
+            r: ".5",
+            fill: "currentColor",
+            key: "1okk4w"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "17.5",
+            cy: "10.5",
+            r: ".5",
+            fill: "currentColor",
+            key: "f64h9f"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "6.5",
+            cy: "12.5",
+            r: ".5",
+            fill: "currentColor",
+            key: "qy21gx"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "8.5",
+            cy: "7.5",
+            r: ".5",
+            fill: "currentColor",
+            key: "fotxhn"
+        }
+    ]
+];
+const Palette = createLucideIcon("palette", __iconNode$6);
+
+const __iconNode$5 = [
+    [
+        "path",
+        {
+            d: "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
+            key: "1c8476"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7",
+            key: "1ydtos"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M7 3v4a1 1 0 0 0 1 1h7",
+            key: "t51u73"
+        }
+    ]
+];
+const Save = createLucideIcon("save", __iconNode$5);
+
+const __iconNode$4 = [
     [
         "path",
         {
@@ -732,9 +1474,43 @@ const __iconNode$2 = [
         }
     ]
 ];
-const Settings = createLucideIcon("settings", __iconNode$2);
+const Settings = createLucideIcon("settings", __iconNode$4);
 
-const __iconNode$1 = [
+const __iconNode$3 = [
+    [
+        "path",
+        {
+            d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z",
+            key: "1s2grr"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M20 2v4",
+            key: "1rf3ol"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M22 4h-4",
+            key: "gwowj6"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "4",
+            cy: "20",
+            r: "2",
+            key: "6kqj1y"
+        }
+    ]
+];
+const Sparkles = createLucideIcon("sparkles", __iconNode$3);
+
+const __iconNode$2 = [
     [
         "path",
         {
@@ -752,9 +1528,9 @@ const __iconNode$1 = [
         }
     ]
 ];
-const User = createLucideIcon("user", __iconNode$1);
+const User = createLucideIcon("user", __iconNode$2);
 
-const __iconNode = [
+const __iconNode$1 = [
     [
         "path",
         {
@@ -770,7 +1546,39 @@ const __iconNode = [
         }
     ]
 ];
-const X = createLucideIcon("x", __iconNode);
+const X = createLucideIcon("x", __iconNode$1);
+
+const __iconNode = [
+    [
+        "path",
+        {
+            d: "M10.513 4.856 13.12 2.17a.5.5 0 0 1 .86.46l-1.377 4.317",
+            key: "193nxd"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M15.656 10H20a1 1 0 0 1 .78 1.63l-1.72 1.773",
+            key: "27a7lr"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16.273 16.273 10.88 21.83a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14H4a1 1 0 0 1-.78-1.63l4.507-4.643",
+            key: "1e0qe9"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m2 2 20 20",
+            key: "1ooewy"
+        }
+    ]
+];
+const ZapOff = createLucideIcon("zap-off", __iconNode);
 
 /**
  * Time zone name format.
@@ -5273,14 +6081,6584 @@ function Badge({ className, variant, ...props }) {
     });
 }
 
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+var link$1 = {exports: {}};
+
+var _interop_require_wildcard = {};
+
+var hasRequired_interop_require_wildcard;
+function require_interop_require_wildcard() {
+    if (hasRequired_interop_require_wildcard) return _interop_require_wildcard;
+    hasRequired_interop_require_wildcard = 1;
+    function _getRequireWildcardCache(nodeInterop) {
+        if (typeof WeakMap !== "function") return null;
+        var cacheBabelInterop = new WeakMap();
+        var cacheNodeInterop = new WeakMap();
+        return (_getRequireWildcardCache = function(nodeInterop) {
+            return nodeInterop ? cacheNodeInterop : cacheBabelInterop;
+        })(nodeInterop);
+    }
+    function _interop_require_wildcard$1(obj, nodeInterop) {
+        if (!nodeInterop && obj && obj.__esModule) return obj;
+        if (obj === null || typeof obj !== "object" && typeof obj !== "function") return {
+            default: obj
+        };
+        var cache = _getRequireWildcardCache(nodeInterop);
+        if (cache && cache.has(obj)) return cache.get(obj);
+        var newObj = {
+            __proto__: null
+        };
+        var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+        for(var key in obj){
+            if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+                var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+                if (desc && (desc.get || desc.set)) Object.defineProperty(newObj, key, desc);
+                else newObj[key] = obj[key];
+            }
+        }
+        newObj.default = obj;
+        if (cache) cache.set(obj, newObj);
+        return newObj;
+    }
+    _interop_require_wildcard._ = _interop_require_wildcard$1;
+    return _interop_require_wildcard;
+}
+
+var resolveHref = {exports: {}};
+
+var querystring = {};
+
+var hasRequiredQuerystring;
+function requireQuerystring() {
+    if (hasRequiredQuerystring) return querystring;
+    hasRequiredQuerystring = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            assign: function() {
+                return assign;
+            },
+            searchParamsToUrlQuery: function() {
+                return searchParamsToUrlQuery;
+            },
+            urlQueryToSearchParams: function() {
+                return urlQueryToSearchParams;
+            }
+        });
+        function searchParamsToUrlQuery(searchParams) {
+            const query = {};
+            for (const [key, value] of searchParams.entries()){
+                const existing = query[key];
+                if (typeof existing === 'undefined') {
+                    query[key] = value;
+                } else if (Array.isArray(existing)) {
+                    existing.push(value);
+                } else {
+                    query[key] = [
+                        existing,
+                        value
+                    ];
+                }
+            }
+            return query;
+        }
+        function stringifyUrlQueryParam(param) {
+            if (typeof param === 'string') {
+                return param;
+            }
+            if (typeof param === 'number' && !isNaN(param) || typeof param === 'boolean') {
+                return String(param);
+            } else {
+                return '';
+            }
+        }
+        function urlQueryToSearchParams(query) {
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of Object.entries(query)){
+                if (Array.isArray(value)) {
+                    for (const item of value){
+                        searchParams.append(key, stringifyUrlQueryParam(item));
+                    }
+                } else {
+                    searchParams.set(key, stringifyUrlQueryParam(value));
+                }
+            }
+            return searchParams;
+        }
+        function assign(target) {
+            for(var _len = arguments.length, searchParamsList = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++){
+                searchParamsList[_key - 1] = arguments[_key];
+            }
+            for (const searchParams of searchParamsList){
+                for (const key of searchParams.keys()){
+                    target.delete(key);
+                }
+                for (const [key, value] of searchParams.entries()){
+                    target.append(key, value);
+                }
+            }
+            return target;
+        }
+    
+    })(querystring);
+    return querystring;
+}
+
+var formatUrl = {};
+
+var hasRequiredFormatUrl;
+function requireFormatUrl() {
+    if (hasRequiredFormatUrl) return formatUrl;
+    hasRequiredFormatUrl = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            formatUrl: function() {
+                return formatUrl;
+            },
+            formatWithValidation: function() {
+                return formatWithValidation;
+            },
+            urlObjectKeys: function() {
+                return urlObjectKeys;
+            }
+        });
+        const _interop_require_wildcard = /*@__PURE__*/ require_interop_require_wildcard();
+        const _querystring = /*#__PURE__*/ _interop_require_wildcard._(requireQuerystring());
+        const slashedProtocols = /https?|ftp|gopher|file/;
+        function formatUrl(urlObj) {
+            let { auth, hostname } = urlObj;
+            let protocol = urlObj.protocol || '';
+            let pathname = urlObj.pathname || '';
+            let hash = urlObj.hash || '';
+            let query = urlObj.query || '';
+            let host = false;
+            auth = auth ? encodeURIComponent(auth).replace(/%3A/i, ':') + '@' : '';
+            if (urlObj.host) {
+                host = auth + urlObj.host;
+            } else if (hostname) {
+                host = auth + (~hostname.indexOf(':') ? "[" + hostname + "]" : hostname);
+                if (urlObj.port) {
+                    host += ':' + urlObj.port;
+                }
+            }
+            if (query && typeof query === 'object') {
+                query = String(_querystring.urlQueryToSearchParams(query));
+            }
+            let search = urlObj.search || query && "?" + query || '';
+            if (protocol && !protocol.endsWith(':')) protocol += ':';
+            if (urlObj.slashes || (!protocol || slashedProtocols.test(protocol)) && host !== false) {
+                host = '//' + (host || '');
+                if (pathname && pathname[0] !== '/') pathname = '/' + pathname;
+            } else if (!host) {
+                host = '';
+            }
+            if (hash && hash[0] !== '#') hash = '#' + hash;
+            if (search && search[0] !== '?') search = '?' + search;
+            pathname = pathname.replace(/[?#]/g, encodeURIComponent);
+            search = search.replace('#', '%23');
+            return "" + protocol + host + pathname + search + hash;
+        }
+        const urlObjectKeys = [
+            'auth',
+            'hash',
+            'host',
+            'hostname',
+            'href',
+            'path',
+            'pathname',
+            'port',
+            'protocol',
+            'query',
+            'search',
+            'slashes'
+        ];
+        function formatWithValidation(url) {
+            if (process.env.NODE_ENV === 'development') {
+                if (url !== null && typeof url === 'object') {
+                    Object.keys(url).forEach((key)=>{
+                        if (!urlObjectKeys.includes(key)) {
+                            console.warn("Unknown key passed via urlObject into url.format: " + key);
+                        }
+                    });
+                }
+            }
+            return formatUrl(url);
+        }
+    
+    })(formatUrl);
+    return formatUrl;
+}
+
+var omit = {};
+
+var hasRequiredOmit;
+function requireOmit() {
+    if (hasRequiredOmit) return omit;
+    hasRequiredOmit = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "omit", {
+            enumerable: true,
+            get: function() {
+                return omit;
+            }
+        });
+        function omit(object, keys) {
+            const omitted = {};
+            Object.keys(object).forEach((key)=>{
+                if (!keys.includes(key)) {
+                    omitted[key] = object[key];
+                }
+            });
+            return omitted;
+        }
+    
+    })(omit);
+    return omit;
+}
+
+var utils$1 = {};
+
+var hasRequiredUtils$1;
+function requireUtils$1() {
+    if (hasRequiredUtils$1) return utils$1;
+    hasRequiredUtils$1 = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            DecodeError: function() {
+                return DecodeError;
+            },
+            MiddlewareNotFoundError: function() {
+                return MiddlewareNotFoundError;
+            },
+            MissingStaticPage: function() {
+                return MissingStaticPage;
+            },
+            NormalizeError: function() {
+                return NormalizeError;
+            },
+            PageNotFoundError: function() {
+                return PageNotFoundError;
+            },
+            SP: function() {
+                return SP;
+            },
+            ST: function() {
+                return ST;
+            },
+            WEB_VITALS: function() {
+                return WEB_VITALS;
+            },
+            execOnce: function() {
+                return execOnce;
+            },
+            getDisplayName: function() {
+                return getDisplayName;
+            },
+            getLocationOrigin: function() {
+                return getLocationOrigin;
+            },
+            getURL: function() {
+                return getURL;
+            },
+            isAbsoluteUrl: function() {
+                return isAbsoluteUrl;
+            },
+            isResSent: function() {
+                return isResSent;
+            },
+            loadGetInitialProps: function() {
+                return loadGetInitialProps;
+            },
+            normalizeRepeatedSlashes: function() {
+                return normalizeRepeatedSlashes;
+            },
+            stringifyError: function() {
+                return stringifyError;
+            }
+        });
+        const WEB_VITALS = [
+            'CLS',
+            'FCP',
+            'FID',
+            'INP',
+            'LCP',
+            'TTFB'
+        ];
+        function execOnce(fn) {
+            let used = false;
+            let result;
+            return function() {
+                for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                    args[_key] = arguments[_key];
+                }
+                if (!used) {
+                    used = true;
+                    result = fn(...args);
+                }
+                return result;
+            };
+        }
+        // Scheme: https://tools.ietf.org/html/rfc3986#section-3.1
+        // Absolute URL: https://tools.ietf.org/html/rfc3986#section-4.3
+        const ABSOLUTE_URL_REGEX = /^[a-zA-Z][a-zA-Z\d+\-.]*?:/;
+        const isAbsoluteUrl = (url)=>ABSOLUTE_URL_REGEX.test(url);
+        function getLocationOrigin() {
+            const { protocol, hostname, port } = window.location;
+            return protocol + "//" + hostname + (port ? ':' + port : '');
+        }
+        function getURL() {
+            const { href } = window.location;
+            const origin = getLocationOrigin();
+            return href.substring(origin.length);
+        }
+        function getDisplayName(Component) {
+            return typeof Component === 'string' ? Component : Component.displayName || Component.name || 'Unknown';
+        }
+        function isResSent(res) {
+            return res.finished || res.headersSent;
+        }
+        function normalizeRepeatedSlashes(url) {
+            const urlParts = url.split('?');
+            const urlNoQuery = urlParts[0];
+            return urlNoQuery // first we replace any non-encoded backslashes with forward
+            // then normalize repeated forward slashes
+            .replace(/\\/g, '/').replace(/\/\/+/g, '/') + (urlParts[1] ? "?" + urlParts.slice(1).join('?') : '');
+        }
+        async function loadGetInitialProps(App, ctx) {
+            if (process.env.NODE_ENV !== 'production') {
+                var _App_prototype;
+                if ((_App_prototype = App.prototype) == null ? void 0 : _App_prototype.getInitialProps) {
+                    const message = '"' + getDisplayName(App) + '.getInitialProps()" is defined as an instance method - visit https://nextjs.org/docs/messages/get-initial-props-as-an-instance-method for more information.';
+                    throw Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+                        value: "E394",
+                        enumerable: false,
+                        configurable: true
+                    });
+                }
+            }
+            // when called from _app `ctx` is nested in `ctx`
+            const res = ctx.res || ctx.ctx && ctx.ctx.res;
+            if (!App.getInitialProps) {
+                if (ctx.ctx && ctx.Component) {
+                    // @ts-ignore pageProps default
+                    return {
+                        pageProps: await loadGetInitialProps(ctx.Component, ctx.ctx)
+                    };
+                }
+                return {};
+            }
+            const props = await App.getInitialProps(ctx);
+            if (res && isResSent(res)) {
+                return props;
+            }
+            if (!props) {
+                const message = '"' + getDisplayName(App) + '.getInitialProps()" should resolve to an object. But found "' + props + '" instead.';
+                throw Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+                    value: "E394",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            if (process.env.NODE_ENV !== 'production') {
+                if (Object.keys(props).length === 0 && !ctx.ctx) {
+                    console.warn("" + getDisplayName(App) + " returned an empty object from `getInitialProps`. This de-optimizes and prevents automatic static optimization. https://nextjs.org/docs/messages/empty-object-getInitialProps");
+                }
+            }
+            return props;
+        }
+        const SP = typeof performance !== 'undefined';
+        const ST = SP && [
+            'mark',
+            'measure',
+            'getEntriesByName'
+        ].every((method)=>typeof performance[method] === 'function');
+        class DecodeError extends Error {
+        }
+        class NormalizeError extends Error {
+        }
+        class PageNotFoundError extends Error {
+            constructor(page){
+                super();
+                this.code = 'ENOENT';
+                this.name = 'PageNotFoundError';
+                this.message = "Cannot find module for page: " + page;
+            }
+        }
+        class MissingStaticPage extends Error {
+            constructor(page, message){
+                super();
+                this.message = "Failed to load static file for page: " + page + " " + message;
+            }
+        }
+        class MiddlewareNotFoundError extends Error {
+            constructor(){
+                super();
+                this.code = 'ENOENT';
+                this.message = "Cannot find the middleware module";
+            }
+        }
+        function stringifyError(error) {
+            return JSON.stringify({
+                message: error.message,
+                stack: error.stack
+            });
+        }
+    
+    })(utils$1);
+    return utils$1;
+}
+
+var normalizeTrailingSlash = {exports: {}};
+
+var removeTrailingSlash = {};
+
+var hasRequiredRemoveTrailingSlash;
+function requireRemoveTrailingSlash() {
+    if (hasRequiredRemoveTrailingSlash) return removeTrailingSlash;
+    hasRequiredRemoveTrailingSlash = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "removeTrailingSlash", {
+            enumerable: true,
+            get: function() {
+                return removeTrailingSlash;
+            }
+        });
+        function removeTrailingSlash(route) {
+            return route.replace(/\/$/, '') || '/';
+        }
+    
+    })(removeTrailingSlash);
+    return removeTrailingSlash;
+}
+
+var parsePath = {};
+
+var hasRequiredParsePath;
+function requireParsePath() {
+    if (hasRequiredParsePath) return parsePath;
+    hasRequiredParsePath = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "parsePath", {
+            enumerable: true,
+            get: function() {
+                return parsePath;
+            }
+        });
+        function parsePath(path) {
+            const hashIndex = path.indexOf('#');
+            const queryIndex = path.indexOf('?');
+            const hasQuery = queryIndex > -1 && (hashIndex < 0 || queryIndex < hashIndex);
+            if (hasQuery || hashIndex > -1) {
+                return {
+                    pathname: path.substring(0, hasQuery ? queryIndex : hashIndex),
+                    query: hasQuery ? path.substring(queryIndex, hashIndex > -1 ? hashIndex : undefined) : '',
+                    hash: hashIndex > -1 ? path.slice(hashIndex) : ''
+                };
+            }
+            return {
+                pathname: path,
+                query: '',
+                hash: ''
+            };
+        }
+    
+    })(parsePath);
+    return parsePath;
+}
+
+var hasRequiredNormalizeTrailingSlash;
+function requireNormalizeTrailingSlash() {
+    if (hasRequiredNormalizeTrailingSlash) return normalizeTrailingSlash.exports;
+    hasRequiredNormalizeTrailingSlash = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "normalizePathTrailingSlash", {
+            enumerable: true,
+            get: function() {
+                return normalizePathTrailingSlash;
+            }
+        });
+        const _removetrailingslash = requireRemoveTrailingSlash();
+        const _parsepath = requireParsePath();
+        const normalizePathTrailingSlash = (path)=>{
+            if (!path.startsWith('/') || process.env.__NEXT_MANUAL_TRAILING_SLASH) {
+                return path;
+            }
+            const { pathname, query, hash } = (0, _parsepath.parsePath)(path);
+            if (process.env.__NEXT_TRAILING_SLASH) {
+                if (/\.[^/]+\/?$/.test(pathname)) {
+                    return "" + (0, _removetrailingslash.removeTrailingSlash)(pathname) + query + hash;
+                } else if (pathname.endsWith('/')) {
+                    return "" + pathname + query + hash;
+                } else {
+                    return pathname + "/" + query + hash;
+                }
+            }
+            return "" + (0, _removetrailingslash.removeTrailingSlash)(pathname) + query + hash;
+        };
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(normalizeTrailingSlash, normalizeTrailingSlash.exports);
+    return normalizeTrailingSlash.exports;
+}
+
+var isLocalUrl = {};
+
+var hasBasePath = {exports: {}};
+
+var pathHasPrefix = {};
+
+var hasRequiredPathHasPrefix;
+function requirePathHasPrefix() {
+    if (hasRequiredPathHasPrefix) return pathHasPrefix;
+    hasRequiredPathHasPrefix = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "pathHasPrefix", {
+            enumerable: true,
+            get: function() {
+                return pathHasPrefix;
+            }
+        });
+        const _parsepath = requireParsePath();
+        function pathHasPrefix(path, prefix) {
+            if (typeof path !== 'string') {
+                return false;
+            }
+            const { pathname } = (0, _parsepath.parsePath)(path);
+            return pathname === prefix || pathname.startsWith(prefix + '/');
+        }
+    
+    })(pathHasPrefix);
+    return pathHasPrefix;
+}
+
+var hasRequiredHasBasePath;
+function requireHasBasePath() {
+    if (hasRequiredHasBasePath) return hasBasePath.exports;
+    hasRequiredHasBasePath = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "hasBasePath", {
+            enumerable: true,
+            get: function() {
+                return hasBasePath;
+            }
+        });
+        const _pathhasprefix = requirePathHasPrefix();
+        const basePath = process.env.__NEXT_ROUTER_BASEPATH || '';
+        function hasBasePath(path) {
+            return (0, _pathhasprefix.pathHasPrefix)(path, basePath);
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(hasBasePath, hasBasePath.exports);
+    return hasBasePath.exports;
+}
+
+var hasRequiredIsLocalUrl;
+function requireIsLocalUrl() {
+    if (hasRequiredIsLocalUrl) return isLocalUrl;
+    hasRequiredIsLocalUrl = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "isLocalURL", {
+            enumerable: true,
+            get: function() {
+                return isLocalURL;
+            }
+        });
+        const _utils = requireUtils$1();
+        const _hasbasepath = requireHasBasePath();
+        function isLocalURL(url) {
+            // prevent a hydration mismatch on href for url with anchor refs
+            if (!(0, _utils.isAbsoluteUrl)(url)) return true;
+            try {
+                // absolute urls can be local if they are on the same origin
+                const locationOrigin = (0, _utils.getLocationOrigin)();
+                const resolved = new URL(url, locationOrigin);
+                return resolved.origin === locationOrigin && (0, _hasbasepath.hasBasePath)(resolved.pathname);
+            } catch (_) {
+                return false;
+            }
+        }
+    
+    })(isLocalUrl);
+    return isLocalUrl;
+}
+
+var utils = {};
+
+var sortedRoutes = {};
+
+var hasRequiredSortedRoutes;
+function requireSortedRoutes() {
+    if (hasRequiredSortedRoutes) return sortedRoutes;
+    hasRequiredSortedRoutes = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            getSortedRouteObjects: function() {
+                return getSortedRouteObjects;
+            },
+            getSortedRoutes: function() {
+                return getSortedRoutes;
+            }
+        });
+        class UrlNode {
+            insert(urlPath) {
+                this._insert(urlPath.split('/').filter(Boolean), [], false);
+            }
+            smoosh() {
+                return this._smoosh();
+            }
+            _smoosh(prefix) {
+                if (prefix === void 0) prefix = '/';
+                const childrenPaths = [
+                    ...this.children.keys()
+                ].sort();
+                if (this.slugName !== null) {
+                    childrenPaths.splice(childrenPaths.indexOf('[]'), 1);
+                }
+                if (this.restSlugName !== null) {
+                    childrenPaths.splice(childrenPaths.indexOf('[...]'), 1);
+                }
+                if (this.optionalRestSlugName !== null) {
+                    childrenPaths.splice(childrenPaths.indexOf('[[...]]'), 1);
+                }
+                const routes = childrenPaths.map((c)=>this.children.get(c)._smoosh("" + prefix + c + "/")).reduce((prev, curr)=>[
+                        ...prev,
+                        ...curr
+                    ], []);
+                if (this.slugName !== null) {
+                    routes.push(...this.children.get('[]')._smoosh(prefix + "[" + this.slugName + "]/"));
+                }
+                if (!this.placeholder) {
+                    const r = prefix === '/' ? '/' : prefix.slice(0, -1);
+                    if (this.optionalRestSlugName != null) {
+                        throw Object.defineProperty(new Error('You cannot define a route with the same specificity as a optional catch-all route ("' + r + '" and "' + r + "[[..." + this.optionalRestSlugName + ']]").'), "__NEXT_ERROR_CODE", {
+                            value: "E458",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    routes.unshift(r);
+                }
+                if (this.restSlugName !== null) {
+                    routes.push(...this.children.get('[...]')._smoosh(prefix + "[..." + this.restSlugName + "]/"));
+                }
+                if (this.optionalRestSlugName !== null) {
+                    routes.push(...this.children.get('[[...]]')._smoosh(prefix + "[[..." + this.optionalRestSlugName + "]]/"));
+                }
+                return routes;
+            }
+            _insert(urlPaths, slugNames, isCatchAll) {
+                if (urlPaths.length === 0) {
+                    this.placeholder = false;
+                    return;
+                }
+                if (isCatchAll) {
+                    throw Object.defineProperty(new Error("Catch-all must be the last part of the URL."), "__NEXT_ERROR_CODE", {
+                        value: "E392",
+                        enumerable: false,
+                        configurable: true
+                    });
+                }
+                // The next segment in the urlPaths list
+                let nextSegment = urlPaths[0];
+                // Check if the segment matches `[something]`
+                if (nextSegment.startsWith('[') && nextSegment.endsWith(']')) {
+                    // Strip `[` and `]`, leaving only `something`
+                    let segmentName = nextSegment.slice(1, -1);
+                    let isOptional = false;
+                    if (segmentName.startsWith('[') && segmentName.endsWith(']')) {
+                        // Strip optional `[` and `]`, leaving only `something`
+                        segmentName = segmentName.slice(1, -1);
+                        isOptional = true;
+                    }
+                    if (segmentName.startsWith('…')) {
+                        throw Object.defineProperty(new Error("Detected a three-dot character ('…') at ('" + segmentName + "'). Did you mean ('...')?"), "__NEXT_ERROR_CODE", {
+                            value: "E147",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    if (segmentName.startsWith('...')) {
+                        // Strip `...`, leaving only `something`
+                        segmentName = segmentName.substring(3);
+                        isCatchAll = true;
+                    }
+                    if (segmentName.startsWith('[') || segmentName.endsWith(']')) {
+                        throw Object.defineProperty(new Error("Segment names may not start or end with extra brackets ('" + segmentName + "')."), "__NEXT_ERROR_CODE", {
+                            value: "E421",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    if (segmentName.startsWith('.')) {
+                        throw Object.defineProperty(new Error("Segment names may not start with erroneous periods ('" + segmentName + "')."), "__NEXT_ERROR_CODE", {
+                            value: "E288",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    function handleSlug(previousSlug, nextSlug) {
+                        if (previousSlug !== null) {
+                            // If the specific segment already has a slug but the slug is not `something`
+                            // This prevents collisions like:
+                            // pages/[post]/index.js
+                            // pages/[id]/index.js
+                            // Because currently multiple dynamic params on the same segment level are not supported
+                            if (previousSlug !== nextSlug) {
+                                // TODO: This error seems to be confusing for users, needs an error link, the description can be based on above comment.
+                                throw Object.defineProperty(new Error("You cannot use different slug names for the same dynamic path ('" + previousSlug + "' !== '" + nextSlug + "')."), "__NEXT_ERROR_CODE", {
+                                    value: "E337",
+                                    enumerable: false,
+                                    configurable: true
+                                });
+                            }
+                        }
+                        slugNames.forEach((slug)=>{
+                            if (slug === nextSlug) {
+                                throw Object.defineProperty(new Error('You cannot have the same slug name "' + nextSlug + '" repeat within a single dynamic path'), "__NEXT_ERROR_CODE", {
+                                    value: "E247",
+                                    enumerable: false,
+                                    configurable: true
+                                });
+                            }
+                            if (slug.replace(/\W/g, '') === nextSegment.replace(/\W/g, '')) {
+                                throw Object.defineProperty(new Error('You cannot have the slug names "' + slug + '" and "' + nextSlug + '" differ only by non-word symbols within a single dynamic path'), "__NEXT_ERROR_CODE", {
+                                    value: "E499",
+                                    enumerable: false,
+                                    configurable: true
+                                });
+                            }
+                        });
+                        slugNames.push(nextSlug);
+                    }
+                    if (isCatchAll) {
+                        if (isOptional) {
+                            if (this.restSlugName != null) {
+                                throw Object.defineProperty(new Error('You cannot use both an required and optional catch-all route at the same level ("[...' + this.restSlugName + ']" and "' + urlPaths[0] + '" ).'), "__NEXT_ERROR_CODE", {
+                                    value: "E299",
+                                    enumerable: false,
+                                    configurable: true
+                                });
+                            }
+                            handleSlug(this.optionalRestSlugName, segmentName);
+                            // slugName is kept as it can only be one particular slugName
+                            this.optionalRestSlugName = segmentName;
+                            // nextSegment is overwritten to [[...]] so that it can later be sorted specifically
+                            nextSegment = '[[...]]';
+                        } else {
+                            if (this.optionalRestSlugName != null) {
+                                throw Object.defineProperty(new Error('You cannot use both an optional and required catch-all route at the same level ("[[...' + this.optionalRestSlugName + ']]" and "' + urlPaths[0] + '").'), "__NEXT_ERROR_CODE", {
+                                    value: "E300",
+                                    enumerable: false,
+                                    configurable: true
+                                });
+                            }
+                            handleSlug(this.restSlugName, segmentName);
+                            // slugName is kept as it can only be one particular slugName
+                            this.restSlugName = segmentName;
+                            // nextSegment is overwritten to [...] so that it can later be sorted specifically
+                            nextSegment = '[...]';
+                        }
+                    } else {
+                        if (isOptional) {
+                            throw Object.defineProperty(new Error('Optional route parameters are not yet supported ("' + urlPaths[0] + '").'), "__NEXT_ERROR_CODE", {
+                                value: "E435",
+                                enumerable: false,
+                                configurable: true
+                            });
+                        }
+                        handleSlug(this.slugName, segmentName);
+                        // slugName is kept as it can only be one particular slugName
+                        this.slugName = segmentName;
+                        // nextSegment is overwritten to [] so that it can later be sorted specifically
+                        nextSegment = '[]';
+                    }
+                }
+                // If this UrlNode doesn't have the nextSegment yet we create a new child UrlNode
+                if (!this.children.has(nextSegment)) {
+                    this.children.set(nextSegment, new UrlNode());
+                }
+                this.children.get(nextSegment)._insert(urlPaths.slice(1), slugNames, isCatchAll);
+            }
+            constructor(){
+                this.placeholder = true;
+                this.children = new Map();
+                this.slugName = null;
+                this.restSlugName = null;
+                this.optionalRestSlugName = null;
+            }
+        }
+        function getSortedRoutes(normalizedPages) {
+            // First the UrlNode is created, and every UrlNode can have only 1 dynamic segment
+            // Eg you can't have pages/[post]/abc.js and pages/[hello]/something-else.js
+            // Only 1 dynamic segment per nesting level
+            // So in the case that is test/integration/dynamic-routing it'll be this:
+            // pages/[post]/comments.js
+            // pages/blog/[post]/comment/[id].js
+            // Both are fine because `pages/[post]` and `pages/blog` are on the same level
+            // So in this case `UrlNode` created here has `this.slugName === 'post'`
+            // And since your PR passed through `slugName` as an array basically it'd including it in too many possibilities
+            // Instead what has to be passed through is the upwards path's dynamic names
+            const root = new UrlNode();
+            // Here the `root` gets injected multiple paths, and insert will break them up into sublevels
+            normalizedPages.forEach((pagePath)=>root.insert(pagePath));
+            // Smoosh will then sort those sublevels up to the point where you get the correct route definition priority
+            return root.smoosh();
+        }
+        function getSortedRouteObjects(objects, getter) {
+            // We're assuming here that all the pathnames are unique, that way we can
+            // sort the list and use the index as the key.
+            const indexes = {};
+            const pathnames = [];
+            for(let i = 0; i < objects.length; i++){
+                const pathname = getter(objects[i]);
+                indexes[pathname] = i;
+                pathnames[i] = pathname;
+            }
+            // Sort the pathnames.
+            const sorted = getSortedRoutes(pathnames);
+            // Map the sorted pathnames back to the original objects using the new sorted
+            // index.
+            return sorted.map((pathname)=>objects[indexes[pathname]]);
+        }
+    
+    })(sortedRoutes);
+    return sortedRoutes;
+}
+
+var isDynamic = {};
+
+var interceptionRoutes = {};
+
+var appPaths = {};
+
+var ensureLeadingSlash = {};
+
+var hasRequiredEnsureLeadingSlash;
+function requireEnsureLeadingSlash() {
+    if (hasRequiredEnsureLeadingSlash) return ensureLeadingSlash;
+    hasRequiredEnsureLeadingSlash = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "ensureLeadingSlash", {
+            enumerable: true,
+            get: function() {
+                return ensureLeadingSlash;
+            }
+        });
+        function ensureLeadingSlash(path) {
+            return path.startsWith('/') ? path : "/" + path;
+        }
+    
+    })(ensureLeadingSlash);
+    return ensureLeadingSlash;
+}
+
+var segment = {};
+
+var hasRequiredSegment;
+function requireSegment() {
+    if (hasRequiredSegment) return segment;
+    hasRequiredSegment = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            DEFAULT_SEGMENT_KEY: function() {
+                return DEFAULT_SEGMENT_KEY;
+            },
+            PAGE_SEGMENT_KEY: function() {
+                return PAGE_SEGMENT_KEY;
+            },
+            addSearchParamsIfPageSegment: function() {
+                return addSearchParamsIfPageSegment;
+            },
+            isGroupSegment: function() {
+                return isGroupSegment;
+            },
+            isParallelRouteSegment: function() {
+                return isParallelRouteSegment;
+            }
+        });
+        function isGroupSegment(segment) {
+            // Use array[0] for performant purpose
+            return segment[0] === '(' && segment.endsWith(')');
+        }
+        function isParallelRouteSegment(segment) {
+            return segment.startsWith('@') && segment !== '@children';
+        }
+        function addSearchParamsIfPageSegment(segment, searchParams) {
+            const isPageSegment = segment.includes(PAGE_SEGMENT_KEY);
+            if (isPageSegment) {
+                const stringifiedQuery = JSON.stringify(searchParams);
+                return stringifiedQuery !== '{}' ? PAGE_SEGMENT_KEY + '?' + stringifiedQuery : PAGE_SEGMENT_KEY;
+            }
+            return segment;
+        }
+        const PAGE_SEGMENT_KEY = '__PAGE__';
+        const DEFAULT_SEGMENT_KEY = '__DEFAULT__';
+    
+    })(segment);
+    return segment;
+}
+
+var hasRequiredAppPaths;
+function requireAppPaths() {
+    if (hasRequiredAppPaths) return appPaths;
+    hasRequiredAppPaths = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            normalizeAppPath: function() {
+                return normalizeAppPath;
+            },
+            normalizeRscURL: function() {
+                return normalizeRscURL;
+            }
+        });
+        const _ensureleadingslash = requireEnsureLeadingSlash();
+        const _segment = requireSegment();
+        function normalizeAppPath(route) {
+            return (0, _ensureleadingslash.ensureLeadingSlash)(route.split('/').reduce((pathname, segment, index, segments)=>{
+                // Empty segments are ignored.
+                if (!segment) {
+                    return pathname;
+                }
+                // Groups are ignored.
+                if ((0, _segment.isGroupSegment)(segment)) {
+                    return pathname;
+                }
+                // Parallel segments are ignored.
+                if (segment[0] === '@') {
+                    return pathname;
+                }
+                // The last segment (if it's a leaf) should be ignored.
+                if ((segment === 'page' || segment === 'route') && index === segments.length - 1) {
+                    return pathname;
+                }
+                return pathname + "/" + segment;
+            }, ''));
+        }
+        function normalizeRscURL(url) {
+            return url.replace(/\.rsc($|\?)/, '$1');
+        }
+    
+    })(appPaths);
+    return appPaths;
+}
+
+var hasRequiredInterceptionRoutes;
+function requireInterceptionRoutes() {
+    if (hasRequiredInterceptionRoutes) return interceptionRoutes;
+    hasRequiredInterceptionRoutes = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            INTERCEPTION_ROUTE_MARKERS: function() {
+                return INTERCEPTION_ROUTE_MARKERS;
+            },
+            extractInterceptionRouteInformation: function() {
+                return extractInterceptionRouteInformation;
+            },
+            isInterceptionRouteAppPath: function() {
+                return isInterceptionRouteAppPath;
+            }
+        });
+        const _apppaths = requireAppPaths();
+        const INTERCEPTION_ROUTE_MARKERS = [
+            '(..)(..)',
+            '(.)',
+            '(..)',
+            '(...)'
+        ];
+        function isInterceptionRouteAppPath(path) {
+            // TODO-APP: add more serious validation
+            return path.split('/').find((segment)=>INTERCEPTION_ROUTE_MARKERS.find((m)=>segment.startsWith(m))) !== undefined;
+        }
+        function extractInterceptionRouteInformation(path) {
+            let interceptingRoute, marker, interceptedRoute;
+            for (const segment of path.split('/')){
+                marker = INTERCEPTION_ROUTE_MARKERS.find((m)=>segment.startsWith(m));
+                if (marker) {
+                    [interceptingRoute, interceptedRoute] = path.split(marker, 2);
+                    break;
+                }
+            }
+            if (!interceptingRoute || !marker || !interceptedRoute) {
+                throw Object.defineProperty(new Error("Invalid interception route: " + path + ". Must be in the format /<intercepting route>/(..|...|..)(..)/<intercepted route>"), "__NEXT_ERROR_CODE", {
+                    value: "E269",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            interceptingRoute = (0, _apppaths.normalizeAppPath)(interceptingRoute) // normalize the path, e.g. /(blog)/feed -> /feed
+            ;
+            switch(marker){
+                case '(.)':
+                    // (.) indicates that we should match with sibling routes, so we just need to append the intercepted route to the intercepting route
+                    if (interceptingRoute === '/') {
+                        interceptedRoute = "/" + interceptedRoute;
+                    } else {
+                        interceptedRoute = interceptingRoute + '/' + interceptedRoute;
+                    }
+                    break;
+                case '(..)':
+                    // (..) indicates that we should match at one level up, so we need to remove the last segment of the intercepting route
+                    if (interceptingRoute === '/') {
+                        throw Object.defineProperty(new Error("Invalid interception route: " + path + ". Cannot use (..) marker at the root level, use (.) instead."), "__NEXT_ERROR_CODE", {
+                            value: "E207",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    interceptedRoute = interceptingRoute.split('/').slice(0, -1).concat(interceptedRoute).join('/');
+                    break;
+                case '(...)':
+                    // (...) will match the route segment in the root directory, so we need to use the root directory to prepend the intercepted route
+                    interceptedRoute = '/' + interceptedRoute;
+                    break;
+                case '(..)(..)':
+                    // (..)(..) indicates that we should match at two levels up, so we need to remove the last two segments of the intercepting route
+                    const splitInterceptingRoute = interceptingRoute.split('/');
+                    if (splitInterceptingRoute.length <= 2) {
+                        throw Object.defineProperty(new Error("Invalid interception route: " + path + ". Cannot use (..)(..) marker at the root level or one level up."), "__NEXT_ERROR_CODE", {
+                            value: "E486",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                    interceptedRoute = splitInterceptingRoute.slice(0, -2).concat(interceptedRoute).join('/');
+                    break;
+                default:
+                    throw Object.defineProperty(new Error('Invariant: unexpected marker'), "__NEXT_ERROR_CODE", {
+                        value: "E112",
+                        enumerable: false,
+                        configurable: true
+                    });
+            }
+            return {
+                interceptingRoute,
+                interceptedRoute
+            };
+        }
+    
+    })(interceptionRoutes);
+    return interceptionRoutes;
+}
+
+var hasRequiredIsDynamic;
+function requireIsDynamic() {
+    if (hasRequiredIsDynamic) return isDynamic;
+    hasRequiredIsDynamic = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "isDynamicRoute", {
+            enumerable: true,
+            get: function() {
+                return isDynamicRoute;
+            }
+        });
+        const _interceptionroutes = requireInterceptionRoutes();
+        // Identify /.*[param].*/ in route string
+        const TEST_ROUTE = /\/[^/]*\[[^/]+\][^/]*(?=\/|$)/;
+        // Identify /[param]/ in route string
+        const TEST_STRICT_ROUTE = /\/\[[^/]+\](?=\/|$)/;
+        function isDynamicRoute(route, strict) {
+            if (strict === void 0) strict = true;
+            if ((0, _interceptionroutes.isInterceptionRouteAppPath)(route)) {
+                route = (0, _interceptionroutes.extractInterceptionRouteInformation)(route).interceptedRoute;
+            }
+            if (strict) {
+                return TEST_STRICT_ROUTE.test(route);
+            }
+            return TEST_ROUTE.test(route);
+        }
+    
+    })(isDynamic);
+    return isDynamic;
+}
+
+var hasRequiredUtils;
+function requireUtils() {
+    if (hasRequiredUtils) return utils;
+    hasRequiredUtils = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            getSortedRouteObjects: function() {
+                return _sortedroutes.getSortedRouteObjects;
+            },
+            getSortedRoutes: function() {
+                return _sortedroutes.getSortedRoutes;
+            },
+            isDynamicRoute: function() {
+                return _isdynamic.isDynamicRoute;
+            }
+        });
+        const _sortedroutes = requireSortedRoutes();
+        const _isdynamic = requireIsDynamic();
+    
+    })(utils);
+    return utils;
+}
+
+var interpolateAs = {};
+
+var routeMatcher = {};
+
+var routeMatchUtils = {};
+
+var pathToRegexp = {exports: {}};
+
+var hasRequiredPathToRegexp;
+function requirePathToRegexp() {
+    if (hasRequiredPathToRegexp) return pathToRegexp.exports;
+    hasRequiredPathToRegexp = 1;
+    (()=>{
+        if (typeof __nccwpck_require__ !== "undefined") __nccwpck_require__.ab = __dirname + "/";
+        var e = {};
+        (()=>{
+            var n = e;
+            Object.defineProperty(n, "__esModule", {
+                value: true
+            });
+            n.pathToRegexp = n.tokensToRegexp = n.regexpToFunction = n.match = n.tokensToFunction = n.compile = n.parse = void 0;
+            function lexer(e) {
+                var n = [];
+                var r = 0;
+                while(r < e.length){
+                    var t = e[r];
+                    if (t === "*" || t === "+" || t === "?") {
+                        n.push({
+                            type: "MODIFIER",
+                            index: r,
+                            value: e[r++]
+                        });
+                        continue;
+                    }
+                    if (t === "\\") {
+                        n.push({
+                            type: "ESCAPED_CHAR",
+                            index: r++,
+                            value: e[r++]
+                        });
+                        continue;
+                    }
+                    if (t === "{") {
+                        n.push({
+                            type: "OPEN",
+                            index: r,
+                            value: e[r++]
+                        });
+                        continue;
+                    }
+                    if (t === "}") {
+                        n.push({
+                            type: "CLOSE",
+                            index: r,
+                            value: e[r++]
+                        });
+                        continue;
+                    }
+                    if (t === ":") {
+                        var a = "";
+                        var i = r + 1;
+                        while(i < e.length){
+                            var o = e.charCodeAt(i);
+                            if (o >= 48 && o <= 57 || o >= 65 && o <= 90 || o >= 97 && o <= 122 || o === 95) {
+                                a += e[i++];
+                                continue;
+                            }
+                            break;
+                        }
+                        if (!a) throw new TypeError("Missing parameter name at ".concat(r));
+                        n.push({
+                            type: "NAME",
+                            index: r,
+                            value: a
+                        });
+                        r = i;
+                        continue;
+                    }
+                    if (t === "(") {
+                        var c = 1;
+                        var f = "";
+                        var i = r + 1;
+                        if (e[i] === "?") {
+                            throw new TypeError('Pattern cannot start with "?" at '.concat(i));
+                        }
+                        while(i < e.length){
+                            if (e[i] === "\\") {
+                                f += e[i++] + e[i++];
+                                continue;
+                            }
+                            if (e[i] === ")") {
+                                c--;
+                                if (c === 0) {
+                                    i++;
+                                    break;
+                                }
+                            } else if (e[i] === "(") {
+                                c++;
+                                if (e[i + 1] !== "?") {
+                                    throw new TypeError("Capturing groups are not allowed at ".concat(i));
+                                }
+                            }
+                            f += e[i++];
+                        }
+                        if (c) throw new TypeError("Unbalanced pattern at ".concat(r));
+                        if (!f) throw new TypeError("Missing pattern at ".concat(r));
+                        n.push({
+                            type: "PATTERN",
+                            index: r,
+                            value: f
+                        });
+                        r = i;
+                        continue;
+                    }
+                    n.push({
+                        type: "CHAR",
+                        index: r,
+                        value: e[r++]
+                    });
+                }
+                n.push({
+                    type: "END",
+                    index: r,
+                    value: ""
+                });
+                return n;
+            }
+            function parse(e, n) {
+                if (n === void 0) {
+                    n = {};
+                }
+                var r = lexer(e);
+                var t = n.prefixes, a = t === void 0 ? "./" : t, i = n.delimiter, o = i === void 0 ? "/#?" : i;
+                var c = [];
+                var f = 0;
+                var u = 0;
+                var p = "";
+                var tryConsume = function(e) {
+                    if (u < r.length && r[u].type === e) return r[u++].value;
+                };
+                var mustConsume = function(e) {
+                    var n = tryConsume(e);
+                    if (n !== undefined) return n;
+                    var t = r[u], a = t.type, i = t.index;
+                    throw new TypeError("Unexpected ".concat(a, " at ").concat(i, ", expected ").concat(e));
+                };
+                var consumeText = function() {
+                    var e = "";
+                    var n;
+                    while(n = tryConsume("CHAR") || tryConsume("ESCAPED_CHAR")){
+                        e += n;
+                    }
+                    return e;
+                };
+                var isSafe = function(e) {
+                    for(var n = 0, r = o; n < r.length; n++){
+                        var t = r[n];
+                        if (e.indexOf(t) > -1) return true;
+                    }
+                    return false;
+                };
+                var safePattern = function(e) {
+                    var n = c[c.length - 1];
+                    var r = e || (n && typeof n === "string" ? n : "");
+                    if (n && !r) {
+                        throw new TypeError('Must have text between two parameters, missing text after "'.concat(n.name, '"'));
+                    }
+                    if (!r || isSafe(r)) return "[^".concat(escapeString(o), "]+?");
+                    return "(?:(?!".concat(escapeString(r), ")[^").concat(escapeString(o), "])+?");
+                };
+                while(u < r.length){
+                    var v = tryConsume("CHAR");
+                    var s = tryConsume("NAME");
+                    var d = tryConsume("PATTERN");
+                    if (s || d) {
+                        var g = v || "";
+                        if (a.indexOf(g) === -1) {
+                            p += g;
+                            g = "";
+                        }
+                        if (p) {
+                            c.push(p);
+                            p = "";
+                        }
+                        c.push({
+                            name: s || f++,
+                            prefix: g,
+                            suffix: "",
+                            pattern: d || safePattern(g),
+                            modifier: tryConsume("MODIFIER") || ""
+                        });
+                        continue;
+                    }
+                    var x = v || tryConsume("ESCAPED_CHAR");
+                    if (x) {
+                        p += x;
+                        continue;
+                    }
+                    if (p) {
+                        c.push(p);
+                        p = "";
+                    }
+                    var h = tryConsume("OPEN");
+                    if (h) {
+                        var g = consumeText();
+                        var l = tryConsume("NAME") || "";
+                        var m = tryConsume("PATTERN") || "";
+                        var T = consumeText();
+                        mustConsume("CLOSE");
+                        c.push({
+                            name: l || (m ? f++ : ""),
+                            pattern: l && !m ? safePattern(g) : m,
+                            prefix: g,
+                            suffix: T,
+                            modifier: tryConsume("MODIFIER") || ""
+                        });
+                        continue;
+                    }
+                    mustConsume("END");
+                }
+                return c;
+            }
+            n.parse = parse;
+            function compile(e, n) {
+                return tokensToFunction(parse(e, n), n);
+            }
+            n.compile = compile;
+            function tokensToFunction(e, n) {
+                if (n === void 0) {
+                    n = {};
+                }
+                var r = flags(n);
+                var t = n.encode, a = t === void 0 ? function(e) {
+                    return e;
+                } : t, i = n.validate, o = i === void 0 ? true : i;
+                var c = e.map(function(e) {
+                    if (typeof e === "object") {
+                        return new RegExp("^(?:".concat(e.pattern, ")$"), r);
+                    }
+                });
+                return function(n) {
+                    var r = "";
+                    for(var t = 0; t < e.length; t++){
+                        var i = e[t];
+                        if (typeof i === "string") {
+                            r += i;
+                            continue;
+                        }
+                        var f = n ? n[i.name] : undefined;
+                        var u = i.modifier === "?" || i.modifier === "*";
+                        var p = i.modifier === "*" || i.modifier === "+";
+                        if (Array.isArray(f)) {
+                            if (!p) {
+                                throw new TypeError('Expected "'.concat(i.name, '" to not repeat, but got an array'));
+                            }
+                            if (f.length === 0) {
+                                if (u) continue;
+                                throw new TypeError('Expected "'.concat(i.name, '" to not be empty'));
+                            }
+                            for(var v = 0; v < f.length; v++){
+                                var s = a(f[v], i);
+                                if (o && !c[t].test(s)) {
+                                    throw new TypeError('Expected all "'.concat(i.name, '" to match "').concat(i.pattern, '", but got "').concat(s, '"'));
+                                }
+                                r += i.prefix + s + i.suffix;
+                            }
+                            continue;
+                        }
+                        if (typeof f === "string" || typeof f === "number") {
+                            var s = a(String(f), i);
+                            if (o && !c[t].test(s)) {
+                                throw new TypeError('Expected "'.concat(i.name, '" to match "').concat(i.pattern, '", but got "').concat(s, '"'));
+                            }
+                            r += i.prefix + s + i.suffix;
+                            continue;
+                        }
+                        if (u) continue;
+                        var d = p ? "an array" : "a string";
+                        throw new TypeError('Expected "'.concat(i.name, '" to be ').concat(d));
+                    }
+                    return r;
+                };
+            }
+            n.tokensToFunction = tokensToFunction;
+            function match(e, n) {
+                var r = [];
+                var t = pathToRegexp(e, r, n);
+                return regexpToFunction(t, r, n);
+            }
+            n.match = match;
+            function regexpToFunction(e, n, r) {
+                if (r === void 0) {
+                    r = {};
+                }
+                var t = r.decode, a = t === void 0 ? function(e) {
+                    return e;
+                } : t;
+                return function(r) {
+                    var t = e.exec(r);
+                    if (!t) return false;
+                    var i = t[0], o = t.index;
+                    var c = Object.create(null);
+                    var _loop_1 = function(e) {
+                        if (t[e] === undefined) return "continue";
+                        var r = n[e - 1];
+                        if (r.modifier === "*" || r.modifier === "+") {
+                            c[r.name] = t[e].split(r.prefix + r.suffix).map(function(e) {
+                                return a(e, r);
+                            });
+                        } else {
+                            c[r.name] = a(t[e], r);
+                        }
+                    };
+                    for(var f = 1; f < t.length; f++){
+                        _loop_1(f);
+                    }
+                    return {
+                        path: i,
+                        index: o,
+                        params: c
+                    };
+                };
+            }
+            n.regexpToFunction = regexpToFunction;
+            function escapeString(e) {
+                return e.replace(/([.+*?=^!:${}()[\]|/\\])/g, "\\$1");
+            }
+            function flags(e) {
+                return e && e.sensitive ? "" : "i";
+            }
+            function regexpToRegexp(e, n) {
+                if (!n) return e;
+                var r = /\((?:\?<(.*?)>)?(?!\?)/g;
+                var t = 0;
+                var a = r.exec(e.source);
+                while(a){
+                    n.push({
+                        name: a[1] || t++,
+                        prefix: "",
+                        suffix: "",
+                        modifier: "",
+                        pattern: ""
+                    });
+                    a = r.exec(e.source);
+                }
+                return e;
+            }
+            function arrayToRegexp(e, n, r) {
+                var t = e.map(function(e) {
+                    return pathToRegexp(e, n, r).source;
+                });
+                return new RegExp("(?:".concat(t.join("|"), ")"), flags(r));
+            }
+            function stringToRegexp(e, n, r) {
+                return tokensToRegexp(parse(e, r), n, r);
+            }
+            function tokensToRegexp(e, n, r) {
+                if (r === void 0) {
+                    r = {};
+                }
+                var t = r.strict, a = t === void 0 ? false : t, i = r.start, o = i === void 0 ? true : i, c = r.end, f = c === void 0 ? true : c, u = r.encode, p = u === void 0 ? function(e) {
+                    return e;
+                } : u, v = r.delimiter, s = v === void 0 ? "/#?" : v, d = r.endsWith, g = d === void 0 ? "" : d;
+                var x = "[".concat(escapeString(g), "]|$");
+                var h = "[".concat(escapeString(s), "]");
+                var l = o ? "^" : "";
+                for(var m = 0, T = e; m < T.length; m++){
+                    var E = T[m];
+                    if (typeof E === "string") {
+                        l += escapeString(p(E));
+                    } else {
+                        var w = escapeString(p(E.prefix));
+                        var y = escapeString(p(E.suffix));
+                        if (E.pattern) {
+                            if (n) n.push(E);
+                            if (w || y) {
+                                if (E.modifier === "+" || E.modifier === "*") {
+                                    var R = E.modifier === "*" ? "?" : "";
+                                    l += "(?:".concat(w, "((?:").concat(E.pattern, ")(?:").concat(y).concat(w, "(?:").concat(E.pattern, "))*)").concat(y, ")").concat(R);
+                                } else {
+                                    l += "(?:".concat(w, "(").concat(E.pattern, ")").concat(y, ")").concat(E.modifier);
+                                }
+                            } else {
+                                if (E.modifier === "+" || E.modifier === "*") {
+                                    throw new TypeError('Can not repeat "'.concat(E.name, '" without a prefix and suffix'));
+                                }
+                                l += "(".concat(E.pattern, ")").concat(E.modifier);
+                            }
+                        } else {
+                            l += "(?:".concat(w).concat(y, ")").concat(E.modifier);
+                        }
+                    }
+                }
+                if (f) {
+                    if (!a) l += "".concat(h, "?");
+                    l += !r.endsWith ? "$" : "(?=".concat(x, ")");
+                } else {
+                    var A = e[e.length - 1];
+                    var _ = typeof A === "string" ? h.indexOf(A[A.length - 1]) > -1 : A === undefined;
+                    if (!a) {
+                        l += "(?:".concat(h, "(?=").concat(x, "))?");
+                    }
+                    if (!_) {
+                        l += "(?=".concat(h, "|").concat(x, ")");
+                    }
+                }
+                return new RegExp(l, flags(r));
+            }
+            n.tokensToRegexp = tokensToRegexp;
+            function pathToRegexp(e, n, r) {
+                if (e instanceof RegExp) return regexpToRegexp(e, n);
+                if (Array.isArray(e)) return arrayToRegexp(e, n, r);
+                return stringToRegexp(e, n, r);
+            }
+            n.pathToRegexp = pathToRegexp;
+        })();
+        pathToRegexp.exports = e;
+    })();
+    return pathToRegexp.exports;
+}
+
+var routePatternNormalizer = {};
+
+var hasRequiredRoutePatternNormalizer;
+function requireRoutePatternNormalizer() {
+    if (hasRequiredRoutePatternNormalizer) return routePatternNormalizer;
+    hasRequiredRoutePatternNormalizer = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            hasAdjacentParameterIssues: function() {
+                return hasAdjacentParameterIssues;
+            },
+            normalizeAdjacentParameters: function() {
+                return normalizeAdjacentParameters;
+            },
+            normalizeTokensForRegexp: function() {
+                return normalizeTokensForRegexp;
+            },
+            stripParameterSeparators: function() {
+                return stripParameterSeparators;
+            }
+        });
+        /**
+		 * Route pattern normalization utilities for path-to-regexp compatibility.
+		 *
+		 * path-to-regexp 6.3.0+ introduced stricter validation that rejects certain
+		 * patterns commonly used in Next.js interception routes. This module provides
+		 * normalization functions to make Next.js route patterns compatible with the
+		 * updated library while preserving all functionality.
+		 */ /**
+		 * Internal separator used to normalize adjacent parameter patterns.
+		 * This unique marker is inserted between adjacent parameters and stripped out
+		 * during parameter extraction to avoid conflicts with real URL content.
+		 */ const PARAM_SEPARATOR = '_NEXTSEP_';
+        function hasAdjacentParameterIssues(route) {
+            if (typeof route !== 'string') return false;
+            // Check for interception route markers followed immediately by parameters
+            // Pattern: /(.):param, /(..):param, /(...):param, /(.)(.):param etc.
+            // These patterns cause "Must have text between two parameters" errors
+            if (/\/\(\.{1,3}\):[^/\s]+/.test(route)) {
+                return true;
+            }
+            // Check for basic adjacent parameters without separators
+            // Pattern: :param1:param2 (but not :param* or other URL patterns)
+            if (/:[a-zA-Z_][a-zA-Z0-9_]*:[a-zA-Z_][a-zA-Z0-9_]*/.test(route)) {
+                return true;
+            }
+            return false;
+        }
+        function normalizeAdjacentParameters(route) {
+            let normalized = route;
+            // Handle interception route patterns: (.):param -> (.)_NEXTSEP_:param
+            normalized = normalized.replace(/(\([^)]*\)):([^/\s]+)/g, `$1${PARAM_SEPARATOR}:$2`);
+            // Handle other adjacent parameter patterns: :param1:param2 -> :param1_NEXTSEP_:param2
+            normalized = normalized.replace(/:([^:/\s)]+)(?=:)/g, `:$1${PARAM_SEPARATOR}`);
+            return normalized;
+        }
+        function normalizeTokensForRegexp(tokens) {
+            return tokens.map((token)=>{
+                // Token union type: Token = string | TokenObject
+                // Literal path segments are strings, parameters/wildcards are objects
+                if (typeof token === 'object' && token !== null && // Not all token objects have 'modifier' property (e.g., simple text tokens)
+                'modifier' in token && // Only repeating modifiers (* or +) cause the validation error
+                // Other modifiers like '?' (optional) are fine
+                (token.modifier === '*' || token.modifier === '+') && // Token objects can have different shapes depending on route pattern
+                'prefix' in token && 'suffix' in token && // Both prefix and suffix must be empty strings
+                // This is what causes the validation error in path-to-regexp
+                token.prefix === '' && token.suffix === '') {
+                    // Add minimal prefix to satisfy path-to-regexp validation
+                    // We use '/' as it's the most common path delimiter and won't break route matching
+                    // The prefix gets used in regex generation but doesn't affect parameter extraction
+                    return {
+                        ...token,
+                        prefix: '/'
+                    };
+                }
+                return token;
+            });
+        }
+        function stripParameterSeparators(params) {
+            const cleaned = {};
+            for (const [key, value] of Object.entries(params)){
+                if (typeof value === 'string') {
+                    // Remove the separator if it appears at the start of parameter values
+                    cleaned[key] = value.replace(new RegExp(`^${PARAM_SEPARATOR}`), '');
+                } else if (Array.isArray(value)) {
+                    // Handle array parameters (from repeated route segments)
+                    cleaned[key] = value.map((item)=>typeof item === 'string' ? item.replace(new RegExp(`^${PARAM_SEPARATOR}`), '') : item);
+                } else {
+                    cleaned[key] = value;
+                }
+            }
+            return cleaned;
+        }
+    
+    })(routePatternNormalizer);
+    return routePatternNormalizer;
+}
+
+var hasRequiredRouteMatchUtils;
+function requireRouteMatchUtils() {
+    if (hasRequiredRouteMatchUtils) return routeMatchUtils;
+    hasRequiredRouteMatchUtils = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            safeCompile: function() {
+                return safeCompile;
+            },
+            safePathToRegexp: function() {
+                return safePathToRegexp;
+            },
+            safeRegexpToFunction: function() {
+                return safeRegexpToFunction;
+            },
+            safeRouteMatcher: function() {
+                return safeRouteMatcher;
+            }
+        });
+        const _pathtoregexp = requirePathToRegexp();
+        const _routepatternnormalizer = requireRoutePatternNormalizer();
+        function safePathToRegexp(route, keys, options) {
+            if (typeof route !== 'string') {
+                return (0, _pathtoregexp.pathToRegexp)(route, keys, options);
+            }
+            // Check if normalization is needed and cache the result
+            const needsNormalization = (0, _routepatternnormalizer.hasAdjacentParameterIssues)(route);
+            const routeToUse = needsNormalization ? (0, _routepatternnormalizer.normalizeAdjacentParameters)(route) : route;
+            try {
+                return (0, _pathtoregexp.pathToRegexp)(routeToUse, keys, options);
+            } catch (error) {
+                // Only try normalization if we haven't already normalized
+                if (!needsNormalization) {
+                    try {
+                        const normalizedRoute = (0, _routepatternnormalizer.normalizeAdjacentParameters)(route);
+                        return (0, _pathtoregexp.pathToRegexp)(normalizedRoute, keys, options);
+                    } catch (retryError) {
+                        // If that doesn't work, fall back to original error
+                        throw error;
+                    }
+                }
+                throw error;
+            }
+        }
+        function safeCompile(route, options) {
+            // Check if normalization is needed and cache the result
+            const needsNormalization = (0, _routepatternnormalizer.hasAdjacentParameterIssues)(route);
+            const routeToUse = needsNormalization ? (0, _routepatternnormalizer.normalizeAdjacentParameters)(route) : route;
+            try {
+                return (0, _pathtoregexp.compile)(routeToUse, options);
+            } catch (error) {
+                // Only try normalization if we haven't already normalized
+                if (!needsNormalization) {
+                    try {
+                        const normalizedRoute = (0, _routepatternnormalizer.normalizeAdjacentParameters)(route);
+                        return (0, _pathtoregexp.compile)(normalizedRoute, options);
+                    } catch (retryError) {
+                        // If that doesn't work, fall back to original error
+                        throw error;
+                    }
+                }
+                throw error;
+            }
+        }
+        function safeRegexpToFunction(regexp, keys) {
+            const originalMatcher = (0, _pathtoregexp.regexpToFunction)(regexp, keys || []);
+            return (pathname)=>{
+                const result = originalMatcher(pathname);
+                if (!result) return false;
+                // Clean parameters before returning
+                return {
+                    ...result,
+                    params: (0, _routepatternnormalizer.stripParameterSeparators)(result.params)
+                };
+            };
+        }
+        function safeRouteMatcher(matcherFn) {
+            return (pathname)=>{
+                const result = matcherFn(pathname);
+                if (!result) return false;
+                // Clean parameters before returning
+                return (0, _routepatternnormalizer.stripParameterSeparators)(result);
+            };
+        }
+    
+    })(routeMatchUtils);
+    return routeMatchUtils;
+}
+
+var hasRequiredRouteMatcher;
+function requireRouteMatcher() {
+    if (hasRequiredRouteMatcher) return routeMatcher;
+    hasRequiredRouteMatcher = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "getRouteMatcher", {
+            enumerable: true,
+            get: function() {
+                return getRouteMatcher;
+            }
+        });
+        const _utils = requireUtils$1();
+        const _routematchutils = requireRouteMatchUtils();
+        function getRouteMatcher(param) {
+            let { re, groups } = param;
+            const rawMatcher = (pathname)=>{
+                const routeMatch = re.exec(pathname);
+                if (!routeMatch) return false;
+                const decode = (param)=>{
+                    try {
+                        return decodeURIComponent(param);
+                    } catch (e) {
+                        throw Object.defineProperty(new _utils.DecodeError('failed to decode param'), "__NEXT_ERROR_CODE", {
+                            value: "E528",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                };
+                const params = {};
+                for (const [key, group] of Object.entries(groups)){
+                    const match = routeMatch[group.pos];
+                    if (match !== undefined) {
+                        if (group.repeat) {
+                            params[key] = match.split('/').map((entry)=>decode(entry));
+                        } else {
+                            params[key] = decode(match);
+                        }
+                    }
+                }
+                return params;
+            };
+            // Wrap with safe matcher to handle parameter cleaning
+            return (0, _routematchutils.safeRouteMatcher)(rawMatcher);
+        }
+    
+    })(routeMatcher);
+    return routeMatcher;
+}
+
+var routeRegex = {};
+
+var constants = {};
+
+var hasRequiredConstants;
+function requireConstants() {
+    if (hasRequiredConstants) return constants;
+    hasRequiredConstants = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            ACTION_SUFFIX: function() {
+                return ACTION_SUFFIX;
+            },
+            APP_DIR_ALIAS: function() {
+                return APP_DIR_ALIAS;
+            },
+            CACHE_ONE_YEAR: function() {
+                return CACHE_ONE_YEAR;
+            },
+            DOT_NEXT_ALIAS: function() {
+                return DOT_NEXT_ALIAS;
+            },
+            ESLINT_DEFAULT_DIRS: function() {
+                return ESLINT_DEFAULT_DIRS;
+            },
+            GSP_NO_RETURNED_VALUE: function() {
+                return GSP_NO_RETURNED_VALUE;
+            },
+            GSSP_COMPONENT_MEMBER_ERROR: function() {
+                return GSSP_COMPONENT_MEMBER_ERROR;
+            },
+            GSSP_NO_RETURNED_VALUE: function() {
+                return GSSP_NO_RETURNED_VALUE;
+            },
+            HTML_CONTENT_TYPE_HEADER: function() {
+                return HTML_CONTENT_TYPE_HEADER;
+            },
+            INFINITE_CACHE: function() {
+                return INFINITE_CACHE;
+            },
+            INSTRUMENTATION_HOOK_FILENAME: function() {
+                return INSTRUMENTATION_HOOK_FILENAME;
+            },
+            JSON_CONTENT_TYPE_HEADER: function() {
+                return JSON_CONTENT_TYPE_HEADER;
+            },
+            MATCHED_PATH_HEADER: function() {
+                return MATCHED_PATH_HEADER;
+            },
+            MIDDLEWARE_FILENAME: function() {
+                return MIDDLEWARE_FILENAME;
+            },
+            MIDDLEWARE_LOCATION_REGEXP: function() {
+                return MIDDLEWARE_LOCATION_REGEXP;
+            },
+            NEXT_BODY_SUFFIX: function() {
+                return NEXT_BODY_SUFFIX;
+            },
+            NEXT_CACHE_IMPLICIT_TAG_ID: function() {
+                return NEXT_CACHE_IMPLICIT_TAG_ID;
+            },
+            NEXT_CACHE_REVALIDATED_TAGS_HEADER: function() {
+                return NEXT_CACHE_REVALIDATED_TAGS_HEADER;
+            },
+            NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER: function() {
+                return NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER;
+            },
+            NEXT_CACHE_SOFT_TAG_MAX_LENGTH: function() {
+                return NEXT_CACHE_SOFT_TAG_MAX_LENGTH;
+            },
+            NEXT_CACHE_TAGS_HEADER: function() {
+                return NEXT_CACHE_TAGS_HEADER;
+            },
+            NEXT_CACHE_TAG_MAX_ITEMS: function() {
+                return NEXT_CACHE_TAG_MAX_ITEMS;
+            },
+            NEXT_CACHE_TAG_MAX_LENGTH: function() {
+                return NEXT_CACHE_TAG_MAX_LENGTH;
+            },
+            NEXT_DATA_SUFFIX: function() {
+                return NEXT_DATA_SUFFIX;
+            },
+            NEXT_INTERCEPTION_MARKER_PREFIX: function() {
+                return NEXT_INTERCEPTION_MARKER_PREFIX;
+            },
+            NEXT_META_SUFFIX: function() {
+                return NEXT_META_SUFFIX;
+            },
+            NEXT_QUERY_PARAM_PREFIX: function() {
+                return NEXT_QUERY_PARAM_PREFIX;
+            },
+            NEXT_RESUME_HEADER: function() {
+                return NEXT_RESUME_HEADER;
+            },
+            NON_STANDARD_NODE_ENV: function() {
+                return NON_STANDARD_NODE_ENV;
+            },
+            PAGES_DIR_ALIAS: function() {
+                return PAGES_DIR_ALIAS;
+            },
+            PRERENDER_REVALIDATE_HEADER: function() {
+                return PRERENDER_REVALIDATE_HEADER;
+            },
+            PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER: function() {
+                return PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER;
+            },
+            PUBLIC_DIR_MIDDLEWARE_CONFLICT: function() {
+                return PUBLIC_DIR_MIDDLEWARE_CONFLICT;
+            },
+            ROOT_DIR_ALIAS: function() {
+                return ROOT_DIR_ALIAS;
+            },
+            RSC_ACTION_CLIENT_WRAPPER_ALIAS: function() {
+                return RSC_ACTION_CLIENT_WRAPPER_ALIAS;
+            },
+            RSC_ACTION_ENCRYPTION_ALIAS: function() {
+                return RSC_ACTION_ENCRYPTION_ALIAS;
+            },
+            RSC_ACTION_PROXY_ALIAS: function() {
+                return RSC_ACTION_PROXY_ALIAS;
+            },
+            RSC_ACTION_VALIDATE_ALIAS: function() {
+                return RSC_ACTION_VALIDATE_ALIAS;
+            },
+            RSC_CACHE_WRAPPER_ALIAS: function() {
+                return RSC_CACHE_WRAPPER_ALIAS;
+            },
+            RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS: function() {
+                return RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS;
+            },
+            RSC_MOD_REF_PROXY_ALIAS: function() {
+                return RSC_MOD_REF_PROXY_ALIAS;
+            },
+            RSC_PREFETCH_SUFFIX: function() {
+                return RSC_PREFETCH_SUFFIX;
+            },
+            RSC_SEGMENTS_DIR_SUFFIX: function() {
+                return RSC_SEGMENTS_DIR_SUFFIX;
+            },
+            RSC_SEGMENT_SUFFIX: function() {
+                return RSC_SEGMENT_SUFFIX;
+            },
+            RSC_SUFFIX: function() {
+                return RSC_SUFFIX;
+            },
+            SERVER_PROPS_EXPORT_ERROR: function() {
+                return SERVER_PROPS_EXPORT_ERROR;
+            },
+            SERVER_PROPS_GET_INIT_PROPS_CONFLICT: function() {
+                return SERVER_PROPS_GET_INIT_PROPS_CONFLICT;
+            },
+            SERVER_PROPS_SSG_CONFLICT: function() {
+                return SERVER_PROPS_SSG_CONFLICT;
+            },
+            SERVER_RUNTIME: function() {
+                return SERVER_RUNTIME;
+            },
+            SSG_FALLBACK_EXPORT_ERROR: function() {
+                return SSG_FALLBACK_EXPORT_ERROR;
+            },
+            SSG_GET_INITIAL_PROPS_CONFLICT: function() {
+                return SSG_GET_INITIAL_PROPS_CONFLICT;
+            },
+            STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR: function() {
+                return STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR;
+            },
+            TEXT_PLAIN_CONTENT_TYPE_HEADER: function() {
+                return TEXT_PLAIN_CONTENT_TYPE_HEADER;
+            },
+            UNSTABLE_REVALIDATE_RENAME_ERROR: function() {
+                return UNSTABLE_REVALIDATE_RENAME_ERROR;
+            },
+            WEBPACK_LAYERS: function() {
+                return WEBPACK_LAYERS;
+            },
+            WEBPACK_RESOURCE_QUERIES: function() {
+                return WEBPACK_RESOURCE_QUERIES;
+            }
+        });
+        const TEXT_PLAIN_CONTENT_TYPE_HEADER = 'text/plain';
+        const HTML_CONTENT_TYPE_HEADER = 'text/html; charset=utf-8';
+        const JSON_CONTENT_TYPE_HEADER = 'application/json; charset=utf-8';
+        const NEXT_QUERY_PARAM_PREFIX = 'nxtP';
+        const NEXT_INTERCEPTION_MARKER_PREFIX = 'nxtI';
+        const MATCHED_PATH_HEADER = 'x-matched-path';
+        const PRERENDER_REVALIDATE_HEADER = 'x-prerender-revalidate';
+        const PRERENDER_REVALIDATE_ONLY_GENERATED_HEADER = 'x-prerender-revalidate-if-generated';
+        const RSC_PREFETCH_SUFFIX = '.prefetch.rsc';
+        const RSC_SEGMENTS_DIR_SUFFIX = '.segments';
+        const RSC_SEGMENT_SUFFIX = '.segment.rsc';
+        const RSC_SUFFIX = '.rsc';
+        const ACTION_SUFFIX = '.action';
+        const NEXT_DATA_SUFFIX = '.json';
+        const NEXT_META_SUFFIX = '.meta';
+        const NEXT_BODY_SUFFIX = '.body';
+        const NEXT_CACHE_TAGS_HEADER = 'x-next-cache-tags';
+        const NEXT_CACHE_REVALIDATED_TAGS_HEADER = 'x-next-revalidated-tags';
+        const NEXT_CACHE_REVALIDATE_TAG_TOKEN_HEADER = 'x-next-revalidate-tag-token';
+        const NEXT_RESUME_HEADER = 'next-resume';
+        const NEXT_CACHE_TAG_MAX_ITEMS = 128;
+        const NEXT_CACHE_TAG_MAX_LENGTH = 256;
+        const NEXT_CACHE_SOFT_TAG_MAX_LENGTH = 1024;
+        const NEXT_CACHE_IMPLICIT_TAG_ID = '_N_T_';
+        const CACHE_ONE_YEAR = 31536000;
+        const INFINITE_CACHE = 0xfffffffe;
+        const MIDDLEWARE_FILENAME = 'middleware';
+        const MIDDLEWARE_LOCATION_REGEXP = `(?:src/)?${MIDDLEWARE_FILENAME}`;
+        const INSTRUMENTATION_HOOK_FILENAME = 'instrumentation';
+        const PAGES_DIR_ALIAS = 'private-next-pages';
+        const DOT_NEXT_ALIAS = 'private-dot-next';
+        const ROOT_DIR_ALIAS = 'private-next-root-dir';
+        const APP_DIR_ALIAS = 'private-next-app-dir';
+        const RSC_MOD_REF_PROXY_ALIAS = 'private-next-rsc-mod-ref-proxy';
+        const RSC_ACTION_VALIDATE_ALIAS = 'private-next-rsc-action-validate';
+        const RSC_ACTION_PROXY_ALIAS = 'private-next-rsc-server-reference';
+        const RSC_CACHE_WRAPPER_ALIAS = 'private-next-rsc-cache-wrapper';
+        const RSC_DYNAMIC_IMPORT_WRAPPER_ALIAS = 'private-next-rsc-track-dynamic-import';
+        const RSC_ACTION_ENCRYPTION_ALIAS = 'private-next-rsc-action-encryption';
+        const RSC_ACTION_CLIENT_WRAPPER_ALIAS = 'private-next-rsc-action-client-wrapper';
+        const PUBLIC_DIR_MIDDLEWARE_CONFLICT = `You can not have a '_next' folder inside of your public folder. This conflicts with the internal '/_next' route. https://nextjs.org/docs/messages/public-next-folder-conflict`;
+        const SSG_GET_INITIAL_PROPS_CONFLICT = `You can not use getInitialProps with getStaticProps. To use SSG, please remove your getInitialProps`;
+        const SERVER_PROPS_GET_INIT_PROPS_CONFLICT = `You can not use getInitialProps with getServerSideProps. Please remove getInitialProps.`;
+        const SERVER_PROPS_SSG_CONFLICT = `You can not use getStaticProps or getStaticPaths with getServerSideProps. To use SSG, please remove getServerSideProps`;
+        const STATIC_STATUS_PAGE_GET_INITIAL_PROPS_ERROR = `can not have getInitialProps/getServerSideProps, https://nextjs.org/docs/messages/404-get-initial-props`;
+        const SERVER_PROPS_EXPORT_ERROR = `pages with \`getServerSideProps\` can not be exported. See more info here: https://nextjs.org/docs/messages/gssp-export`;
+        const GSP_NO_RETURNED_VALUE = 'Your `getStaticProps` function did not return an object. Did you forget to add a `return`?';
+        const GSSP_NO_RETURNED_VALUE = 'Your `getServerSideProps` function did not return an object. Did you forget to add a `return`?';
+        const UNSTABLE_REVALIDATE_RENAME_ERROR = 'The `unstable_revalidate` property is available for general use.\n' + 'Please use `revalidate` instead.';
+        const GSSP_COMPONENT_MEMBER_ERROR = `can not be attached to a page's component and must be exported from the page. See more info here: https://nextjs.org/docs/messages/gssp-component-member`;
+        const NON_STANDARD_NODE_ENV = `You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env`;
+        const SSG_FALLBACK_EXPORT_ERROR = `Pages with \`fallback\` enabled in \`getStaticPaths\` can not be exported. See more info here: https://nextjs.org/docs/messages/ssg-fallback-true-export`;
+        const ESLINT_DEFAULT_DIRS = [
+            'app',
+            'pages',
+            'components',
+            'lib',
+            'src'
+        ];
+        const SERVER_RUNTIME = {
+            edge: 'edge',
+            experimentalEdge: 'experimental-edge',
+            nodejs: 'nodejs'
+        };
+        /**
+		 * The names of the webpack layers. These layers are the primitives for the
+		 * webpack chunks.
+		 */ const WEBPACK_LAYERS_NAMES = {
+            /**
+		   * The layer for the shared code between the client and server bundles.
+		   */ shared: 'shared',
+            /**
+		   * The layer for server-only runtime and picking up `react-server` export conditions.
+		   * Including app router RSC pages and app router custom routes and metadata routes.
+		   */ reactServerComponents: 'rsc',
+            /**
+		   * Server Side Rendering layer for app (ssr).
+		   */ serverSideRendering: 'ssr',
+            /**
+		   * The browser client bundle layer for actions.
+		   */ actionBrowser: 'action-browser',
+            /**
+		   * The Node.js bundle layer for the API routes.
+		   */ apiNode: 'api-node',
+            /**
+		   * The Edge Lite bundle layer for the API routes.
+		   */ apiEdge: 'api-edge',
+            /**
+		   * The layer for the middleware code.
+		   */ middleware: 'middleware',
+            /**
+		   * The layer for the instrumentation hooks.
+		   */ instrument: 'instrument',
+            /**
+		   * The layer for assets on the edge.
+		   */ edgeAsset: 'edge-asset',
+            /**
+		   * The browser client bundle layer for App directory.
+		   */ appPagesBrowser: 'app-pages-browser',
+            /**
+		   * The browser client bundle layer for Pages directory.
+		   */ pagesDirBrowser: 'pages-dir-browser',
+            /**
+		   * The Edge Lite bundle layer for Pages directory.
+		   */ pagesDirEdge: 'pages-dir-edge',
+            /**
+		   * The Node.js bundle layer for Pages directory.
+		   */ pagesDirNode: 'pages-dir-node'
+        };
+        const WEBPACK_LAYERS = {
+            ...WEBPACK_LAYERS_NAMES,
+            GROUP: {
+                builtinReact: [
+                    WEBPACK_LAYERS_NAMES.reactServerComponents,
+                    WEBPACK_LAYERS_NAMES.actionBrowser
+                ],
+                serverOnly: [
+                    WEBPACK_LAYERS_NAMES.reactServerComponents,
+                    WEBPACK_LAYERS_NAMES.actionBrowser,
+                    WEBPACK_LAYERS_NAMES.instrument,
+                    WEBPACK_LAYERS_NAMES.middleware
+                ],
+                neutralTarget: [
+                    // pages api
+                    WEBPACK_LAYERS_NAMES.apiNode,
+                    WEBPACK_LAYERS_NAMES.apiEdge
+                ],
+                clientOnly: [
+                    WEBPACK_LAYERS_NAMES.serverSideRendering,
+                    WEBPACK_LAYERS_NAMES.appPagesBrowser
+                ],
+                bundled: [
+                    WEBPACK_LAYERS_NAMES.reactServerComponents,
+                    WEBPACK_LAYERS_NAMES.actionBrowser,
+                    WEBPACK_LAYERS_NAMES.serverSideRendering,
+                    WEBPACK_LAYERS_NAMES.appPagesBrowser,
+                    WEBPACK_LAYERS_NAMES.shared,
+                    WEBPACK_LAYERS_NAMES.instrument,
+                    WEBPACK_LAYERS_NAMES.middleware
+                ],
+                appPages: [
+                    // app router pages and layouts
+                    WEBPACK_LAYERS_NAMES.reactServerComponents,
+                    WEBPACK_LAYERS_NAMES.serverSideRendering,
+                    WEBPACK_LAYERS_NAMES.appPagesBrowser,
+                    WEBPACK_LAYERS_NAMES.actionBrowser
+                ]
+            }
+        };
+        const WEBPACK_RESOURCE_QUERIES = {
+            edgeSSREntry: '__next_edge_ssr_entry__',
+            metadata: '__next_metadata__',
+            metadataRoute: '__next_metadata_route__',
+            metadataImageMeta: '__next_metadata_image_meta__'
+        };
+    
+    })(constants);
+    return constants;
+}
+
+var escapeRegexp = {};
+
+var hasRequiredEscapeRegexp;
+function requireEscapeRegexp() {
+    if (hasRequiredEscapeRegexp) return escapeRegexp;
+    hasRequiredEscapeRegexp = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "escapeStringRegexp", {
+            enumerable: true,
+            get: function() {
+                return escapeStringRegexp;
+            }
+        });
+        const reHasRegExp = /[|\\{}()[\]^$+*?.-]/;
+        const reReplaceRegExp = /[|\\{}()[\]^$+*?.-]/g;
+        function escapeStringRegexp(str) {
+            // see also: https://github.com/lodash/lodash/blob/2da024c3b4f9947a48517639de7560457cd4ec6c/escapeRegExp.js#L23
+            if (reHasRegExp.test(str)) {
+                return str.replace(reReplaceRegExp, '\\$&');
+            }
+            return str;
+        }
+    
+    })(escapeRegexp);
+    return escapeRegexp;
+}
+
+var getDynamicParam = {};
+
+var hasRequiredGetDynamicParam;
+function requireGetDynamicParam() {
+    if (hasRequiredGetDynamicParam) return getDynamicParam;
+    hasRequiredGetDynamicParam = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            PARAMETER_PATTERN: function() {
+                return PARAMETER_PATTERN;
+            },
+            getDynamicParam: function() {
+                return getDynamicParam;
+            },
+            parseMatchedParameter: function() {
+                return parseMatchedParameter;
+            },
+            parseParameter: function() {
+                return parseParameter;
+            }
+        });
+        function getDynamicParam(params, segmentKey, dynamicParamType, pagePath, fallbackRouteParams) {
+            let value = params[segmentKey];
+            if (fallbackRouteParams && fallbackRouteParams.has(segmentKey)) {
+                value = fallbackRouteParams.get(segmentKey);
+            } else if (Array.isArray(value)) {
+                value = value.map((i)=>encodeURIComponent(i));
+            } else if (typeof value === 'string') {
+                value = encodeURIComponent(value);
+            }
+            if (!value) {
+                const isCatchall = dynamicParamType === 'c';
+                const isOptionalCatchall = dynamicParamType === 'oc';
+                if (isCatchall || isOptionalCatchall) {
+                    // handle the case where an optional catchall does not have a value,
+                    // e.g. `/dashboard/[[...slug]]` when requesting `/dashboard`
+                    if (isOptionalCatchall) {
+                        return {
+                            param: segmentKey,
+                            value: null,
+                            type: dynamicParamType,
+                            treeSegment: [
+                                segmentKey,
+                                '',
+                                dynamicParamType
+                            ]
+                        };
+                    }
+                    // handle the case where a catchall or optional catchall does not have a value,
+                    // e.g. `/foo/bar/hello` and `@slot/[...catchall]` or `@slot/[[...catchall]]` is matched
+                    value = pagePath.split('/') // remove the first empty string
+                    .slice(1) // replace any dynamic params with the actual values
+                    .flatMap((pathSegment)=>{
+                        const param = parseParameter(pathSegment);
+                        var _params_param_key;
+                        // if the segment matches a param, return the param value
+                        // otherwise, it's a static segment, so just return that
+                        return (_params_param_key = params[param.key]) != null ? _params_param_key : param.key;
+                    });
+                    return {
+                        param: segmentKey,
+                        value,
+                        type: dynamicParamType,
+                        // This value always has to be a string.
+                        treeSegment: [
+                            segmentKey,
+                            value.join('/'),
+                            dynamicParamType
+                        ]
+                    };
+                }
+            }
+            return {
+                param: segmentKey,
+                // The value that is passed to user code.
+                value: value,
+                // The value that is rendered in the router tree.
+                treeSegment: [
+                    segmentKey,
+                    Array.isArray(value) ? value.join('/') : value,
+                    dynamicParamType
+                ],
+                type: dynamicParamType
+            };
+        }
+        const PARAMETER_PATTERN = /^([^[]*)\[((?:\[[^\]]*\])|[^\]]+)\](.*)$/;
+        function parseParameter(param) {
+            const match = param.match(PARAMETER_PATTERN);
+            if (!match) {
+                return parseMatchedParameter(param);
+            }
+            return parseMatchedParameter(match[2]);
+        }
+        function parseMatchedParameter(param) {
+            const optional = param.startsWith('[') && param.endsWith(']');
+            if (optional) {
+                param = param.slice(1, -1);
+            }
+            const repeat = param.startsWith('...');
+            if (repeat) {
+                param = param.slice(3);
+            }
+            return {
+                key: param,
+                repeat,
+                optional
+            };
+        }
+    
+    })(getDynamicParam);
+    return getDynamicParam;
+}
+
+var hasRequiredRouteRegex;
+function requireRouteRegex() {
+    if (hasRequiredRouteRegex) return routeRegex;
+    hasRequiredRouteRegex = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            getNamedMiddlewareRegex: function() {
+                return getNamedMiddlewareRegex;
+            },
+            getNamedRouteRegex: function() {
+                return getNamedRouteRegex;
+            },
+            getRouteRegex: function() {
+                return getRouteRegex;
+            }
+        });
+        const _constants = requireConstants();
+        const _interceptionroutes = requireInterceptionRoutes();
+        const _escaperegexp = requireEscapeRegexp();
+        const _removetrailingslash = requireRemoveTrailingSlash();
+        const _getdynamicparam = requireGetDynamicParam();
+        function getParametrizedRoute(route, includeSuffix, includePrefix) {
+            const groups = {};
+            let groupIndex = 1;
+            const segments = [];
+            for (const segment of (0, _removetrailingslash.removeTrailingSlash)(route).slice(1).split('/')){
+                const markerMatch = _interceptionroutes.INTERCEPTION_ROUTE_MARKERS.find((m)=>segment.startsWith(m));
+                const paramMatches = segment.match(_getdynamicparam.PARAMETER_PATTERN) // Check for parameters
+                ;
+                if (markerMatch && paramMatches && paramMatches[2]) {
+                    const { key, optional, repeat } = (0, _getdynamicparam.parseMatchedParameter)(paramMatches[2]);
+                    groups[key] = {
+                        pos: groupIndex++,
+                        repeat,
+                        optional
+                    };
+                    segments.push("/" + (0, _escaperegexp.escapeStringRegexp)(markerMatch) + "([^/]+?)");
+                } else if (paramMatches && paramMatches[2]) {
+                    const { key, repeat, optional } = (0, _getdynamicparam.parseMatchedParameter)(paramMatches[2]);
+                    groups[key] = {
+                        pos: groupIndex++,
+                        repeat,
+                        optional
+                    };
+                    if (includePrefix && paramMatches[1]) {
+                        segments.push("/" + (0, _escaperegexp.escapeStringRegexp)(paramMatches[1]));
+                    }
+                    let s = repeat ? optional ? '(?:/(.+?))?' : '/(.+?)' : '/([^/]+?)';
+                    // Remove the leading slash if includePrefix already added it.
+                    if (includePrefix && paramMatches[1]) {
+                        s = s.substring(1);
+                    }
+                    segments.push(s);
+                } else {
+                    segments.push("/" + (0, _escaperegexp.escapeStringRegexp)(segment));
+                }
+                // If there's a suffix, add it to the segments if it's enabled.
+                if (includeSuffix && paramMatches && paramMatches[3]) {
+                    segments.push((0, _escaperegexp.escapeStringRegexp)(paramMatches[3]));
+                }
+            }
+            return {
+                parameterizedRoute: segments.join(''),
+                groups
+            };
+        }
+        function getRouteRegex(normalizedRoute, param) {
+            let { includeSuffix = false, includePrefix = false, excludeOptionalTrailingSlash = false } = param === void 0 ? {} : param;
+            const { parameterizedRoute, groups } = getParametrizedRoute(normalizedRoute, includeSuffix, includePrefix);
+            let re = parameterizedRoute;
+            if (!excludeOptionalTrailingSlash) {
+                re += '(?:/)?';
+            }
+            return {
+                re: new RegExp("^" + re + "$"),
+                groups: groups
+            };
+        }
+        /**
+		 * Builds a function to generate a minimal routeKey using only a-z and minimal
+		 * number of characters.
+		 */ function buildGetSafeRouteKey() {
+            let i = 0;
+            return ()=>{
+                let routeKey = '';
+                let j = ++i;
+                while(j > 0){
+                    routeKey += String.fromCharCode(97 + (j - 1) % 26);
+                    j = Math.floor((j - 1) / 26);
+                }
+                return routeKey;
+            };
+        }
+        function getSafeKeyFromSegment(param) {
+            let { interceptionMarker, getSafeRouteKey, segment, routeKeys, keyPrefix, backreferenceDuplicateKeys } = param;
+            const { key, optional, repeat } = (0, _getdynamicparam.parseMatchedParameter)(segment);
+            // replace any non-word characters since they can break
+            // the named regex
+            let cleanedKey = key.replace(/\W/g, '');
+            if (keyPrefix) {
+                cleanedKey = "" + keyPrefix + cleanedKey;
+            }
+            let invalidKey = false;
+            // check if the key is still invalid and fallback to using a known
+            // safe key
+            if (cleanedKey.length === 0 || cleanedKey.length > 30) {
+                invalidKey = true;
+            }
+            if (!isNaN(parseInt(cleanedKey.slice(0, 1)))) {
+                invalidKey = true;
+            }
+            if (invalidKey) {
+                cleanedKey = getSafeRouteKey();
+            }
+            const duplicateKey = cleanedKey in routeKeys;
+            if (keyPrefix) {
+                routeKeys[cleanedKey] = "" + keyPrefix + key;
+            } else {
+                routeKeys[cleanedKey] = key;
+            }
+            // if the segment has an interception marker, make sure that's part of the regex pattern
+            // this is to ensure that the route with the interception marker doesn't incorrectly match
+            // the non-intercepted route (ie /app/(.)[username] should not match /app/[username])
+            const interceptionPrefix = interceptionMarker ? (0, _escaperegexp.escapeStringRegexp)(interceptionMarker) : '';
+            let pattern;
+            if (duplicateKey && backreferenceDuplicateKeys) {
+                // Use a backreference to the key to ensure that the key is the same value
+                // in each of the placeholders.
+                pattern = "\\k<" + cleanedKey + ">";
+            } else if (repeat) {
+                pattern = "(?<" + cleanedKey + ">.+?)";
+            } else {
+                pattern = "(?<" + cleanedKey + ">[^/]+?)";
+            }
+            return optional ? "(?:/" + interceptionPrefix + pattern + ")?" : "/" + interceptionPrefix + pattern;
+        }
+        function getNamedParametrizedRoute(route, prefixRouteKeys, includeSuffix, includePrefix, backreferenceDuplicateKeys) {
+            const getSafeRouteKey = buildGetSafeRouteKey();
+            const routeKeys = {};
+            const segments = [];
+            for (const segment of (0, _removetrailingslash.removeTrailingSlash)(route).slice(1).split('/')){
+                const hasInterceptionMarker = _interceptionroutes.INTERCEPTION_ROUTE_MARKERS.some((m)=>segment.startsWith(m));
+                const paramMatches = segment.match(_getdynamicparam.PARAMETER_PATTERN) // Check for parameters
+                ;
+                if (hasInterceptionMarker && paramMatches && paramMatches[2]) {
+                    // If there's an interception marker, add it to the segments.
+                    segments.push(getSafeKeyFromSegment({
+                        getSafeRouteKey,
+                        interceptionMarker: paramMatches[1],
+                        segment: paramMatches[2],
+                        routeKeys,
+                        keyPrefix: prefixRouteKeys ? _constants.NEXT_INTERCEPTION_MARKER_PREFIX : undefined,
+                        backreferenceDuplicateKeys
+                    }));
+                } else if (paramMatches && paramMatches[2]) {
+                    // If there's a prefix, add it to the segments if it's enabled.
+                    if (includePrefix && paramMatches[1]) {
+                        segments.push("/" + (0, _escaperegexp.escapeStringRegexp)(paramMatches[1]));
+                    }
+                    let s = getSafeKeyFromSegment({
+                        getSafeRouteKey,
+                        segment: paramMatches[2],
+                        routeKeys,
+                        keyPrefix: prefixRouteKeys ? _constants.NEXT_QUERY_PARAM_PREFIX : undefined,
+                        backreferenceDuplicateKeys
+                    });
+                    // Remove the leading slash if includePrefix already added it.
+                    if (includePrefix && paramMatches[1]) {
+                        s = s.substring(1);
+                    }
+                    segments.push(s);
+                } else {
+                    segments.push("/" + (0, _escaperegexp.escapeStringRegexp)(segment));
+                }
+                // If there's a suffix, add it to the segments if it's enabled.
+                if (includeSuffix && paramMatches && paramMatches[3]) {
+                    segments.push((0, _escaperegexp.escapeStringRegexp)(paramMatches[3]));
+                }
+            }
+            return {
+                namedParameterizedRoute: segments.join(''),
+                routeKeys
+            };
+        }
+        function getNamedRouteRegex(normalizedRoute, options) {
+            var _options_includeSuffix, _options_includePrefix, _options_backreferenceDuplicateKeys;
+            const result = getNamedParametrizedRoute(normalizedRoute, options.prefixRouteKeys, (_options_includeSuffix = options.includeSuffix) != null ? _options_includeSuffix : false, (_options_includePrefix = options.includePrefix) != null ? _options_includePrefix : false, (_options_backreferenceDuplicateKeys = options.backreferenceDuplicateKeys) != null ? _options_backreferenceDuplicateKeys : false);
+            let namedRegex = result.namedParameterizedRoute;
+            if (!options.excludeOptionalTrailingSlash) {
+                namedRegex += '(?:/)?';
+            }
+            return {
+                ...getRouteRegex(normalizedRoute, options),
+                namedRegex: "^" + namedRegex + "$",
+                routeKeys: result.routeKeys
+            };
+        }
+        function getNamedMiddlewareRegex(normalizedRoute, options) {
+            const { parameterizedRoute } = getParametrizedRoute(normalizedRoute, false, false);
+            const { catchAll = true } = options;
+            if (parameterizedRoute === '/') {
+                let catchAllRegex = catchAll ? '.*' : '';
+                return {
+                    namedRegex: "^/" + catchAllRegex + "$"
+                };
+            }
+            const { namedParameterizedRoute } = getNamedParametrizedRoute(normalizedRoute, false, false, false, false);
+            let catchAllGroupedRegex = catchAll ? '(?:(/.*)?)' : '';
+            return {
+                namedRegex: "^" + namedParameterizedRoute + catchAllGroupedRegex + "$"
+            };
+        }
+    
+    })(routeRegex);
+    return routeRegex;
+}
+
+var hasRequiredInterpolateAs;
+function requireInterpolateAs() {
+    if (hasRequiredInterpolateAs) return interpolateAs;
+    hasRequiredInterpolateAs = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "interpolateAs", {
+            enumerable: true,
+            get: function() {
+                return interpolateAs;
+            }
+        });
+        const _routematcher = requireRouteMatcher();
+        const _routeregex = requireRouteRegex();
+        function interpolateAs(route, asPathname, query) {
+            let interpolatedRoute = '';
+            const dynamicRegex = (0, _routeregex.getRouteRegex)(route);
+            const dynamicGroups = dynamicRegex.groups;
+            const dynamicMatches = (asPathname !== route ? (0, _routematcher.getRouteMatcher)(dynamicRegex)(asPathname) : '') || // Fall back to reading the values from the href
+            // TODO: should this take priority; also need to change in the router.
+            query;
+            interpolatedRoute = route;
+            const params = Object.keys(dynamicGroups);
+            if (!params.every((param)=>{
+                let value = dynamicMatches[param] || '';
+                const { repeat, optional } = dynamicGroups[param];
+                // support single-level catch-all
+                // TODO: more robust handling for user-error (passing `/`)
+                let replaced = "[" + (repeat ? '...' : '') + param + "]";
+                if (optional) {
+                    replaced = (!value ? '/' : '') + "[" + replaced + "]";
+                }
+                if (repeat && !Array.isArray(value)) value = [
+                    value
+                ];
+                return (optional || param in dynamicMatches) && // Interpolate group into data URL if present
+                (interpolatedRoute = interpolatedRoute.replace(replaced, repeat ? value.map(// path delimiter escaped since they are being inserted
+                // into the URL and we expect URL encoded segments
+                // when parsing dynamic route params
+                (segment)=>encodeURIComponent(segment)).join('/') : encodeURIComponent(value)) || '/');
+            })) {
+                interpolatedRoute = '' // did not satisfy all requirements
+                ;
+            // n.b. We ignore this error because we handle warning for this case in
+            // development in the `<Link>` component directly.
+            }
+            return {
+                params,
+                result: interpolatedRoute
+            };
+        }
+    
+    })(interpolateAs);
+    return interpolateAs;
+}
+
+var hasRequiredResolveHref;
+function requireResolveHref() {
+    if (hasRequiredResolveHref) return resolveHref.exports;
+    hasRequiredResolveHref = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "resolveHref", {
+            enumerable: true,
+            get: function() {
+                return resolveHref;
+            }
+        });
+        const _querystring = requireQuerystring();
+        const _formaturl = requireFormatUrl();
+        const _omit = requireOmit();
+        const _utils = requireUtils$1();
+        const _normalizetrailingslash = requireNormalizeTrailingSlash();
+        const _islocalurl = requireIsLocalUrl();
+        const _utils1 = requireUtils();
+        const _interpolateas = requireInterpolateAs();
+        const _routeregex = requireRouteRegex();
+        const _routematcher = requireRouteMatcher();
+        function resolveHref(router, href, resolveAs) {
+            // we use a dummy base url for relative urls
+            let base;
+            let urlAsString = typeof href === 'string' ? href : (0, _formaturl.formatWithValidation)(href);
+            // repeated slashes and backslashes in the URL are considered
+            // invalid and will never match a Next.js page/file
+            // https://www.rfc-editor.org/rfc/rfc3986.html#section-3.1
+            const urlProtoMatch = urlAsString.match(/^[a-z][a-z0-9+.-]*:\/\//i);
+            const urlAsStringNoProto = urlProtoMatch ? urlAsString.slice(urlProtoMatch[0].length) : urlAsString;
+            const urlParts = urlAsStringNoProto.split('?', 1);
+            if ((urlParts[0] || '').match(/(\/\/|\\)/)) {
+                console.error("Invalid href '" + urlAsString + "' passed to next/router in page: '" + router.pathname + "'. Repeated forward-slashes (//) or backslashes \\ are not valid in the href.");
+                const normalizedUrl = (0, _utils.normalizeRepeatedSlashes)(urlAsStringNoProto);
+                urlAsString = (urlProtoMatch ? urlProtoMatch[0] : '') + normalizedUrl;
+            }
+            // Return because it cannot be routed by the Next.js router
+            if (!(0, _islocalurl.isLocalURL)(urlAsString)) {
+                return resolveAs ? [
+                    urlAsString
+                ] : urlAsString;
+            }
+            try {
+                let baseBase = urlAsString.startsWith('#') ? router.asPath : router.pathname;
+                // If the provided href is only a query string, it is safer to use the asPath
+                // considering rewrites.
+                if (urlAsString.startsWith('?')) {
+                    baseBase = router.asPath;
+                    // However, if is a dynamic route, we need to use the pathname to preserve the
+                    // query interpolation and rewrites (router.pathname will look like "/[slug]").
+                    if ((0, _utils1.isDynamicRoute)(router.pathname)) {
+                        baseBase = router.pathname;
+                        const routeRegex = (0, _routeregex.getRouteRegex)(router.pathname);
+                        const match = (0, _routematcher.getRouteMatcher)(routeRegex)(router.asPath);
+                        // For dynamic routes, if asPath doesn't match the pathname regex, it is a rewritten path.
+                        // In this case, should use asPath to preserve the current URL.
+                        if (!match) {
+                            baseBase = router.asPath;
+                        }
+                    // Note: There is an edge case where the pathname is dynamic, and also a rewrite path to the same segment.
+                    // E.g. in "/[slug]" path, rewrite "/foo" -> "/bar"
+                    // In this case, it will be treated as a non-rewritten path and possibly interpolate the query string.
+                    // E.g., "/any?slug=foo" will become the content of "/foo", not rewritten as "/bar"
+                    // This is currently a trade-off of not resolving rewrite paths on every Router/Link call,
+                    // but using a lighter route regex pattern check.
+                    }
+                }
+                base = new URL(baseBase, 'http://n');
+            } catch (_) {
+                // fallback to / for invalid asPath values e.g. //
+                base = new URL('/', 'http://n');
+            }
+            try {
+                const finalUrl = new URL(urlAsString, base);
+                finalUrl.pathname = (0, _normalizetrailingslash.normalizePathTrailingSlash)(finalUrl.pathname);
+                let interpolatedAs = '';
+                if ((0, _utils1.isDynamicRoute)(finalUrl.pathname) && finalUrl.searchParams && resolveAs) {
+                    const query = (0, _querystring.searchParamsToUrlQuery)(finalUrl.searchParams);
+                    const { result, params } = (0, _interpolateas.interpolateAs)(finalUrl.pathname, finalUrl.pathname, query);
+                    if (result) {
+                        interpolatedAs = (0, _formaturl.formatWithValidation)({
+                            pathname: result,
+                            hash: finalUrl.hash,
+                            query: (0, _omit.omit)(query, params)
+                        });
+                    }
+                }
+                // if the origin didn't change, it means we received a relative href
+                const resolvedHref = finalUrl.origin === base.origin ? finalUrl.href.slice(finalUrl.origin.length) : finalUrl.href;
+                return resolveAs ? [
+                    resolvedHref,
+                    interpolatedAs || resolvedHref
+                ] : resolvedHref;
+            } catch (_) {
+                return resolveAs ? [
+                    urlAsString
+                ] : urlAsString;
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(resolveHref, resolveHref.exports);
+    return resolveHref.exports;
+}
+
+var addLocale$1 = {exports: {}};
+
+var addLocale = {};
+
+var addPathPrefix = {};
+
+var hasRequiredAddPathPrefix;
+function requireAddPathPrefix() {
+    if (hasRequiredAddPathPrefix) return addPathPrefix;
+    hasRequiredAddPathPrefix = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "addPathPrefix", {
+            enumerable: true,
+            get: function() {
+                return addPathPrefix;
+            }
+        });
+        const _parsepath = requireParsePath();
+        function addPathPrefix(path, prefix) {
+            if (!path.startsWith('/') || !prefix) {
+                return path;
+            }
+            const { pathname, query, hash } = (0, _parsepath.parsePath)(path);
+            return "" + prefix + pathname + query + hash;
+        }
+    
+    })(addPathPrefix);
+    return addPathPrefix;
+}
+
+var hasRequiredAddLocale$1;
+function requireAddLocale$1() {
+    if (hasRequiredAddLocale$1) return addLocale;
+    hasRequiredAddLocale$1 = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "addLocale", {
+            enumerable: true,
+            get: function() {
+                return addLocale;
+            }
+        });
+        const _addpathprefix = requireAddPathPrefix();
+        const _pathhasprefix = requirePathHasPrefix();
+        function addLocale(path, locale, defaultLocale, ignorePrefix) {
+            // If no locale was given or the locale is the default locale, we don't need
+            // to prefix the path.
+            if (!locale || locale === defaultLocale) return path;
+            const lower = path.toLowerCase();
+            // If the path is an API path or the path already has the locale prefix, we
+            // don't need to prefix the path.
+            if (!ignorePrefix) {
+                if ((0, _pathhasprefix.pathHasPrefix)(lower, '/api')) return path;
+                if ((0, _pathhasprefix.pathHasPrefix)(lower, "/" + locale.toLowerCase())) return path;
+            }
+            // Add the locale prefix to the path.
+            return (0, _addpathprefix.addPathPrefix)(path, "/" + locale);
+        }
+    
+    })(addLocale);
+    return addLocale;
+}
+
+var hasRequiredAddLocale;
+function requireAddLocale() {
+    if (hasRequiredAddLocale) return addLocale$1.exports;
+    hasRequiredAddLocale = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "addLocale", {
+            enumerable: true,
+            get: function() {
+                return addLocale;
+            }
+        });
+        const _normalizetrailingslash = requireNormalizeTrailingSlash();
+        const addLocale = function(path) {
+            for(var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++){
+                args[_key - 1] = arguments[_key];
+            }
+            if (process.env.__NEXT_I18N_SUPPORT) {
+                return (0, _normalizetrailingslash.normalizePathTrailingSlash)(requireAddLocale$1().addLocale(path, ...args));
+            }
+            return path;
+        };
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(addLocale$1, addLocale$1.exports);
+    return addLocale$1.exports;
+}
+
+var routerContext_sharedRuntime = {};
+
+var _interop_require_default = {};
+
+var hasRequired_interop_require_default;
+function require_interop_require_default() {
+    if (hasRequired_interop_require_default) return _interop_require_default;
+    hasRequired_interop_require_default = 1;
+    function _interop_require_default$1(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+    _interop_require_default._ = _interop_require_default$1;
+    return _interop_require_default;
+}
+
+var hasRequiredRouterContext_sharedRuntime;
+function requireRouterContext_sharedRuntime() {
+    if (hasRequiredRouterContext_sharedRuntime) return routerContext_sharedRuntime;
+    hasRequiredRouterContext_sharedRuntime = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "RouterContext", {
+            enumerable: true,
+            get: function() {
+                return RouterContext;
+            }
+        });
+        const _interop_require_default = /*@__PURE__*/ require_interop_require_default();
+        const _react = /*#__PURE__*/ _interop_require_default._(React__default);
+        const RouterContext = _react.default.createContext(null);
+        if (process.env.NODE_ENV !== 'production') {
+            RouterContext.displayName = 'RouterContext';
+        }
+    
+    })(routerContext_sharedRuntime);
+    return routerContext_sharedRuntime;
+}
+
+var useIntersection = {exports: {}};
+
+var requestIdleCallback = {exports: {}};
+
+var hasRequiredRequestIdleCallback;
+function requireRequestIdleCallback() {
+    if (hasRequiredRequestIdleCallback) return requestIdleCallback.exports;
+    hasRequiredRequestIdleCallback = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            cancelIdleCallback: function() {
+                return cancelIdleCallback;
+            },
+            requestIdleCallback: function() {
+                return requestIdleCallback;
+            }
+        });
+        const requestIdleCallback = typeof self !== 'undefined' && self.requestIdleCallback && self.requestIdleCallback.bind(window) || function(cb) {
+            let start = Date.now();
+            return self.setTimeout(function() {
+                cb({
+                    didTimeout: false,
+                    timeRemaining: function() {
+                        return Math.max(0, 50 - (Date.now() - start));
+                    }
+                });
+            }, 1);
+        };
+        const cancelIdleCallback = typeof self !== 'undefined' && self.cancelIdleCallback && self.cancelIdleCallback.bind(window) || function(id) {
+            return clearTimeout(id);
+        };
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(requestIdleCallback, requestIdleCallback.exports);
+    return requestIdleCallback.exports;
+}
+
+var hasRequiredUseIntersection;
+function requireUseIntersection() {
+    if (hasRequiredUseIntersection) return useIntersection.exports;
+    hasRequiredUseIntersection = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "useIntersection", {
+            enumerable: true,
+            get: function() {
+                return useIntersection;
+            }
+        });
+        const _react = React__default;
+        const _requestidlecallback = requireRequestIdleCallback();
+        const hasIntersectionObserver = typeof IntersectionObserver === 'function';
+        const observers = new Map();
+        const idList = [];
+        function createObserver(options) {
+            const id = {
+                root: options.root || null,
+                margin: options.rootMargin || ''
+            };
+            const existing = idList.find((obj)=>obj.root === id.root && obj.margin === id.margin);
+            let instance;
+            if (existing) {
+                instance = observers.get(existing);
+                if (instance) {
+                    return instance;
+                }
+            }
+            const elements = new Map();
+            const observer = new IntersectionObserver((entries)=>{
+                entries.forEach((entry)=>{
+                    const callback = elements.get(entry.target);
+                    const isVisible = entry.isIntersecting || entry.intersectionRatio > 0;
+                    if (callback && isVisible) {
+                        callback(isVisible);
+                    }
+                });
+            }, options);
+            instance = {
+                id,
+                observer,
+                elements
+            };
+            idList.push(id);
+            observers.set(id, instance);
+            return instance;
+        }
+        function observe(element, callback, options) {
+            const { id, observer, elements } = createObserver(options);
+            elements.set(element, callback);
+            observer.observe(element);
+            return function unobserve() {
+                elements.delete(element);
+                observer.unobserve(element);
+                // Destroy observer when there's nothing left to watch:
+                if (elements.size === 0) {
+                    observer.disconnect();
+                    observers.delete(id);
+                    const index = idList.findIndex((obj)=>obj.root === id.root && obj.margin === id.margin);
+                    if (index > -1) {
+                        idList.splice(index, 1);
+                    }
+                }
+            };
+        }
+        function useIntersection(param) {
+            let { rootRef, rootMargin, disabled } = param;
+            const isDisabled = disabled || !hasIntersectionObserver;
+            const [visible, setVisible] = (0, _react.useState)(false);
+            const elementRef = (0, _react.useRef)(null);
+            const setElement = (0, _react.useCallback)((element)=>{
+                elementRef.current = element;
+            }, []);
+            (0, _react.useEffect)(()=>{
+                if (hasIntersectionObserver) {
+                    if (isDisabled || visible) return;
+                    const element = elementRef.current;
+                    if (element && element.tagName) {
+                        const unobserve = observe(element, (isVisible)=>isVisible && setVisible(isVisible), {
+                            root: rootRef == null ? void 0 : rootRef.current,
+                            rootMargin
+                        });
+                        return unobserve;
+                    }
+                } else {
+                    if (!visible) {
+                        const idleCallback = (0, _requestidlecallback.requestIdleCallback)(()=>setVisible(true));
+                        return ()=>(0, _requestidlecallback.cancelIdleCallback)(idleCallback);
+                    }
+                }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [
+                isDisabled,
+                rootMargin,
+                rootRef,
+                visible,
+                elementRef.current
+            ]);
+            const resetVisible = (0, _react.useCallback)(()=>{
+                setVisible(false);
+            }, []);
+            return [
+                setElement,
+                visible,
+                resetVisible
+            ];
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(useIntersection, useIntersection.exports);
+    return useIntersection.exports;
+}
+
+var getDomainLocale = {exports: {}};
+
+var normalizeLocalePath$1 = {exports: {}};
+
+var normalizeLocalePath = {};
+
+var hasRequiredNormalizeLocalePath$1;
+function requireNormalizeLocalePath$1() {
+    if (hasRequiredNormalizeLocalePath$1) return normalizeLocalePath;
+    hasRequiredNormalizeLocalePath$1 = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "normalizeLocalePath", {
+            enumerable: true,
+            get: function() {
+                return normalizeLocalePath;
+            }
+        });
+        /**
+		 * A cache of lowercased locales for each list of locales. This is stored as a
+		 * WeakMap so if the locales are garbage collected, the cache entry will be
+		 * removed as well.
+		 */ const cache = new WeakMap();
+        function normalizeLocalePath(pathname, locales) {
+            // If locales is undefined, return the pathname as is.
+            if (!locales) return {
+                pathname
+            };
+            // Get the cached lowercased locales or create a new cache entry.
+            let lowercasedLocales = cache.get(locales);
+            if (!lowercasedLocales) {
+                lowercasedLocales = locales.map((locale)=>locale.toLowerCase());
+                cache.set(locales, lowercasedLocales);
+            }
+            let detectedLocale;
+            // The first segment will be empty, because it has a leading `/`. If
+            // there is no further segment, there is no locale (or it's the default).
+            const segments = pathname.split('/', 2);
+            // If there's no second segment (ie, the pathname is just `/`), there's no
+            // locale.
+            if (!segments[1]) return {
+                pathname
+            };
+            // The second segment will contain the locale part if any.
+            const segment = segments[1].toLowerCase();
+            // See if the segment matches one of the locales. If it doesn't, there is
+            // no locale (or it's the default).
+            const index = lowercasedLocales.indexOf(segment);
+            if (index < 0) return {
+                pathname
+            };
+            // Return the case-sensitive locale.
+            detectedLocale = locales[index];
+            // Remove the `/${locale}` part of the pathname.
+            pathname = pathname.slice(detectedLocale.length + 1) || '/';
+            return {
+                pathname,
+                detectedLocale
+            };
+        }
+    
+    })(normalizeLocalePath);
+    return normalizeLocalePath;
+}
+
+var hasRequiredNormalizeLocalePath;
+function requireNormalizeLocalePath() {
+    if (hasRequiredNormalizeLocalePath) return normalizeLocalePath$1.exports;
+    hasRequiredNormalizeLocalePath = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "normalizeLocalePath", {
+            enumerable: true,
+            get: function() {
+                return normalizeLocalePath;
+            }
+        });
+        const normalizeLocalePath = (pathname, locales)=>{
+            if (process.env.__NEXT_I18N_SUPPORT) {
+                return requireNormalizeLocalePath$1().normalizeLocalePath(pathname, locales);
+            }
+            return {
+                pathname,
+                detectedLocale: undefined
+            };
+        };
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(normalizeLocalePath$1, normalizeLocalePath$1.exports);
+    return normalizeLocalePath$1.exports;
+}
+
+var detectDomainLocale$1 = {exports: {}};
+
+var detectDomainLocale = {};
+
+var hasRequiredDetectDomainLocale$1;
+function requireDetectDomainLocale$1() {
+    if (hasRequiredDetectDomainLocale$1) return detectDomainLocale;
+    hasRequiredDetectDomainLocale$1 = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "detectDomainLocale", {
+            enumerable: true,
+            get: function() {
+                return detectDomainLocale;
+            }
+        });
+        function detectDomainLocale(domainItems, hostname, detectedLocale) {
+            if (!domainItems) return;
+            if (detectedLocale) {
+                detectedLocale = detectedLocale.toLowerCase();
+            }
+            for (const item of domainItems){
+                var _item_domain, _item_locales;
+                // remove port if present
+                const domainHostname = (_item_domain = item.domain) == null ? void 0 : _item_domain.split(':', 1)[0].toLowerCase();
+                if (hostname === domainHostname || detectedLocale === item.defaultLocale.toLowerCase() || ((_item_locales = item.locales) == null ? void 0 : _item_locales.some((locale)=>locale.toLowerCase() === detectedLocale))) {
+                    return item;
+                }
+            }
+        }
+    
+    })(detectDomainLocale);
+    return detectDomainLocale;
+}
+
+var hasRequiredDetectDomainLocale;
+function requireDetectDomainLocale() {
+    if (hasRequiredDetectDomainLocale) return detectDomainLocale$1.exports;
+    hasRequiredDetectDomainLocale = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "detectDomainLocale", {
+            enumerable: true,
+            get: function() {
+                return detectDomainLocale;
+            }
+        });
+        const detectDomainLocale = function() {
+            for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+                args[_key] = arguments[_key];
+            }
+            if (process.env.__NEXT_I18N_SUPPORT) {
+                return requireDetectDomainLocale$1().detectDomainLocale(...args);
+            }
+        };
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(detectDomainLocale$1, detectDomainLocale$1.exports);
+    return detectDomainLocale$1.exports;
+}
+
+var hasRequiredGetDomainLocale;
+function requireGetDomainLocale() {
+    if (hasRequiredGetDomainLocale) return getDomainLocale.exports;
+    hasRequiredGetDomainLocale = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "getDomainLocale", {
+            enumerable: true,
+            get: function() {
+                return getDomainLocale;
+            }
+        });
+        const _normalizetrailingslash = requireNormalizeTrailingSlash();
+        const basePath = process.env.__NEXT_ROUTER_BASEPATH || '';
+        function getDomainLocale(path, locale, locales, domainLocales) {
+            if (process.env.__NEXT_I18N_SUPPORT) {
+                const normalizeLocalePath = requireNormalizeLocalePath().normalizeLocalePath;
+                const detectDomainLocale = requireDetectDomainLocale().detectDomainLocale;
+                const target = locale || normalizeLocalePath(path, locales).detectedLocale;
+                const domain = detectDomainLocale(domainLocales, undefined, target);
+                if (domain) {
+                    const proto = "http" + (domain.http ? '' : 's') + "://";
+                    const finalLocale = target === domain.defaultLocale ? '' : "/" + target;
+                    return "" + proto + domain.domain + (0, _normalizetrailingslash.normalizePathTrailingSlash)("" + basePath + finalLocale + path);
+                }
+                return false;
+            } else {
+                return false;
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(getDomainLocale, getDomainLocale.exports);
+    return getDomainLocale.exports;
+}
+
+var addBasePath = {exports: {}};
+
+var hasRequiredAddBasePath;
+function requireAddBasePath() {
+    if (hasRequiredAddBasePath) return addBasePath.exports;
+    hasRequiredAddBasePath = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "addBasePath", {
+            enumerable: true,
+            get: function() {
+                return addBasePath;
+            }
+        });
+        const _addpathprefix = requireAddPathPrefix();
+        const _normalizetrailingslash = requireNormalizeTrailingSlash();
+        const basePath = process.env.__NEXT_ROUTER_BASEPATH || '';
+        function addBasePath(path, required) {
+            return (0, _normalizetrailingslash.normalizePathTrailingSlash)(process.env.__NEXT_MANUAL_CLIENT_BASE_PATH && !required ? path : (0, _addpathprefix.addPathPrefix)(path, basePath));
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(addBasePath, addBasePath.exports);
+    return addBasePath.exports;
+}
+
+var useMergedRef = {exports: {}};
+
+var hasRequiredUseMergedRef;
+function requireUseMergedRef() {
+    if (hasRequiredUseMergedRef) return useMergedRef.exports;
+    hasRequiredUseMergedRef = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "useMergedRef", {
+            enumerable: true,
+            get: function() {
+                return useMergedRef;
+            }
+        });
+        const _react = React__default;
+        function useMergedRef(refA, refB) {
+            const cleanupA = (0, _react.useRef)(null);
+            const cleanupB = (0, _react.useRef)(null);
+            // NOTE: In theory, we could skip the wrapping if only one of the refs is non-null.
+            // (this happens often if the user doesn't pass a ref to Link/Form/Image)
+            // But this can cause us to leak a cleanup-ref into user code (e.g. via `<Link legacyBehavior>`),
+            // and the user might pass that ref into ref-merging library that doesn't support cleanup refs
+            // (because it hasn't been updated for React 19)
+            // which can then cause things to blow up, because a cleanup-returning ref gets called with `null`.
+            // So in practice, it's safer to be defensive and always wrap the ref, even on React 19.
+            return (0, _react.useCallback)((current)=>{
+                if (current === null) {
+                    const cleanupFnA = cleanupA.current;
+                    if (cleanupFnA) {
+                        cleanupA.current = null;
+                        cleanupFnA();
+                    }
+                    const cleanupFnB = cleanupB.current;
+                    if (cleanupFnB) {
+                        cleanupB.current = null;
+                        cleanupFnB();
+                    }
+                } else {
+                    if (refA) {
+                        cleanupA.current = applyRef(refA, current);
+                    }
+                    if (refB) {
+                        cleanupB.current = applyRef(refB, current);
+                    }
+                }
+            }, [
+                refA,
+                refB
+            ]);
+        }
+        function applyRef(refA, current) {
+            if (typeof refA === 'function') {
+                const cleanup = refA(current);
+                if (typeof cleanup === 'function') {
+                    return cleanup;
+                } else {
+                    return ()=>refA(null);
+                }
+            } else {
+                refA.current = current;
+                return ()=>{
+                    refA.current = null;
+                };
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(useMergedRef, useMergedRef.exports);
+    return useMergedRef.exports;
+}
+
+var errorOnce = {};
+
+var hasRequiredErrorOnce;
+function requireErrorOnce() {
+    if (hasRequiredErrorOnce) return errorOnce;
+    hasRequiredErrorOnce = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "errorOnce", {
+            enumerable: true,
+            get: function() {
+                return errorOnce;
+            }
+        });
+        let errorOnce = (_)=>{};
+        if (process.env.NODE_ENV !== 'production') {
+            const errors = new Set();
+            errorOnce = (msg)=>{
+                if (!errors.has(msg)) {
+                    console.error(msg);
+                }
+                errors.add(msg);
+            };
+        }
+    
+    })(errorOnce);
+    return errorOnce;
+}
+
+var hasRequiredLink$1;
+function requireLink$1() {
+    if (hasRequiredLink$1) return link$1.exports;
+    hasRequiredLink$1 = 1;
+    (function(module, exports) {
+        'use client';
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            default: function() {
+                return _default;
+            },
+            useLinkStatus: function() {
+                return useLinkStatus;
+            }
+        });
+        const _interop_require_wildcard = /*@__PURE__*/ require_interop_require_wildcard();
+        const _jsxruntime = require$$1;
+        const _react = /*#__PURE__*/ _interop_require_wildcard._(React__default);
+        const _resolvehref = requireResolveHref();
+        const _islocalurl = requireIsLocalUrl();
+        const _formaturl = requireFormatUrl();
+        const _utils = requireUtils$1();
+        const _addlocale = requireAddLocale();
+        const _routercontextsharedruntime = requireRouterContext_sharedRuntime();
+        const _useintersection = requireUseIntersection();
+        const _getdomainlocale = requireGetDomainLocale();
+        const _addbasepath = requireAddBasePath();
+        const _usemergedref = requireUseMergedRef();
+        const _erroronce = requireErrorOnce();
+        const prefetched = new Set();
+        function prefetch(router, href, as, options) {
+            if (typeof window === 'undefined') {
+                return;
+            }
+            if (!(0, _islocalurl.isLocalURL)(href)) {
+                return;
+            }
+            // We should only dedupe requests when experimental.optimisticClientCache is
+            // disabled.
+            if (!options.bypassPrefetchedCheck) {
+                const locale = typeof options.locale !== 'undefined' ? options.locale : 'locale' in router ? router.locale : undefined;
+                const prefetchedKey = href + '%' + as + '%' + locale;
+                // If we've already fetched the key, then don't prefetch it again!
+                if (prefetched.has(prefetchedKey)) {
+                    return;
+                }
+                // Mark this URL as prefetched.
+                prefetched.add(prefetchedKey);
+            }
+            // Prefetch the JSON page if asked (only in the client)
+            // We need to handle a prefetch error here since we may be
+            // loading with priority which can reject but we don't
+            // want to force navigation since this is only a prefetch
+            router.prefetch(href, as, options).catch((err)=>{
+                if (process.env.NODE_ENV !== 'production') {
+                    // rethrow to show invalid URL errors
+                    throw err;
+                }
+            });
+        }
+        function isModifiedEvent(event) {
+            const eventTarget = event.currentTarget;
+            const target = eventTarget.getAttribute('target');
+            return target && target !== '_self' || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || // triggers resource download
+            event.nativeEvent && event.nativeEvent.which === 2;
+        }
+        function linkClicked(e, router, href, as, replace, shallow, scroll, locale, onNavigate) {
+            const { nodeName } = e.currentTarget;
+            // anchors inside an svg have a lowercase nodeName
+            const isAnchorNodeName = nodeName.toUpperCase() === 'A';
+            if (isAnchorNodeName && isModifiedEvent(e) || e.currentTarget.hasAttribute('download')) {
+                // ignore click for browser’s default behavior
+                return;
+            }
+            if (!(0, _islocalurl.isLocalURL)(href)) {
+                if (replace) {
+                    // browser default behavior does not replace the history state
+                    // so we need to do it manually
+                    e.preventDefault();
+                    location.replace(href);
+                }
+                // ignore click for browser’s default behavior
+                return;
+            }
+            e.preventDefault();
+            const navigate = ()=>{
+                if (onNavigate) {
+                    let isDefaultPrevented = false;
+                    onNavigate({
+                        preventDefault: ()=>{
+                            isDefaultPrevented = true;
+                        }
+                    });
+                    if (isDefaultPrevented) {
+                        return;
+                    }
+                }
+                // If the router is an NextRouter instance it will have `beforePopState`
+                const routerScroll = scroll != null ? scroll : true;
+                if ('beforePopState' in router) {
+                    router[replace ? 'replace' : 'push'](href, as, {
+                        shallow,
+                        locale,
+                        scroll: routerScroll
+                    });
+                } else {
+                    router[replace ? 'replace' : 'push'](as || href, {
+                        scroll: routerScroll
+                    });
+                }
+            };
+            navigate();
+        }
+        function formatStringOrUrl(urlObjOrString) {
+            if (typeof urlObjOrString === 'string') {
+                return urlObjOrString;
+            }
+            return (0, _formaturl.formatUrl)(urlObjOrString);
+        }
+        /**
+		 * A React component that extends the HTML `<a>` element to provide [prefetching](https://nextjs.org/docs/app/building-your-application/routing/linking-and-navigating#2-prefetching)
+		 * and client-side navigation between routes.
+		 *
+		 * It is the primary way to navigate between routes in Next.js.
+		 *
+		 * Read more: [Next.js docs: `<Link>`](https://nextjs.org/docs/app/api-reference/components/link)
+		 */ const Link = /*#__PURE__*/ _react.default.forwardRef(function LinkComponent(props, forwardedRef) {
+            let children;
+            const { href: hrefProp, as: asProp, children: childrenProp, prefetch: prefetchProp = null, passHref, replace, shallow, scroll, locale, onClick, onNavigate, onMouseEnter: onMouseEnterProp, onTouchStart: onTouchStartProp, legacyBehavior = false, ...restProps } = props;
+            children = childrenProp;
+            if (legacyBehavior && (typeof children === 'string' || typeof children === 'number')) {
+                children = /*#__PURE__*/ (0, _jsxruntime.jsx)("a", {
+                    children: children
+                });
+            }
+            const router = _react.default.useContext(_routercontextsharedruntime.RouterContext);
+            const prefetchEnabled = prefetchProp !== false;
+            if (process.env.NODE_ENV !== 'production') {
+                function createPropError(args) {
+                    return Object.defineProperty(new Error("Failed prop type: The prop `" + args.key + "` expects a " + args.expected + " in `<Link>`, but got `" + args.actual + "` instead." + (typeof window !== 'undefined' ? "\nOpen your browser's console to view the Component stack trace." : '')), "__NEXT_ERROR_CODE", {
+                        value: "E319",
+                        enumerable: false,
+                        configurable: true
+                    });
+                }
+                // TypeScript trick for type-guarding:
+                const requiredPropsGuard = {
+                    href: true
+                };
+                const requiredProps = Object.keys(requiredPropsGuard);
+                requiredProps.forEach((key)=>{
+                    if (key === 'href') {
+                        if (props[key] == null || typeof props[key] !== 'string' && typeof props[key] !== 'object') {
+                            throw createPropError({
+                                key,
+                                expected: '`string` or `object`',
+                                actual: props[key] === null ? 'null' : typeof props[key]
+                            });
+                        }
+                    }
+                });
+                // TypeScript trick for type-guarding:
+                const optionalPropsGuard = {
+                    as: true,
+                    replace: true,
+                    scroll: true,
+                    shallow: true,
+                    passHref: true,
+                    prefetch: true,
+                    locale: true,
+                    onClick: true,
+                    onMouseEnter: true,
+                    onTouchStart: true,
+                    legacyBehavior: true,
+                    onNavigate: true
+                };
+                const optionalProps = Object.keys(optionalPropsGuard);
+                optionalProps.forEach((key)=>{
+                    const valType = typeof props[key];
+                    if (key === 'as') {
+                        if (props[key] && valType !== 'string' && valType !== 'object') {
+                            throw createPropError({
+                                key,
+                                expected: '`string` or `object`',
+                                actual: valType
+                            });
+                        }
+                    } else if (key === 'locale') {
+                        if (props[key] && valType !== 'string') {
+                            throw createPropError({
+                                key,
+                                expected: '`string`',
+                                actual: valType
+                            });
+                        }
+                    } else if (key === 'onClick' || key === 'onMouseEnter' || key === 'onTouchStart' || key === 'onNavigate') {
+                        if (props[key] && valType !== 'function') {
+                            throw createPropError({
+                                key,
+                                expected: '`function`',
+                                actual: valType
+                            });
+                        }
+                    } else if (key === 'replace' || key === 'scroll' || key === 'shallow' || key === 'passHref' || key === 'legacyBehavior') {
+                        if (props[key] != null && valType !== 'boolean') {
+                            throw createPropError({
+                                key,
+                                expected: '`boolean`',
+                                actual: valType
+                            });
+                        }
+                    } else if (key === 'prefetch') {
+                        if (props[key] != null && valType !== 'boolean' && props[key] !== 'auto') {
+                            throw createPropError({
+                                key,
+                                expected: '`boolean | "auto"`',
+                                actual: valType
+                            });
+                        }
+                    } else ;
+                });
+            }
+            const { href, as } = _react.default.useMemo(()=>{
+                if (!router) {
+                    const resolvedHref = formatStringOrUrl(hrefProp);
+                    return {
+                        href: resolvedHref,
+                        as: asProp ? formatStringOrUrl(asProp) : resolvedHref
+                    };
+                }
+                const [resolvedHref, resolvedAs] = (0, _resolvehref.resolveHref)(router, hrefProp, true);
+                return {
+                    href: resolvedHref,
+                    as: asProp ? (0, _resolvehref.resolveHref)(router, asProp) : resolvedAs || resolvedHref
+                };
+            }, [
+                router,
+                hrefProp,
+                asProp
+            ]);
+            const previousHref = _react.default.useRef(href);
+            const previousAs = _react.default.useRef(as);
+            // This will return the first child, if multiple are provided it will throw an error
+            let child;
+            if (legacyBehavior) {
+                if (process.env.NODE_ENV === 'development') {
+                    if (onClick) {
+                        console.warn('"onClick" was passed to <Link> with `href` of `' + hrefProp + '` but "legacyBehavior" was set. The legacy behavior requires onClick be set on the child of next/link');
+                    }
+                    if (onMouseEnterProp) {
+                        console.warn('"onMouseEnter" was passed to <Link> with `href` of `' + hrefProp + '` but "legacyBehavior" was set. The legacy behavior requires onMouseEnter be set on the child of next/link');
+                    }
+                    try {
+                        child = _react.default.Children.only(children);
+                    } catch (err) {
+                        if (!children) {
+                            throw Object.defineProperty(new Error("No children were passed to <Link> with `href` of `" + hrefProp + "` but one child is required https://nextjs.org/docs/messages/link-no-children"), "__NEXT_ERROR_CODE", {
+                                value: "E320",
+                                enumerable: false,
+                                configurable: true
+                            });
+                        }
+                        throw Object.defineProperty(new Error("Multiple children were passed to <Link> with `href` of `" + hrefProp + "` but only one child is supported https://nextjs.org/docs/messages/link-multiple-children" + (typeof window !== 'undefined' ? " \nOpen your browser's console to view the Component stack trace." : '')), "__NEXT_ERROR_CODE", {
+                            value: "E266",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                } else {
+                    child = _react.default.Children.only(children);
+                }
+            } else {
+                if (process.env.NODE_ENV === 'development') {
+                    if ((children == null ? void 0 : children.type) === 'a') {
+                        throw Object.defineProperty(new Error('Invalid <Link> with <a> child. Please remove <a> or use <Link legacyBehavior>.\nLearn more: https://nextjs.org/docs/messages/invalid-new-link-with-extra-anchor'), "__NEXT_ERROR_CODE", {
+                            value: "E209",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    }
+                }
+            }
+            const childRef = legacyBehavior ? child && typeof child === 'object' && child.ref : forwardedRef;
+            const [setIntersectionRef, isVisible, resetVisible] = (0, _useintersection.useIntersection)({
+                rootMargin: '200px'
+            });
+            const setIntersectionWithResetRef = _react.default.useCallback((el)=>{
+                // Before the link getting observed, check if visible state need to be reset
+                if (previousAs.current !== as || previousHref.current !== href) {
+                    resetVisible();
+                    previousAs.current = as;
+                    previousHref.current = href;
+                }
+                setIntersectionRef(el);
+            }, [
+                as,
+                href,
+                resetVisible,
+                setIntersectionRef
+            ]);
+            const setRef = (0, _usemergedref.useMergedRef)(setIntersectionWithResetRef, childRef);
+            // Prefetch the URL if we haven't already and it's visible.
+            _react.default.useEffect(()=>{
+                // in dev, we only prefetch on hover to avoid wasting resources as the prefetch will trigger compiling the page.
+                if (process.env.NODE_ENV !== 'production') {
+                    return;
+                }
+                if (!router) {
+                    return;
+                }
+                // If we don't need to prefetch the URL, don't do prefetch.
+                if (!isVisible || !prefetchEnabled) {
+                    return;
+                }
+                // Prefetch the URL.
+                prefetch(router, href, as, {
+                    locale
+                });
+            }, [
+                as,
+                href,
+                isVisible,
+                locale,
+                prefetchEnabled,
+                router == null ? void 0 : router.locale,
+                router
+            ]);
+            const childProps = {
+                ref: setRef,
+                onClick (e) {
+                    if (process.env.NODE_ENV !== 'production') {
+                        if (!e) {
+                            throw Object.defineProperty(new Error('Component rendered inside next/link has to pass click event to "onClick" prop.'), "__NEXT_ERROR_CODE", {
+                                value: "E312",
+                                enumerable: false,
+                                configurable: true
+                            });
+                        }
+                    }
+                    if (!legacyBehavior && typeof onClick === 'function') {
+                        onClick(e);
+                    }
+                    if (legacyBehavior && child.props && typeof child.props.onClick === 'function') {
+                        child.props.onClick(e);
+                    }
+                    if (!router) {
+                        return;
+                    }
+                    if (e.defaultPrevented) {
+                        return;
+                    }
+                    linkClicked(e, router, href, as, replace, shallow, scroll, locale, onNavigate);
+                },
+                onMouseEnter (e) {
+                    if (!legacyBehavior && typeof onMouseEnterProp === 'function') {
+                        onMouseEnterProp(e);
+                    }
+                    if (legacyBehavior && child.props && typeof child.props.onMouseEnter === 'function') {
+                        child.props.onMouseEnter(e);
+                    }
+                    if (!router) {
+                        return;
+                    }
+                    prefetch(router, href, as, {
+                        locale,
+                        priority: true,
+                        // @see {https://github.com/vercel/next.js/discussions/40268?sort=top#discussioncomment-3572642}
+                        bypassPrefetchedCheck: true
+                    });
+                },
+                onTouchStart: process.env.__NEXT_LINK_NO_TOUCH_START ? undefined : function onTouchStart(e) {
+                    if (!legacyBehavior && typeof onTouchStartProp === 'function') {
+                        onTouchStartProp(e);
+                    }
+                    if (legacyBehavior && child.props && typeof child.props.onTouchStart === 'function') {
+                        child.props.onTouchStart(e);
+                    }
+                    if (!router) {
+                        return;
+                    }
+                    prefetch(router, href, as, {
+                        locale,
+                        priority: true,
+                        // @see {https://github.com/vercel/next.js/discussions/40268?sort=top#discussioncomment-3572642}
+                        bypassPrefetchedCheck: true
+                    });
+                }
+            };
+            // If child is an <a> tag and doesn't have a href attribute, or if the 'passHref' property is
+            // defined, we specify the current 'href', so that repetition is not needed by the user.
+            // If the url is absolute, we can bypass the logic to prepend the domain and locale.
+            if ((0, _utils.isAbsoluteUrl)(as)) {
+                childProps.href = as;
+            } else if (!legacyBehavior || passHref || child.type === 'a' && !('href' in child.props)) {
+                const curLocale = typeof locale !== 'undefined' ? locale : router == null ? void 0 : router.locale;
+                // we only render domain locales if we are currently on a domain locale
+                // so that locale links are still visitable in development/preview envs
+                const localeDomain = (router == null ? void 0 : router.isLocaleDomain) && (0, _getdomainlocale.getDomainLocale)(as, curLocale, router == null ? void 0 : router.locales, router == null ? void 0 : router.domainLocales);
+                childProps.href = localeDomain || (0, _addbasepath.addBasePath)((0, _addlocale.addLocale)(as, curLocale, router == null ? void 0 : router.defaultLocale));
+            }
+            if (legacyBehavior) {
+                if (process.env.NODE_ENV === 'development') {
+                    (0, _erroronce.errorOnce)('`legacyBehavior` is deprecated and will be removed in a future ' + 'release. A codemod is available to upgrade your components:\n\n' + 'npx @next/codemod@latest new-link .\n\n' + 'Learn more: https://nextjs.org/docs/app/building-your-application/upgrading/codemods#remove-a-tags-from-link-components');
+                }
+                return /*#__PURE__*/ _react.default.cloneElement(child, childProps);
+            }
+            return /*#__PURE__*/ (0, _jsxruntime.jsx)("a", {
+                ...restProps,
+                ...childProps,
+                children: children
+            });
+        });
+        const LinkStatusContext = /*#__PURE__*/ (0, _react.createContext)({
+            // We do not support link status in the Pages Router, so we always return false
+            pending: false
+        });
+        const useLinkStatus = ()=>{
+            // This behaviour is like React's useFormStatus. When the component is not under
+            // a <form> tag, it will get the default value, instead of throwing an error.
+            return (0, _react.useContext)(LinkStatusContext);
+        };
+        const _default = Link;
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(link$1, link$1.exports);
+    return link$1.exports;
+}
+
+var link;
+var hasRequiredLink;
+function requireLink() {
+    if (hasRequiredLink) return link;
+    hasRequiredLink = 1;
+    link = requireLink$1();
+    return link;
+}
+
+var linkExports = requireLink();
+var Link = /*@__PURE__*/getDefaultExportFromCjs(linkExports);
+
+var navigation$1 = {exports: {}};
+
+var appRouterContext_sharedRuntime = {};
+
+var hasRequiredAppRouterContext_sharedRuntime;
+function requireAppRouterContext_sharedRuntime() {
+    if (hasRequiredAppRouterContext_sharedRuntime) return appRouterContext_sharedRuntime;
+    hasRequiredAppRouterContext_sharedRuntime = 1;
+    (function(exports) {
+        'use client';
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            AppRouterContext: function() {
+                return AppRouterContext;
+            },
+            GlobalLayoutRouterContext: function() {
+                return GlobalLayoutRouterContext;
+            },
+            LayoutRouterContext: function() {
+                return LayoutRouterContext;
+            },
+            MissingSlotContext: function() {
+                return MissingSlotContext;
+            },
+            TemplateContext: function() {
+                return TemplateContext;
+            }
+        });
+        const _interop_require_default = /*@__PURE__*/ require_interop_require_default();
+        const _react = /*#__PURE__*/ _interop_require_default._(React__default);
+        const AppRouterContext = _react.default.createContext(null);
+        const LayoutRouterContext = _react.default.createContext(null);
+        const GlobalLayoutRouterContext = _react.default.createContext(null);
+        const TemplateContext = _react.default.createContext(null);
+        if (process.env.NODE_ENV !== 'production') {
+            AppRouterContext.displayName = 'AppRouterContext';
+            LayoutRouterContext.displayName = 'LayoutRouterContext';
+            GlobalLayoutRouterContext.displayName = 'GlobalLayoutRouterContext';
+            TemplateContext.displayName = 'TemplateContext';
+        }
+        const MissingSlotContext = _react.default.createContext(new Set());
+    
+    })(appRouterContext_sharedRuntime);
+    return appRouterContext_sharedRuntime;
+}
+
+var hooksClientContext_sharedRuntime = {};
+
+var hasRequiredHooksClientContext_sharedRuntime;
+function requireHooksClientContext_sharedRuntime() {
+    if (hasRequiredHooksClientContext_sharedRuntime) return hooksClientContext_sharedRuntime;
+    hasRequiredHooksClientContext_sharedRuntime = 1;
+    (function(exports) {
+        'use client';
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            PathParamsContext: function() {
+                return PathParamsContext;
+            },
+            PathnameContext: function() {
+                return PathnameContext;
+            },
+            SearchParamsContext: function() {
+                return SearchParamsContext;
+            }
+        });
+        const _react = React__default;
+        const SearchParamsContext = (0, _react.createContext)(null);
+        const PathnameContext = (0, _react.createContext)(null);
+        const PathParamsContext = (0, _react.createContext)(null);
+        if (process.env.NODE_ENV !== 'production') {
+            SearchParamsContext.displayName = 'SearchParamsContext';
+            PathnameContext.displayName = 'PathnameContext';
+            PathParamsContext.displayName = 'PathParamsContext';
+        }
+    
+    })(hooksClientContext_sharedRuntime);
+    return hooksClientContext_sharedRuntime;
+}
+
+var getSegmentValue = {exports: {}};
+
+var hasRequiredGetSegmentValue;
+function requireGetSegmentValue() {
+    if (hasRequiredGetSegmentValue) return getSegmentValue.exports;
+    hasRequiredGetSegmentValue = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "getSegmentValue", {
+            enumerable: true,
+            get: function() {
+                return getSegmentValue;
+            }
+        });
+        function getSegmentValue(segment) {
+            return Array.isArray(segment) ? segment[1] : segment;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(getSegmentValue, getSegmentValue.exports);
+    return getSegmentValue.exports;
+}
+
+var navigation_reactServer = {exports: {}};
+
+var redirect = {exports: {}};
+
+var redirectStatusCode = {exports: {}};
+
+var hasRequiredRedirectStatusCode;
+function requireRedirectStatusCode() {
+    if (hasRequiredRedirectStatusCode) return redirectStatusCode.exports;
+    hasRequiredRedirectStatusCode = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "RedirectStatusCode", {
+            enumerable: true,
+            get: function() {
+                return RedirectStatusCode;
+            }
+        });
+        var RedirectStatusCode = /*#__PURE__*/ function(RedirectStatusCode) {
+            RedirectStatusCode[RedirectStatusCode["SeeOther"] = 303] = "SeeOther";
+            RedirectStatusCode[RedirectStatusCode["TemporaryRedirect"] = 307] = "TemporaryRedirect";
+            RedirectStatusCode[RedirectStatusCode["PermanentRedirect"] = 308] = "PermanentRedirect";
+            return RedirectStatusCode;
+        }({});
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(redirectStatusCode, redirectStatusCode.exports);
+    return redirectStatusCode.exports;
+}
+
+var redirectError = {exports: {}};
+
+var hasRequiredRedirectError;
+function requireRedirectError() {
+    if (hasRequiredRedirectError) return redirectError.exports;
+    hasRequiredRedirectError = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            REDIRECT_ERROR_CODE: function() {
+                return REDIRECT_ERROR_CODE;
+            },
+            RedirectType: function() {
+                return RedirectType;
+            },
+            isRedirectError: function() {
+                return isRedirectError;
+            }
+        });
+        const _redirectstatuscode = requireRedirectStatusCode();
+        const REDIRECT_ERROR_CODE = 'NEXT_REDIRECT';
+        var RedirectType = /*#__PURE__*/ function(RedirectType) {
+            RedirectType["push"] = "push";
+            RedirectType["replace"] = "replace";
+            return RedirectType;
+        }({});
+        function isRedirectError(error) {
+            if (typeof error !== 'object' || error === null || !('digest' in error) || typeof error.digest !== 'string') {
+                return false;
+            }
+            const digest = error.digest.split(';');
+            const [errorCode, type] = digest;
+            const destination = digest.slice(2, -2).join(';');
+            const status = digest.at(-2);
+            const statusCode = Number(status);
+            return errorCode === REDIRECT_ERROR_CODE && (type === 'replace' || type === 'push') && typeof destination === 'string' && !isNaN(statusCode) && statusCode in _redirectstatuscode.RedirectStatusCode;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(redirectError, redirectError.exports);
+    return redirectError.exports;
+}
+
+var actionAsyncStorage_external = {};
+
+var actionAsyncStorageInstance = {};
+
+var asyncLocalStorage = {};
+
+var hasRequiredAsyncLocalStorage;
+function requireAsyncLocalStorage() {
+    if (hasRequiredAsyncLocalStorage) return asyncLocalStorage;
+    hasRequiredAsyncLocalStorage = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            bindSnapshot: function() {
+                return bindSnapshot;
+            },
+            createAsyncLocalStorage: function() {
+                return createAsyncLocalStorage;
+            },
+            createSnapshot: function() {
+                return createSnapshot;
+            }
+        });
+        const sharedAsyncLocalStorageNotAvailableError = Object.defineProperty(new Error('Invariant: AsyncLocalStorage accessed in runtime where it is not available'), "__NEXT_ERROR_CODE", {
+            value: "E504",
+            enumerable: false,
+            configurable: true
+        });
+        class FakeAsyncLocalStorage {
+            disable() {
+                throw sharedAsyncLocalStorageNotAvailableError;
+            }
+            getStore() {
+                // This fake implementation of AsyncLocalStorage always returns `undefined`.
+                return undefined;
+            }
+            run() {
+                throw sharedAsyncLocalStorageNotAvailableError;
+            }
+            exit() {
+                throw sharedAsyncLocalStorageNotAvailableError;
+            }
+            enterWith() {
+                throw sharedAsyncLocalStorageNotAvailableError;
+            }
+            static bind(fn) {
+                return fn;
+            }
+        }
+        const maybeGlobalAsyncLocalStorage = typeof globalThis !== 'undefined' && globalThis.AsyncLocalStorage;
+        function createAsyncLocalStorage() {
+            if (maybeGlobalAsyncLocalStorage) {
+                return new maybeGlobalAsyncLocalStorage();
+            }
+            return new FakeAsyncLocalStorage();
+        }
+        function bindSnapshot(fn) {
+            if (maybeGlobalAsyncLocalStorage) {
+                return maybeGlobalAsyncLocalStorage.bind(fn);
+            }
+            return FakeAsyncLocalStorage.bind(fn);
+        }
+        function createSnapshot() {
+            if (maybeGlobalAsyncLocalStorage) {
+                return maybeGlobalAsyncLocalStorage.snapshot();
+            }
+            return function(fn, ...args) {
+                return fn(...args);
+            };
+        }
+    
+    })(asyncLocalStorage);
+    return asyncLocalStorage;
+}
+
+var hasRequiredActionAsyncStorageInstance;
+function requireActionAsyncStorageInstance() {
+    if (hasRequiredActionAsyncStorageInstance) return actionAsyncStorageInstance;
+    hasRequiredActionAsyncStorageInstance = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "actionAsyncStorageInstance", {
+            enumerable: true,
+            get: function() {
+                return actionAsyncStorageInstance;
+            }
+        });
+        const _asynclocalstorage = requireAsyncLocalStorage();
+        const actionAsyncStorageInstance = (0, _asynclocalstorage.createAsyncLocalStorage)();
+    
+    })(actionAsyncStorageInstance);
+    return actionAsyncStorageInstance;
+}
+
+var hasRequiredActionAsyncStorage_external;
+function requireActionAsyncStorage_external() {
+    if (hasRequiredActionAsyncStorage_external) return actionAsyncStorage_external;
+    hasRequiredActionAsyncStorage_external = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "actionAsyncStorage", {
+            enumerable: true,
+            get: function() {
+                return _actionasyncstorageinstance.actionAsyncStorageInstance;
+            }
+        });
+        const _actionasyncstorageinstance = requireActionAsyncStorageInstance();
+    
+    })(actionAsyncStorage_external);
+    return actionAsyncStorage_external;
+}
+
+var hasRequiredRedirect;
+function requireRedirect() {
+    if (hasRequiredRedirect) return redirect.exports;
+    hasRequiredRedirect = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            getRedirectError: function() {
+                return getRedirectError;
+            },
+            getRedirectStatusCodeFromError: function() {
+                return getRedirectStatusCodeFromError;
+            },
+            getRedirectTypeFromError: function() {
+                return getRedirectTypeFromError;
+            },
+            getURLFromRedirectError: function() {
+                return getURLFromRedirectError;
+            },
+            permanentRedirect: function() {
+                return permanentRedirect;
+            },
+            redirect: function() {
+                return redirect;
+            }
+        });
+        const _redirectstatuscode = requireRedirectStatusCode();
+        const _redirecterror = requireRedirectError();
+        const actionAsyncStorage = typeof window === 'undefined' ? requireActionAsyncStorage_external().actionAsyncStorage : undefined;
+        function getRedirectError(url, type, statusCode) {
+            if (statusCode === void 0) statusCode = _redirectstatuscode.RedirectStatusCode.TemporaryRedirect;
+            const error = Object.defineProperty(new Error(_redirecterror.REDIRECT_ERROR_CODE), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.digest = _redirecterror.REDIRECT_ERROR_CODE + ";" + type + ";" + url + ";" + statusCode + ";";
+            return error;
+        }
+        function redirect(/** The URL to redirect to */ url, type) {
+            var _actionAsyncStorage_getStore;
+            type != null ? type : type = (actionAsyncStorage == null ? void 0 : (_actionAsyncStorage_getStore = actionAsyncStorage.getStore()) == null ? void 0 : _actionAsyncStorage_getStore.isAction) ? _redirecterror.RedirectType.push : _redirecterror.RedirectType.replace;
+            throw getRedirectError(url, type, _redirectstatuscode.RedirectStatusCode.TemporaryRedirect);
+        }
+        function permanentRedirect(/** The URL to redirect to */ url, type) {
+            if (type === void 0) type = _redirecterror.RedirectType.replace;
+            throw getRedirectError(url, type, _redirectstatuscode.RedirectStatusCode.PermanentRedirect);
+        }
+        function getURLFromRedirectError(error) {
+            if (!(0, _redirecterror.isRedirectError)(error)) return null;
+            // Slices off the beginning of the digest that contains the code and the
+            // separating ';'.
+            return error.digest.split(';').slice(2, -2).join(';');
+        }
+        function getRedirectTypeFromError(error) {
+            if (!(0, _redirecterror.isRedirectError)(error)) {
+                throw Object.defineProperty(new Error('Not a redirect error'), "__NEXT_ERROR_CODE", {
+                    value: "E260",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            return error.digest.split(';', 2)[1];
+        }
+        function getRedirectStatusCodeFromError(error) {
+            if (!(0, _redirecterror.isRedirectError)(error)) {
+                throw Object.defineProperty(new Error('Not a redirect error'), "__NEXT_ERROR_CODE", {
+                    value: "E260",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            return Number(error.digest.split(';').at(-2));
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(redirect, redirect.exports);
+    return redirect.exports;
+}
+
+var notFound = {exports: {}};
+
+var httpAccessFallback = {exports: {}};
+
+var hasRequiredHttpAccessFallback;
+function requireHttpAccessFallback() {
+    if (hasRequiredHttpAccessFallback) return httpAccessFallback.exports;
+    hasRequiredHttpAccessFallback = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            HTTPAccessErrorStatus: function() {
+                return HTTPAccessErrorStatus;
+            },
+            HTTP_ERROR_FALLBACK_ERROR_CODE: function() {
+                return HTTP_ERROR_FALLBACK_ERROR_CODE;
+            },
+            getAccessFallbackErrorTypeByStatus: function() {
+                return getAccessFallbackErrorTypeByStatus;
+            },
+            getAccessFallbackHTTPStatus: function() {
+                return getAccessFallbackHTTPStatus;
+            },
+            isHTTPAccessFallbackError: function() {
+                return isHTTPAccessFallbackError;
+            }
+        });
+        const HTTPAccessErrorStatus = {
+            NOT_FOUND: 404,
+            FORBIDDEN: 403,
+            UNAUTHORIZED: 401
+        };
+        const ALLOWED_CODES = new Set(Object.values(HTTPAccessErrorStatus));
+        const HTTP_ERROR_FALLBACK_ERROR_CODE = 'NEXT_HTTP_ERROR_FALLBACK';
+        function isHTTPAccessFallbackError(error) {
+            if (typeof error !== 'object' || error === null || !('digest' in error) || typeof error.digest !== 'string') {
+                return false;
+            }
+            const [prefix, httpStatus] = error.digest.split(';');
+            return prefix === HTTP_ERROR_FALLBACK_ERROR_CODE && ALLOWED_CODES.has(Number(httpStatus));
+        }
+        function getAccessFallbackHTTPStatus(error) {
+            const httpStatus = error.digest.split(';')[1];
+            return Number(httpStatus);
+        }
+        function getAccessFallbackErrorTypeByStatus(status) {
+            switch(status){
+                case 401:
+                    return 'unauthorized';
+                case 403:
+                    return 'forbidden';
+                case 404:
+                    return 'not-found';
+                default:
+                    return;
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(httpAccessFallback, httpAccessFallback.exports);
+    return httpAccessFallback.exports;
+}
+
+var hasRequiredNotFound;
+function requireNotFound() {
+    if (hasRequiredNotFound) return notFound.exports;
+    hasRequiredNotFound = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "notFound", {
+            enumerable: true,
+            get: function() {
+                return notFound;
+            }
+        });
+        const _httpaccessfallback = requireHttpAccessFallback();
+        /**
+		 * This function allows you to render the [not-found.js file](https://nextjs.org/docs/app/api-reference/file-conventions/not-found)
+		 * within a route segment as well as inject a tag.
+		 *
+		 * `notFound()` can be used in
+		 * [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components),
+		 * [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers), and
+		 * [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+		 *
+		 * - In a Server Component, this will insert a `<meta name="robots" content="noindex" />` meta tag and set the status code to 404.
+		 * - In a Route Handler or Server Action, it will serve a 404 to the caller.
+		 *
+		 * Read more: [Next.js Docs: `notFound`](https://nextjs.org/docs/app/api-reference/functions/not-found)
+		 */ const DIGEST = "" + _httpaccessfallback.HTTP_ERROR_FALLBACK_ERROR_CODE + ";404";
+        function notFound() {
+            // eslint-disable-next-line no-throw-literal
+            const error = Object.defineProperty(new Error(DIGEST), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.digest = DIGEST;
+            throw error;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(notFound, notFound.exports);
+    return notFound.exports;
+}
+
+var forbidden = {exports: {}};
+
+var hasRequiredForbidden;
+function requireForbidden() {
+    if (hasRequiredForbidden) return forbidden.exports;
+    hasRequiredForbidden = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "forbidden", {
+            enumerable: true,
+            get: function() {
+                return forbidden;
+            }
+        });
+        const _httpaccessfallback = requireHttpAccessFallback();
+        // TODO: Add `forbidden` docs
+        /**
+		 * @experimental
+		 * This function allows you to render the [forbidden.js file](https://nextjs.org/docs/app/api-reference/file-conventions/forbidden)
+		 * within a route segment as well as inject a tag.
+		 *
+		 * `forbidden()` can be used in
+		 * [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components),
+		 * [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers), and
+		 * [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+		 *
+		 * Read more: [Next.js Docs: `forbidden`](https://nextjs.org/docs/app/api-reference/functions/forbidden)
+		 */ const DIGEST = "" + _httpaccessfallback.HTTP_ERROR_FALLBACK_ERROR_CODE + ";403";
+        function forbidden() {
+            if (!process.env.__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS) {
+                throw Object.defineProperty(new Error("`forbidden()` is experimental and only allowed to be enabled when `experimental.authInterrupts` is enabled."), "__NEXT_ERROR_CODE", {
+                    value: "E488",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            // eslint-disable-next-line no-throw-literal
+            const error = Object.defineProperty(new Error(DIGEST), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.digest = DIGEST;
+            throw error;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(forbidden, forbidden.exports);
+    return forbidden.exports;
+}
+
+var unauthorized = {exports: {}};
+
+var hasRequiredUnauthorized;
+function requireUnauthorized() {
+    if (hasRequiredUnauthorized) return unauthorized.exports;
+    hasRequiredUnauthorized = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "unauthorized", {
+            enumerable: true,
+            get: function() {
+                return unauthorized;
+            }
+        });
+        const _httpaccessfallback = requireHttpAccessFallback();
+        // TODO: Add `unauthorized` docs
+        /**
+		 * @experimental
+		 * This function allows you to render the [unauthorized.js file](https://nextjs.org/docs/app/api-reference/file-conventions/unauthorized)
+		 * within a route segment as well as inject a tag.
+		 *
+		 * `unauthorized()` can be used in
+		 * [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components),
+		 * [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers), and
+		 * [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations).
+		 *
+		 *
+		 * Read more: [Next.js Docs: `unauthorized`](https://nextjs.org/docs/app/api-reference/functions/unauthorized)
+		 */ const DIGEST = "" + _httpaccessfallback.HTTP_ERROR_FALLBACK_ERROR_CODE + ";401";
+        function unauthorized() {
+            if (!process.env.__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS) {
+                throw Object.defineProperty(new Error("`unauthorized()` is experimental and only allowed to be used when `experimental.authInterrupts` is enabled."), "__NEXT_ERROR_CODE", {
+                    value: "E411",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            // eslint-disable-next-line no-throw-literal
+            const error = Object.defineProperty(new Error(DIGEST), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.digest = DIGEST;
+            throw error;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(unauthorized, unauthorized.exports);
+    return unauthorized.exports;
+}
+
+var unstableRethrow = {exports: {}};
+
+var unstableRethrow_server = {exports: {}};
+
+var dynamicRenderingUtils = {};
+
+var hasRequiredDynamicRenderingUtils;
+function requireDynamicRenderingUtils() {
+    if (hasRequiredDynamicRenderingUtils) return dynamicRenderingUtils;
+    hasRequiredDynamicRenderingUtils = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            isHangingPromiseRejectionError: function() {
+                return isHangingPromiseRejectionError;
+            },
+            makeDevtoolsIOAwarePromise: function() {
+                return makeDevtoolsIOAwarePromise;
+            },
+            makeHangingPromise: function() {
+                return makeHangingPromise;
+            }
+        });
+        function isHangingPromiseRejectionError(err) {
+            if (typeof err !== 'object' || err === null || !('digest' in err)) {
+                return false;
+            }
+            return err.digest === HANGING_PROMISE_REJECTION;
+        }
+        const HANGING_PROMISE_REJECTION = 'HANGING_PROMISE_REJECTION';
+        class HangingPromiseRejectionError extends Error {
+            constructor(route, expression){
+                super(`During prerendering, ${expression} rejects when the prerender is complete. Typically these errors are handled by React but if you move ${expression} to a different context by using \`setTimeout\`, \`after\`, or similar functions you may observe this error and you should handle it in that context. This occurred at route "${route}".`), this.route = route, this.expression = expression, this.digest = HANGING_PROMISE_REJECTION;
+            }
+        }
+        const abortListenersBySignal = new WeakMap();
+        function makeHangingPromise(signal, route, expression) {
+            if (signal.aborted) {
+                return Promise.reject(new HangingPromiseRejectionError(route, expression));
+            } else {
+                const hangingPromise = new Promise((_, reject)=>{
+                    const boundRejection = reject.bind(null, new HangingPromiseRejectionError(route, expression));
+                    let currentListeners = abortListenersBySignal.get(signal);
+                    if (currentListeners) {
+                        currentListeners.push(boundRejection);
+                    } else {
+                        const listeners = [
+                            boundRejection
+                        ];
+                        abortListenersBySignal.set(signal, listeners);
+                        signal.addEventListener('abort', ()=>{
+                            for(let i = 0; i < listeners.length; i++){
+                                listeners[i]();
+                            }
+                        }, {
+                            once: true
+                        });
+                    }
+                });
+                // We are fine if no one actually awaits this promise. We shouldn't consider this an unhandled rejection so
+                // we attach a noop catch handler here to suppress this warning. If you actually await somewhere or construct
+                // your own promise out of it you'll need to ensure you handle the error when it rejects.
+                hangingPromise.catch(ignoreReject);
+                return hangingPromise;
+            }
+        }
+        function ignoreReject() {}
+        function makeDevtoolsIOAwarePromise(underlying) {
+            // in React DevTools if we resolve in a setTimeout we will observe
+            // the promise resolution as something that can suspend a boundary or root.
+            return new Promise((resolve)=>{
+                // Must use setTimeout to be considered IO React DevTools. setImmediate will not work.
+                setTimeout(()=>{
+                    resolve(underlying);
+                }, 0);
+            });
+        }
+    
+    })(dynamicRenderingUtils);
+    return dynamicRenderingUtils;
+}
+
+var isPostpone = {};
+
+var hasRequiredIsPostpone;
+function requireIsPostpone() {
+    if (hasRequiredIsPostpone) return isPostpone;
+    hasRequiredIsPostpone = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "isPostpone", {
+            enumerable: true,
+            get: function() {
+                return isPostpone;
+            }
+        });
+        const REACT_POSTPONE_TYPE = Symbol.for('react.postpone');
+        function isPostpone(error) {
+            return typeof error === 'object' && error !== null && error.$$typeof === REACT_POSTPONE_TYPE;
+        }
+    
+    })(isPostpone);
+    return isPostpone;
+}
+
+var bailoutToCsr = {};
+
+var hasRequiredBailoutToCsr;
+function requireBailoutToCsr() {
+    if (hasRequiredBailoutToCsr) return bailoutToCsr;
+    hasRequiredBailoutToCsr = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            BailoutToCSRError: function() {
+                return BailoutToCSRError;
+            },
+            isBailoutToCSRError: function() {
+                return isBailoutToCSRError;
+            }
+        });
+        const BAILOUT_TO_CSR = 'BAILOUT_TO_CLIENT_SIDE_RENDERING';
+        class BailoutToCSRError extends Error {
+            constructor(reason){
+                super("Bail out to client-side rendering: " + reason), this.reason = reason, this.digest = BAILOUT_TO_CSR;
+            }
+        }
+        function isBailoutToCSRError(err) {
+            if (typeof err !== 'object' || err === null || !('digest' in err)) {
+                return false;
+            }
+            return err.digest === BAILOUT_TO_CSR;
+        }
+    
+    })(bailoutToCsr);
+    return bailoutToCsr;
+}
+
+var isNextRouterError = {exports: {}};
+
+var hasRequiredIsNextRouterError;
+function requireIsNextRouterError() {
+    if (hasRequiredIsNextRouterError) return isNextRouterError.exports;
+    hasRequiredIsNextRouterError = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "isNextRouterError", {
+            enumerable: true,
+            get: function() {
+                return isNextRouterError;
+            }
+        });
+        const _httpaccessfallback = requireHttpAccessFallback();
+        const _redirecterror = requireRedirectError();
+        function isNextRouterError(error) {
+            return (0, _redirecterror.isRedirectError)(error) || (0, _httpaccessfallback.isHTTPAccessFallbackError)(error);
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(isNextRouterError, isNextRouterError.exports);
+    return isNextRouterError.exports;
+}
+
+var dynamicRendering = {};
+
+var hooksServerContext = {exports: {}};
+
+var hasRequiredHooksServerContext;
+function requireHooksServerContext() {
+    if (hasRequiredHooksServerContext) return hooksServerContext.exports;
+    hasRequiredHooksServerContext = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            DynamicServerError: function() {
+                return DynamicServerError;
+            },
+            isDynamicServerError: function() {
+                return isDynamicServerError;
+            }
+        });
+        const DYNAMIC_ERROR_CODE = 'DYNAMIC_SERVER_USAGE';
+        class DynamicServerError extends Error {
+            constructor(description){
+                super("Dynamic server usage: " + description), this.description = description, this.digest = DYNAMIC_ERROR_CODE;
+            }
+        }
+        function isDynamicServerError(err) {
+            if (typeof err !== 'object' || err === null || !('digest' in err) || typeof err.digest !== 'string') {
+                return false;
+            }
+            return err.digest === DYNAMIC_ERROR_CODE;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(hooksServerContext, hooksServerContext.exports);
+    return hooksServerContext.exports;
+}
+
+var staticGenerationBailout = {exports: {}};
+
+var hasRequiredStaticGenerationBailout;
+function requireStaticGenerationBailout() {
+    if (hasRequiredStaticGenerationBailout) return staticGenerationBailout.exports;
+    hasRequiredStaticGenerationBailout = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            StaticGenBailoutError: function() {
+                return StaticGenBailoutError;
+            },
+            isStaticGenBailoutError: function() {
+                return isStaticGenBailoutError;
+            }
+        });
+        const NEXT_STATIC_GEN_BAILOUT = 'NEXT_STATIC_GEN_BAILOUT';
+        class StaticGenBailoutError extends Error {
+            constructor(...args){
+                super(...args), this.code = NEXT_STATIC_GEN_BAILOUT;
+            }
+        }
+        function isStaticGenBailoutError(error) {
+            if (typeof error !== 'object' || error === null || !('code' in error)) {
+                return false;
+            }
+            return error.code === NEXT_STATIC_GEN_BAILOUT;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(staticGenerationBailout, staticGenerationBailout.exports);
+    return staticGenerationBailout.exports;
+}
+
+var workUnitAsyncStorage_external = {};
+
+var workUnitAsyncStorageInstance = {};
+
+var hasRequiredWorkUnitAsyncStorageInstance;
+function requireWorkUnitAsyncStorageInstance() {
+    if (hasRequiredWorkUnitAsyncStorageInstance) return workUnitAsyncStorageInstance;
+    hasRequiredWorkUnitAsyncStorageInstance = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "workUnitAsyncStorageInstance", {
+            enumerable: true,
+            get: function() {
+                return workUnitAsyncStorageInstance;
+            }
+        });
+        const _asynclocalstorage = requireAsyncLocalStorage();
+        const workUnitAsyncStorageInstance = (0, _asynclocalstorage.createAsyncLocalStorage)();
+    
+    })(workUnitAsyncStorageInstance);
+    return workUnitAsyncStorageInstance;
+}
+
+var appRouterHeaders = {exports: {}};
+
+var hasRequiredAppRouterHeaders;
+function requireAppRouterHeaders() {
+    if (hasRequiredAppRouterHeaders) return appRouterHeaders.exports;
+    hasRequiredAppRouterHeaders = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            ACTION_HEADER: function() {
+                return ACTION_HEADER;
+            },
+            FLIGHT_HEADERS: function() {
+                return FLIGHT_HEADERS;
+            },
+            NEXT_ACTION_NOT_FOUND_HEADER: function() {
+                return NEXT_ACTION_NOT_FOUND_HEADER;
+            },
+            NEXT_DID_POSTPONE_HEADER: function() {
+                return NEXT_DID_POSTPONE_HEADER;
+            },
+            NEXT_HMR_REFRESH_HASH_COOKIE: function() {
+                return NEXT_HMR_REFRESH_HASH_COOKIE;
+            },
+            NEXT_HMR_REFRESH_HEADER: function() {
+                return NEXT_HMR_REFRESH_HEADER;
+            },
+            NEXT_IS_PRERENDER_HEADER: function() {
+                return NEXT_IS_PRERENDER_HEADER;
+            },
+            NEXT_REWRITTEN_PATH_HEADER: function() {
+                return NEXT_REWRITTEN_PATH_HEADER;
+            },
+            NEXT_REWRITTEN_QUERY_HEADER: function() {
+                return NEXT_REWRITTEN_QUERY_HEADER;
+            },
+            NEXT_ROUTER_PREFETCH_HEADER: function() {
+                return NEXT_ROUTER_PREFETCH_HEADER;
+            },
+            NEXT_ROUTER_SEGMENT_PREFETCH_HEADER: function() {
+                return NEXT_ROUTER_SEGMENT_PREFETCH_HEADER;
+            },
+            NEXT_ROUTER_STALE_TIME_HEADER: function() {
+                return NEXT_ROUTER_STALE_TIME_HEADER;
+            },
+            NEXT_ROUTER_STATE_TREE_HEADER: function() {
+                return NEXT_ROUTER_STATE_TREE_HEADER;
+            },
+            NEXT_RSC_UNION_QUERY: function() {
+                return NEXT_RSC_UNION_QUERY;
+            },
+            NEXT_URL: function() {
+                return NEXT_URL;
+            },
+            RSC_CONTENT_TYPE_HEADER: function() {
+                return RSC_CONTENT_TYPE_HEADER;
+            },
+            RSC_HEADER: function() {
+                return RSC_HEADER;
+            }
+        });
+        const RSC_HEADER = 'rsc';
+        const ACTION_HEADER = 'next-action';
+        const NEXT_ROUTER_STATE_TREE_HEADER = 'next-router-state-tree';
+        const NEXT_ROUTER_PREFETCH_HEADER = 'next-router-prefetch';
+        const NEXT_ROUTER_SEGMENT_PREFETCH_HEADER = 'next-router-segment-prefetch';
+        const NEXT_HMR_REFRESH_HEADER = 'next-hmr-refresh';
+        const NEXT_HMR_REFRESH_HASH_COOKIE = '__next_hmr_refresh_hash__';
+        const NEXT_URL = 'next-url';
+        const RSC_CONTENT_TYPE_HEADER = 'text/x-component';
+        const FLIGHT_HEADERS = [
+            RSC_HEADER,
+            NEXT_ROUTER_STATE_TREE_HEADER,
+            NEXT_ROUTER_PREFETCH_HEADER,
+            NEXT_HMR_REFRESH_HEADER,
+            NEXT_ROUTER_SEGMENT_PREFETCH_HEADER
+        ];
+        const NEXT_RSC_UNION_QUERY = '_rsc';
+        const NEXT_ROUTER_STALE_TIME_HEADER = 'x-nextjs-stale-time';
+        const NEXT_DID_POSTPONE_HEADER = 'x-nextjs-postponed';
+        const NEXT_REWRITTEN_PATH_HEADER = 'x-nextjs-rewritten-path';
+        const NEXT_REWRITTEN_QUERY_HEADER = 'x-nextjs-rewritten-query';
+        const NEXT_IS_PRERENDER_HEADER = 'x-nextjs-prerender';
+        const NEXT_ACTION_NOT_FOUND_HEADER = 'x-nextjs-action-not-found';
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(appRouterHeaders, appRouterHeaders.exports);
+    return appRouterHeaders.exports;
+}
+
+var invariantError = {};
+
+var hasRequiredInvariantError;
+function requireInvariantError() {
+    if (hasRequiredInvariantError) return invariantError;
+    hasRequiredInvariantError = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "InvariantError", {
+            enumerable: true,
+            get: function() {
+                return InvariantError;
+            }
+        });
+        class InvariantError extends Error {
+            constructor(message, options){
+                super("Invariant: " + (message.endsWith('.') ? message : message + '.') + " This is a bug in Next.js.", options);
+                this.name = 'InvariantError';
+            }
+        }
+    
+    })(invariantError);
+    return invariantError;
+}
+
+var hasRequiredWorkUnitAsyncStorage_external;
+function requireWorkUnitAsyncStorage_external() {
+    if (hasRequiredWorkUnitAsyncStorage_external) return workUnitAsyncStorage_external;
+    hasRequiredWorkUnitAsyncStorage_external = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            getCacheSignal: function() {
+                return getCacheSignal;
+            },
+            getDraftModeProviderForCacheScope: function() {
+                return getDraftModeProviderForCacheScope;
+            },
+            getHmrRefreshHash: function() {
+                return getHmrRefreshHash;
+            },
+            getPrerenderResumeDataCache: function() {
+                return getPrerenderResumeDataCache;
+            },
+            getRenderResumeDataCache: function() {
+                return getRenderResumeDataCache;
+            },
+            getRuntimeStagePromise: function() {
+                return getRuntimeStagePromise;
+            },
+            getServerComponentsHmrCache: function() {
+                return getServerComponentsHmrCache;
+            },
+            isHmrRefresh: function() {
+                return isHmrRefresh;
+            },
+            throwForMissingRequestStore: function() {
+                return throwForMissingRequestStore;
+            },
+            throwInvariantForMissingStore: function() {
+                return throwInvariantForMissingStore;
+            },
+            workUnitAsyncStorage: function() {
+                return _workunitasyncstorageinstance.workUnitAsyncStorageInstance;
+            }
+        });
+        const _workunitasyncstorageinstance = requireWorkUnitAsyncStorageInstance();
+        const _approuterheaders = requireAppRouterHeaders();
+        const _invarianterror = requireInvariantError();
+        function throwForMissingRequestStore(callingExpression) {
+            throw Object.defineProperty(new Error(`\`${callingExpression}\` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context`), "__NEXT_ERROR_CODE", {
+                value: "E251",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        function throwInvariantForMissingStore() {
+            throw Object.defineProperty(new _invarianterror.InvariantError('Expected workUnitAsyncStorage to have a store.'), "__NEXT_ERROR_CODE", {
+                value: "E696",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        function getPrerenderResumeDataCache(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'prerender':
+                case 'prerender-runtime':
+                case 'prerender-ppr':
+                    return workUnitStore.prerenderResumeDataCache;
+                case 'prerender-client':
+                    // TODO eliminate fetch caching in client scope and stop exposing this data
+                    // cache during SSR.
+                    return workUnitStore.prerenderResumeDataCache;
+                case 'prerender-legacy':
+                case 'request':
+                case 'cache':
+                case 'private-cache':
+                case 'unstable-cache':
+                    return null;
+                default:
+                    return workUnitStore;
+            }
+        }
+        function getRenderResumeDataCache(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'request':
+                    return workUnitStore.renderResumeDataCache;
+                case 'prerender':
+                case 'prerender-runtime':
+                case 'prerender-client':
+                    if (workUnitStore.renderResumeDataCache) {
+                        // If we are in a prerender, we might have a render resume data cache
+                        // that is used to read from prefilled caches.
+                        return workUnitStore.renderResumeDataCache;
+                    }
+                // fallthrough
+                case 'prerender-ppr':
+                    // Otherwise we return the mutable resume data cache here as an immutable
+                    // version of the cache as it can also be used for reading.
+                    return workUnitStore.prerenderResumeDataCache;
+                case 'cache':
+                case 'private-cache':
+                case 'unstable-cache':
+                case 'prerender-legacy':
+                    return null;
+                default:
+                    return workUnitStore;
+            }
+        }
+        function getHmrRefreshHash(workStore, workUnitStore) {
+            if (workStore.dev) {
+                switch(workUnitStore.type){
+                    case 'cache':
+                    case 'private-cache':
+                    case 'prerender':
+                    case 'prerender-runtime':
+                        return workUnitStore.hmrRefreshHash;
+                    case 'request':
+                        var _workUnitStore_cookies_get;
+                        return (_workUnitStore_cookies_get = workUnitStore.cookies.get(_approuterheaders.NEXT_HMR_REFRESH_HASH_COOKIE)) == null ? void 0 : _workUnitStore_cookies_get.value;
+                }
+            }
+            return undefined;
+        }
+        function isHmrRefresh(workStore, workUnitStore) {
+            if (workStore.dev) {
+                switch(workUnitStore.type){
+                    case 'cache':
+                    case 'private-cache':
+                    case 'request':
+                        return workUnitStore.isHmrRefresh ?? false;
+                }
+            }
+            return false;
+        }
+        function getServerComponentsHmrCache(workStore, workUnitStore) {
+            if (workStore.dev) {
+                switch(workUnitStore.type){
+                    case 'cache':
+                    case 'private-cache':
+                    case 'request':
+                        return workUnitStore.serverComponentsHmrCache;
+                }
+            }
+            return undefined;
+        }
+        function getDraftModeProviderForCacheScope(workStore, workUnitStore) {
+            if (workStore.isDraftMode) {
+                switch(workUnitStore.type){
+                    case 'cache':
+                    case 'private-cache':
+                    case 'unstable-cache':
+                    case 'prerender-runtime':
+                    case 'request':
+                        return workUnitStore.draftMode;
+                }
+            }
+            return undefined;
+        }
+        function getCacheSignal(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'prerender':
+                case 'prerender-client':
+                case 'prerender-runtime':
+                    return workUnitStore.cacheSignal;
+                case 'prerender-ppr':
+                case 'prerender-legacy':
+                case 'request':
+                case 'cache':
+                case 'private-cache':
+                case 'unstable-cache':
+                    return null;
+                default:
+                    return workUnitStore;
+            }
+        }
+        function getRuntimeStagePromise(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'prerender-runtime':
+                case 'private-cache':
+                    return workUnitStore.runtimeStagePromise;
+                case 'prerender':
+                case 'prerender-client':
+                case 'prerender-ppr':
+                case 'prerender-legacy':
+                case 'request':
+                case 'cache':
+                case 'unstable-cache':
+                    return null;
+                default:
+                    return workUnitStore;
+            }
+        }
+    
+    })(workUnitAsyncStorage_external);
+    return workUnitAsyncStorage_external;
+}
+
+var workAsyncStorage_external = {};
+
+var workAsyncStorageInstance = {};
+
+var hasRequiredWorkAsyncStorageInstance;
+function requireWorkAsyncStorageInstance() {
+    if (hasRequiredWorkAsyncStorageInstance) return workAsyncStorageInstance;
+    hasRequiredWorkAsyncStorageInstance = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "workAsyncStorageInstance", {
+            enumerable: true,
+            get: function() {
+                return workAsyncStorageInstance;
+            }
+        });
+        const _asynclocalstorage = requireAsyncLocalStorage();
+        const workAsyncStorageInstance = (0, _asynclocalstorage.createAsyncLocalStorage)();
+    
+    })(workAsyncStorageInstance);
+    return workAsyncStorageInstance;
+}
+
+var hasRequiredWorkAsyncStorage_external;
+function requireWorkAsyncStorage_external() {
+    if (hasRequiredWorkAsyncStorage_external) return workAsyncStorage_external;
+    hasRequiredWorkAsyncStorage_external = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "workAsyncStorage", {
+            enumerable: true,
+            get: function() {
+                return _workasyncstorageinstance.workAsyncStorageInstance;
+            }
+        });
+        const _workasyncstorageinstance = requireWorkAsyncStorageInstance();
+    
+    })(workAsyncStorage_external);
+    return workAsyncStorage_external;
+}
+
+var boundaryConstants = {};
+
+var hasRequiredBoundaryConstants;
+function requireBoundaryConstants() {
+    if (hasRequiredBoundaryConstants) return boundaryConstants;
+    hasRequiredBoundaryConstants = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            METADATA_BOUNDARY_NAME: function() {
+                return METADATA_BOUNDARY_NAME;
+            },
+            OUTLET_BOUNDARY_NAME: function() {
+                return OUTLET_BOUNDARY_NAME;
+            },
+            ROOT_LAYOUT_BOUNDARY_NAME: function() {
+                return ROOT_LAYOUT_BOUNDARY_NAME;
+            },
+            VIEWPORT_BOUNDARY_NAME: function() {
+                return VIEWPORT_BOUNDARY_NAME;
+            }
+        });
+        const METADATA_BOUNDARY_NAME = '__next_metadata_boundary__';
+        const VIEWPORT_BOUNDARY_NAME = '__next_viewport_boundary__';
+        const OUTLET_BOUNDARY_NAME = '__next_outlet_boundary__';
+        const ROOT_LAYOUT_BOUNDARY_NAME = '__next_root_layout_boundary__';
+    
+    })(boundaryConstants);
+    return boundaryConstants;
+}
+
+var scheduler = {};
+
+var hasRequiredScheduler;
+function requireScheduler() {
+    if (hasRequiredScheduler) return scheduler;
+    hasRequiredScheduler = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            atLeastOneTask: function() {
+                return atLeastOneTask;
+            },
+            scheduleImmediate: function() {
+                return scheduleImmediate;
+            },
+            scheduleOnNextTick: function() {
+                return scheduleOnNextTick;
+            },
+            waitAtLeastOneReactRenderTask: function() {
+                return waitAtLeastOneReactRenderTask;
+            }
+        });
+        const scheduleOnNextTick = (cb)=>{
+            // We use Promise.resolve().then() here so that the operation is scheduled at
+            // the end of the promise job queue, we then add it to the next process tick
+            // to ensure it's evaluated afterwards.
+            //
+            // This was inspired by the implementation of the DataLoader interface: https://github.com/graphql/dataloader/blob/d336bd15282664e0be4b4a657cb796f09bafbc6b/src/index.js#L213-L255
+            //
+            Promise.resolve().then(()=>{
+                if (process.env.NEXT_RUNTIME === 'edge') {
+                    setTimeout(cb, 0);
+                } else {
+                    process.nextTick(cb);
+                }
+            });
+        };
+        const scheduleImmediate = (cb)=>{
+            if (process.env.NEXT_RUNTIME === 'edge') {
+                setTimeout(cb, 0);
+            } else {
+                setImmediate(cb);
+            }
+        };
+        function atLeastOneTask() {
+            return new Promise((resolve)=>scheduleImmediate(resolve));
+        }
+        function waitAtLeastOneReactRenderTask() {
+            if (process.env.NEXT_RUNTIME === 'edge') {
+                return new Promise((r)=>setTimeout(r, 0));
+            } else {
+                return new Promise((r)=>setImmediate(r));
+            }
+        }
+    
+    })(scheduler);
+    return scheduler;
+}
+
+var hasRequiredDynamicRendering;
+function requireDynamicRendering() {
+    if (hasRequiredDynamicRendering) return dynamicRendering;
+    hasRequiredDynamicRendering = 1;
+    (function(exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            Postpone: function() {
+                return Postpone;
+            },
+            PreludeState: function() {
+                return PreludeState;
+            },
+            abortAndThrowOnSynchronousRequestDataAccess: function() {
+                return abortAndThrowOnSynchronousRequestDataAccess;
+            },
+            abortOnSynchronousPlatformIOAccess: function() {
+                return abortOnSynchronousPlatformIOAccess;
+            },
+            accessedDynamicData: function() {
+                return accessedDynamicData;
+            },
+            annotateDynamicAccess: function() {
+                return annotateDynamicAccess;
+            },
+            consumeDynamicAccess: function() {
+                return consumeDynamicAccess;
+            },
+            createDynamicTrackingState: function() {
+                return createDynamicTrackingState;
+            },
+            createDynamicValidationState: function() {
+                return createDynamicValidationState;
+            },
+            createHangingInputAbortSignal: function() {
+                return createHangingInputAbortSignal;
+            },
+            createRenderInBrowserAbortSignal: function() {
+                return createRenderInBrowserAbortSignal;
+            },
+            delayUntilRuntimeStage: function() {
+                return delayUntilRuntimeStage;
+            },
+            formatDynamicAPIAccesses: function() {
+                return formatDynamicAPIAccesses;
+            },
+            getFirstDynamicReason: function() {
+                return getFirstDynamicReason;
+            },
+            isDynamicPostpone: function() {
+                return isDynamicPostpone;
+            },
+            isPrerenderInterruptedError: function() {
+                return isPrerenderInterruptedError;
+            },
+            logDisallowedDynamicError: function() {
+                return logDisallowedDynamicError;
+            },
+            markCurrentScopeAsDynamic: function() {
+                return markCurrentScopeAsDynamic;
+            },
+            postponeWithTracking: function() {
+                return postponeWithTracking;
+            },
+            throwIfDisallowedDynamic: function() {
+                return throwIfDisallowedDynamic;
+            },
+            throwToInterruptStaticGeneration: function() {
+                return throwToInterruptStaticGeneration;
+            },
+            trackAllowedDynamicAccess: function() {
+                return trackAllowedDynamicAccess;
+            },
+            trackDynamicDataInDynamicRender: function() {
+                return trackDynamicDataInDynamicRender;
+            },
+            trackSynchronousPlatformIOAccessInDev: function() {
+                return trackSynchronousPlatformIOAccessInDev;
+            },
+            trackSynchronousRequestDataAccessInDev: function() {
+                return trackSynchronousRequestDataAccessInDev;
+            },
+            useDynamicRouteParams: function() {
+                return useDynamicRouteParams;
+            },
+            warnOnSyncDynamicError: function() {
+                return warnOnSyncDynamicError;
+            }
+        });
+        const _react = /*#__PURE__*/ _interop_require_default(React__default);
+        const _hooksservercontext = requireHooksServerContext();
+        const _staticgenerationbailout = requireStaticGenerationBailout();
+        const _workunitasyncstorageexternal = requireWorkUnitAsyncStorage_external();
+        const _workasyncstorageexternal = requireWorkAsyncStorage_external();
+        const _dynamicrenderingutils = requireDynamicRenderingUtils();
+        const _boundaryconstants = requireBoundaryConstants();
+        const _scheduler = requireScheduler();
+        const _bailouttocsr = requireBailoutToCsr();
+        const _invarianterror = requireInvariantError();
+        function _interop_require_default(obj) {
+            return obj && obj.__esModule ? obj : {
+                default: obj
+            };
+        }
+        const hasPostpone = typeof _react.default.unstable_postpone === 'function';
+        function createDynamicTrackingState(isDebugDynamicAccesses) {
+            return {
+                isDebugDynamicAccesses,
+                dynamicAccesses: [],
+                syncDynamicErrorWithStack: null
+            };
+        }
+        function createDynamicValidationState() {
+            return {
+                hasSuspenseAboveBody: false,
+                hasDynamicMetadata: false,
+                hasDynamicViewport: false,
+                hasAllowedDynamic: false,
+                dynamicErrors: []
+            };
+        }
+        function getFirstDynamicReason(trackingState) {
+            var _trackingState_dynamicAccesses_;
+            return (_trackingState_dynamicAccesses_ = trackingState.dynamicAccesses[0]) == null ? void 0 : _trackingState_dynamicAccesses_.expression;
+        }
+        function markCurrentScopeAsDynamic(store, workUnitStore, expression) {
+            if (workUnitStore) {
+                switch(workUnitStore.type){
+                    case 'cache':
+                    case 'unstable-cache':
+                        // Inside cache scopes, marking a scope as dynamic has no effect,
+                        // because the outer cache scope creates a cache boundary. This is
+                        // subtly different from reading a dynamic data source, which is
+                        // forbidden inside a cache scope.
+                        return;
+                    case 'private-cache':
+                        // A private cache scope is already dynamic by definition.
+                        return;
+                }
+            }
+            // If we're forcing dynamic rendering or we're forcing static rendering, we
+            // don't need to do anything here because the entire page is already dynamic
+            // or it's static and it should not throw or postpone here.
+            if (store.forceDynamic || store.forceStatic) return;
+            if (store.dynamicShouldError) {
+                throw Object.defineProperty(new _staticgenerationbailout.StaticGenBailoutError(`Route ${store.route} with \`dynamic = "error"\` couldn't be rendered statically because it used \`${expression}\`. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`), "__NEXT_ERROR_CODE", {
+                    value: "E553",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            if (workUnitStore) {
+                switch(workUnitStore.type){
+                    case 'prerender-ppr':
+                        return postponeWithTracking(store.route, expression, workUnitStore.dynamicTracking);
+                    case 'prerender-legacy':
+                        workUnitStore.revalidate = 0;
+                        // We aren't prerendering, but we are generating a static page. We need
+                        // to bail out of static generation.
+                        const err = Object.defineProperty(new _hooksservercontext.DynamicServerError(`Route ${store.route} couldn't be rendered statically because it used ${expression}. See more info here: https://nextjs.org/docs/messages/dynamic-server-error`), "__NEXT_ERROR_CODE", {
+                            value: "E550",
+                            enumerable: false,
+                            configurable: true
+                        });
+                        store.dynamicUsageDescription = expression;
+                        store.dynamicUsageStack = err.stack;
+                        throw err;
+                    case 'request':
+                        if (process.env.NODE_ENV !== 'production') {
+                            workUnitStore.usedDynamic = true;
+                        }
+                        break;
+                }
+            }
+        }
+        function throwToInterruptStaticGeneration(expression, store, prerenderStore) {
+            // We aren't prerendering but we are generating a static page. We need to bail out of static generation
+            const err = Object.defineProperty(new _hooksservercontext.DynamicServerError(`Route ${store.route} couldn't be rendered statically because it used \`${expression}\`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error`), "__NEXT_ERROR_CODE", {
+                value: "E558",
+                enumerable: false,
+                configurable: true
+            });
+            prerenderStore.revalidate = 0;
+            store.dynamicUsageDescription = expression;
+            store.dynamicUsageStack = err.stack;
+            throw err;
+        }
+        function trackDynamicDataInDynamicRender(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'cache':
+                case 'unstable-cache':
+                    // Inside cache scopes, marking a scope as dynamic has no effect,
+                    // because the outer cache scope creates a cache boundary. This is
+                    // subtly different from reading a dynamic data source, which is
+                    // forbidden inside a cache scope.
+                    return;
+                case 'private-cache':
+                    // A private cache scope is already dynamic by definition.
+                    return;
+                case 'prerender':
+                case 'prerender-runtime':
+                case 'prerender-legacy':
+                case 'prerender-ppr':
+                case 'prerender-client':
+                    break;
+                case 'request':
+                    if (process.env.NODE_ENV !== 'production') {
+                        workUnitStore.usedDynamic = true;
+                    }
+                    break;
+            }
+        }
+        function abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore) {
+            const reason = `Route ${route} needs to bail out of prerendering at this point because it used ${expression}.`;
+            const error = createPrerenderInterruptedError(reason);
+            prerenderStore.controller.abort(error);
+            const dynamicTracking = prerenderStore.dynamicTracking;
+            if (dynamicTracking) {
+                dynamicTracking.dynamicAccesses.push({
+                    // When we aren't debugging, we don't need to create another error for the
+                    // stack trace.
+                    stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+                    expression
+                });
+            }
+        }
+        function abortOnSynchronousPlatformIOAccess(route, expression, errorWithStack, prerenderStore) {
+            const dynamicTracking = prerenderStore.dynamicTracking;
+            abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore);
+            // It is important that we set this tracking value after aborting. Aborts are executed
+            // synchronously except for the case where you abort during render itself. By setting this
+            // value late we can use it to determine if any of the aborted tasks are the task that
+            // called the sync IO expression in the first place.
+            if (dynamicTracking) {
+                if (dynamicTracking.syncDynamicErrorWithStack === null) {
+                    dynamicTracking.syncDynamicErrorWithStack = errorWithStack;
+                }
+            }
+        }
+        function trackSynchronousPlatformIOAccessInDev(requestStore) {
+            // We don't actually have a controller to abort but we do the semantic equivalent by
+            // advancing the request store out of prerender mode
+            requestStore.prerenderPhase = false;
+        }
+        function abortAndThrowOnSynchronousRequestDataAccess(route, expression, errorWithStack, prerenderStore) {
+            const prerenderSignal = prerenderStore.controller.signal;
+            if (prerenderSignal.aborted === false) {
+                // TODO it would be better to move this aborted check into the callsite so we can avoid making
+                // the error object when it isn't relevant to the aborting of the prerender however
+                // since we need the throw semantics regardless of whether we abort it is easier to land
+                // this way. See how this was handled with `abortOnSynchronousPlatformIOAccess` for a closer
+                // to ideal implementation
+                abortOnSynchronousDynamicDataAccess(route, expression, prerenderStore);
+                // It is important that we set this tracking value after aborting. Aborts are executed
+                // synchronously except for the case where you abort during render itself. By setting this
+                // value late we can use it to determine if any of the aborted tasks are the task that
+                // called the sync IO expression in the first place.
+                const dynamicTracking = prerenderStore.dynamicTracking;
+                if (dynamicTracking) {
+                    if (dynamicTracking.syncDynamicErrorWithStack === null) {
+                        dynamicTracking.syncDynamicErrorWithStack = errorWithStack;
+                    }
+                }
+            }
+            throw createPrerenderInterruptedError(`Route ${route} needs to bail out of prerendering at this point because it used ${expression}.`);
+        }
+        function warnOnSyncDynamicError(dynamicTracking) {
+            if (dynamicTracking.syncDynamicErrorWithStack) {
+                // the server did something sync dynamic, likely
+                // leading to an early termination of the prerender.
+                console.error(dynamicTracking.syncDynamicErrorWithStack);
+            }
+        }
+        const trackSynchronousRequestDataAccessInDev = trackSynchronousPlatformIOAccessInDev;
+        function Postpone({ reason, route }) {
+            const prerenderStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+            const dynamicTracking = prerenderStore && prerenderStore.type === 'prerender-ppr' ? prerenderStore.dynamicTracking : null;
+            postponeWithTracking(route, reason, dynamicTracking);
+        }
+        function postponeWithTracking(route, expression, dynamicTracking) {
+            assertPostpone();
+            if (dynamicTracking) {
+                dynamicTracking.dynamicAccesses.push({
+                    // When we aren't debugging, we don't need to create another error for the
+                    // stack trace.
+                    stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+                    expression
+                });
+            }
+            _react.default.unstable_postpone(createPostponeReason(route, expression));
+        }
+        function createPostponeReason(route, expression) {
+            return `Route ${route} needs to bail out of prerendering at this point because it used ${expression}. ` + `React throws this special object to indicate where. It should not be caught by ` + `your own try/catch. Learn more: https://nextjs.org/docs/messages/ppr-caught-error`;
+        }
+        function isDynamicPostpone(err) {
+            if (typeof err === 'object' && err !== null && typeof err.message === 'string') {
+                return isDynamicPostponeReason(err.message);
+            }
+            return false;
+        }
+        function isDynamicPostponeReason(reason) {
+            return reason.includes('needs to bail out of prerendering at this point because it used') && reason.includes('Learn more: https://nextjs.org/docs/messages/ppr-caught-error');
+        }
+        if (isDynamicPostponeReason(createPostponeReason('%%%', '^^^')) === false) {
+            throw Object.defineProperty(new Error('Invariant: isDynamicPostpone misidentified a postpone reason. This is a bug in Next.js'), "__NEXT_ERROR_CODE", {
+                value: "E296",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        const NEXT_PRERENDER_INTERRUPTED = 'NEXT_PRERENDER_INTERRUPTED';
+        function createPrerenderInterruptedError(message) {
+            const error = Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.digest = NEXT_PRERENDER_INTERRUPTED;
+            return error;
+        }
+        function isPrerenderInterruptedError(error) {
+            return typeof error === 'object' && error !== null && error.digest === NEXT_PRERENDER_INTERRUPTED && 'name' in error && 'message' in error && error instanceof Error;
+        }
+        function accessedDynamicData(dynamicAccesses) {
+            return dynamicAccesses.length > 0;
+        }
+        function consumeDynamicAccess(serverDynamic, clientDynamic) {
+            // We mutate because we only call this once we are no longer writing
+            // to the dynamicTrackingState and it's more efficient than creating a new
+            // array.
+            serverDynamic.dynamicAccesses.push(...clientDynamic.dynamicAccesses);
+            return serverDynamic.dynamicAccesses;
+        }
+        function formatDynamicAPIAccesses(dynamicAccesses) {
+            return dynamicAccesses.filter((access)=>typeof access.stack === 'string' && access.stack.length > 0).map(({ expression, stack })=>{
+                stack = stack.split('\n') // Remove the "Error: " prefix from the first line of the stack trace as
+                // well as the first 4 lines of the stack trace which is the distance
+                // from the user code and the `new Error().stack` call.
+                .slice(4).filter((line)=>{
+                    // Exclude Next.js internals from the stack trace.
+                    if (line.includes('node_modules/next/')) {
+                        return false;
+                    }
+                    // Exclude anonymous functions from the stack trace.
+                    if (line.includes(' (<anonymous>)')) {
+                        return false;
+                    }
+                    // Exclude Node.js internals from the stack trace.
+                    if (line.includes(' (node:')) {
+                        return false;
+                    }
+                    return true;
+                }).join('\n');
+                return `Dynamic API Usage Debug - ${expression}:\n${stack}`;
+            });
+        }
+        function assertPostpone() {
+            if (!hasPostpone) {
+                throw Object.defineProperty(new Error(`Invariant: React.unstable_postpone is not defined. This suggests the wrong version of React was loaded. This is a bug in Next.js`), "__NEXT_ERROR_CODE", {
+                    value: "E224",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+        }
+        function createRenderInBrowserAbortSignal() {
+            const controller = new AbortController();
+            controller.abort(Object.defineProperty(new _bailouttocsr.BailoutToCSRError('Render in Browser'), "__NEXT_ERROR_CODE", {
+                value: "E721",
+                enumerable: false,
+                configurable: true
+            }));
+            return controller.signal;
+        }
+        function createHangingInputAbortSignal(workUnitStore) {
+            switch(workUnitStore.type){
+                case 'prerender':
+                case 'prerender-runtime':
+                    const controller = new AbortController();
+                    if (workUnitStore.cacheSignal) {
+                        // If we have a cacheSignal it means we're in a prospective render. If
+                        // the input we're waiting on is coming from another cache, we do want
+                        // to wait for it so that we can resolve this cache entry too.
+                        workUnitStore.cacheSignal.inputReady().then(()=>{
+                            controller.abort();
+                        });
+                    } else {
+                        // Otherwise we're in the final render and we should already have all
+                        // our caches filled.
+                        // If the prerender uses stages, we have wait until the runtime stage,
+                        // at which point all runtime inputs will be resolved.
+                        // (otherwise, a runtime prerender might consider `cookies()` hanging
+                        //  even though they'd resolve in the next task.)
+                        //
+                        // We might still be waiting on some microtasks so we
+                        // wait one tick before giving up. When we give up, we still want to
+                        // render the content of this cache as deeply as we can so that we can
+                        // suspend as deeply as possible in the tree or not at all if we don't
+                        // end up waiting for the input.
+                        const runtimeStagePromise = (0, _workunitasyncstorageexternal.getRuntimeStagePromise)(workUnitStore);
+                        if (runtimeStagePromise) {
+                            runtimeStagePromise.then(()=>(0, _scheduler.scheduleOnNextTick)(()=>controller.abort()));
+                        } else {
+                            (0, _scheduler.scheduleOnNextTick)(()=>controller.abort());
+                        }
+                    }
+                    return controller.signal;
+                case 'prerender-client':
+                case 'prerender-ppr':
+                case 'prerender-legacy':
+                case 'request':
+                case 'cache':
+                case 'private-cache':
+                case 'unstable-cache':
+                    return undefined;
+            }
+        }
+        function annotateDynamicAccess(expression, prerenderStore) {
+            const dynamicTracking = prerenderStore.dynamicTracking;
+            if (dynamicTracking) {
+                dynamicTracking.dynamicAccesses.push({
+                    stack: dynamicTracking.isDebugDynamicAccesses ? new Error().stack : undefined,
+                    expression
+                });
+            }
+        }
+        function useDynamicRouteParams(expression) {
+            const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+            const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+            if (workStore && workUnitStore) {
+                switch(workUnitStore.type){
+                    case 'prerender-client':
+                    case 'prerender':
+                        {
+                            const fallbackParams = workUnitStore.fallbackRouteParams;
+                            if (fallbackParams && fallbackParams.size > 0) {
+                                // We are in a prerender with cacheComponents semantics. We are going to
+                                // hang here and never resolve. This will cause the currently
+                                // rendering component to effectively be a dynamic hole.
+                                _react.default.use((0, _dynamicrenderingutils.makeHangingPromise)(workUnitStore.renderSignal, workStore.route, expression));
+                            }
+                            break;
+                        }
+                    case 'prerender-ppr':
+                        {
+                            const fallbackParams = workUnitStore.fallbackRouteParams;
+                            if (fallbackParams && fallbackParams.size > 0) {
+                                return postponeWithTracking(workStore.route, expression, workUnitStore.dynamicTracking);
+                            }
+                            break;
+                        }
+                    case 'prerender-runtime':
+                        throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called during a runtime prerender. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                            value: "E771",
+                            enumerable: false,
+                            configurable: true
+                        });
+                    case 'cache':
+                    case 'private-cache':
+                        throw Object.defineProperty(new _invarianterror.InvariantError(`\`${expression}\` was called inside a cache scope. Next.js should be preventing ${expression} from being included in server components statically, but did not in this case.`), "__NEXT_ERROR_CODE", {
+                            value: "E745",
+                            enumerable: false,
+                            configurable: true
+                        });
+                }
+            }
+        }
+        const hasSuspenseRegex = /\n\s+at Suspense \(<anonymous>\)/;
+        // Common implicit body tags that React will treat as body when placed directly in html
+        const bodyAndImplicitTags = 'body|div|main|section|article|aside|header|footer|nav|form|p|span|h1|h2|h3|h4|h5|h6';
+        // Detects when RootLayoutBoundary (our framework marker component) appears
+        // after Suspense in the component stack, indicating the root layout is wrapped
+        // within a Suspense boundary. Ensures no body/html/implicit-body components are in between.
+        //
+        // Example matches:
+        //   at Suspense (<anonymous>)
+        //   at __next_root_layout_boundary__ (<anonymous>)
+        //
+        // Or with other components in between (but not body/html/implicit-body):
+        //   at Suspense (<anonymous>)
+        //   at SomeComponent (<anonymous>)
+        //   at __next_root_layout_boundary__ (<anonymous>)
+        const hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex = new RegExp(`\\n\\s+at Suspense \\(<anonymous>\\)(?:(?!\\n\\s+at (?:${bodyAndImplicitTags}) \\(<anonymous>\\))[\\s\\S])*?\\n\\s+at ${_boundaryconstants.ROOT_LAYOUT_BOUNDARY_NAME} \\([^\\n]*\\)`);
+        const hasMetadataRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.METADATA_BOUNDARY_NAME}[\\n\\s]`);
+        const hasViewportRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.VIEWPORT_BOUNDARY_NAME}[\\n\\s]`);
+        const hasOutletRegex = new RegExp(`\\n\\s+at ${_boundaryconstants.OUTLET_BOUNDARY_NAME}[\\n\\s]`);
+        function trackAllowedDynamicAccess(workStore, componentStack, dynamicValidation, clientDynamic) {
+            if (hasOutletRegex.test(componentStack)) {
+                // We don't need to track that this is dynamic. It is only so when something else is also dynamic.
+                return;
+            } else if (hasMetadataRegex.test(componentStack)) {
+                dynamicValidation.hasDynamicMetadata = true;
+                return;
+            } else if (hasViewportRegex.test(componentStack)) {
+                dynamicValidation.hasDynamicViewport = true;
+                return;
+            } else if (hasSuspenseBeforeRootLayoutWithoutBodyOrImplicitBodyRegex.test(componentStack)) {
+                // For Suspense within body, the prelude wouldn't be empty so it wouldn't violate the empty static shells rule.
+                // But if you have Suspense above body, the prelude is empty but we allow that because having Suspense
+                // is an explicit signal from the user that they acknowledge the empty shell and want dynamic rendering.
+                dynamicValidation.hasAllowedDynamic = true;
+                dynamicValidation.hasSuspenseAboveBody = true;
+                return;
+            } else if (hasSuspenseRegex.test(componentStack)) {
+                // this error had a Suspense boundary above it so we don't need to report it as a source
+                // of disallowed
+                dynamicValidation.hasAllowedDynamic = true;
+                return;
+            } else if (clientDynamic.syncDynamicErrorWithStack) {
+                // This task was the task that called the sync error.
+                dynamicValidation.dynamicErrors.push(clientDynamic.syncDynamicErrorWithStack);
+                return;
+            } else {
+                const message = `Route "${workStore.route}": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense`;
+                const error = createErrorWithComponentOrOwnerStack(message, componentStack);
+                dynamicValidation.dynamicErrors.push(error);
+                return;
+            }
+        }
+        /**
+		 * In dev mode, we prefer using the owner stack, otherwise the provided
+		 * component stack is used.
+		 */ function createErrorWithComponentOrOwnerStack(message, componentStack) {
+            const ownerStack = process.env.NODE_ENV !== 'production' && _react.default.captureOwnerStack ? _react.default.captureOwnerStack() : null;
+            const error = Object.defineProperty(new Error(message), "__NEXT_ERROR_CODE", {
+                value: "E394",
+                enumerable: false,
+                configurable: true
+            });
+            error.stack = error.name + ': ' + message + (ownerStack ?? componentStack);
+            return error;
+        }
+        var PreludeState = /*#__PURE__*/ function(PreludeState) {
+            PreludeState[PreludeState["Full"] = 0] = "Full";
+            PreludeState[PreludeState["Empty"] = 1] = "Empty";
+            PreludeState[PreludeState["Errored"] = 2] = "Errored";
+            return PreludeState;
+        }({});
+        function logDisallowedDynamicError(workStore, error) {
+            console.error(error);
+            if (!workStore.dev) {
+                if (workStore.hasReadableErrorStacks) {
+                    console.error(`To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "${workStore.route}" in your browser to investigate the error.`);
+                } else {
+                    console.error(`To get a more detailed stack trace and pinpoint the issue, try one of the following:
+  - Start the app in development mode by running \`next dev\`, then open "${workStore.route}" in your browser to investigate the error.
+  - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.`);
+                }
+            }
+        }
+        function throwIfDisallowedDynamic(workStore, prelude, dynamicValidation, serverDynamic) {
+            if (prelude !== 0) {
+                if (dynamicValidation.hasSuspenseAboveBody) {
+                    // This route has opted into allowing fully dynamic rendering
+                    // by including a Suspense boundary above the body. In this case
+                    // a lack of a shell is not considered disallowed so we simply return
+                    return;
+                }
+                if (serverDynamic.syncDynamicErrorWithStack) {
+                    // There is no shell and the server did something sync dynamic likely
+                    // leading to an early termination of the prerender before the shell
+                    // could be completed. We terminate the build/validating render.
+                    logDisallowedDynamicError(workStore, serverDynamic.syncDynamicErrorWithStack);
+                    throw new _staticgenerationbailout.StaticGenBailoutError();
+                }
+                // We didn't have any sync bailouts but there may be user code which
+                // blocked the root. We would have captured these during the prerender
+                // and can log them here and then terminate the build/validating render
+                const dynamicErrors = dynamicValidation.dynamicErrors;
+                if (dynamicErrors.length > 0) {
+                    for(let i = 0; i < dynamicErrors.length; i++){
+                        logDisallowedDynamicError(workStore, dynamicErrors[i]);
+                    }
+                    throw new _staticgenerationbailout.StaticGenBailoutError();
+                }
+                // If we got this far then the only other thing that could be blocking
+                // the root is dynamic Viewport. If this is dynamic then
+                // you need to opt into that by adding a Suspense boundary above the body
+                // to indicate your are ok with fully dynamic rendering.
+                if (dynamicValidation.hasDynamicViewport) {
+                    console.error(`Route "${workStore.route}" has a \`generateViewport\` that depends on Request data (\`cookies()\`, etc...) or uncached external data (\`fetch(...)\`, etc...) without explicitly allowing fully dynamic rendering. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-viewport`);
+                    throw new _staticgenerationbailout.StaticGenBailoutError();
+                }
+                if (prelude === 1) {
+                    // If we ever get this far then we messed up the tracking of invalid dynamic.
+                    // We still adhere to the constraint that you must produce a shell but invite the
+                    // user to report this as a bug in Next.js.
+                    console.error(`Route "${workStore.route}" did not produce a static shell and Next.js was unable to determine a reason. This is a bug in Next.js.`);
+                    throw new _staticgenerationbailout.StaticGenBailoutError();
+                }
+            } else {
+                if (dynamicValidation.hasAllowedDynamic === false && dynamicValidation.hasDynamicMetadata) {
+                    console.error(`Route "${workStore.route}" has a \`generateMetadata\` that depends on Request data (\`cookies()\`, etc...) or uncached external data (\`fetch(...)\`, etc...) when the rest of the route does not. See more info here: https://nextjs.org/docs/messages/next-prerender-dynamic-metadata`);
+                    throw new _staticgenerationbailout.StaticGenBailoutError();
+                }
+            }
+        }
+        function delayUntilRuntimeStage(prerenderStore, result) {
+            if (prerenderStore.runtimeStagePromise) {
+                return prerenderStore.runtimeStagePromise.then(()=>result);
+            }
+            return result;
+        }
+    
+    })(dynamicRendering);
+    return dynamicRendering;
+}
+
+var hasRequiredUnstableRethrow_server;
+function requireUnstableRethrow_server() {
+    if (hasRequiredUnstableRethrow_server) return unstableRethrow_server.exports;
+    hasRequiredUnstableRethrow_server = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "unstable_rethrow", {
+            enumerable: true,
+            get: function() {
+                return unstable_rethrow;
+            }
+        });
+        const _dynamicrenderingutils = requireDynamicRenderingUtils();
+        const _ispostpone = requireIsPostpone();
+        const _bailouttocsr = requireBailoutToCsr();
+        const _isnextroutererror = requireIsNextRouterError();
+        const _dynamicrendering = requireDynamicRendering();
+        const _hooksservercontext = requireHooksServerContext();
+        function unstable_rethrow(error) {
+            if ((0, _isnextroutererror.isNextRouterError)(error) || (0, _bailouttocsr.isBailoutToCSRError)(error) || (0, _hooksservercontext.isDynamicServerError)(error) || (0, _dynamicrendering.isDynamicPostpone)(error) || (0, _ispostpone.isPostpone)(error) || (0, _dynamicrenderingutils.isHangingPromiseRejectionError)(error)) {
+                throw error;
+            }
+            if (error instanceof Error && 'cause' in error) {
+                unstable_rethrow(error.cause);
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(unstableRethrow_server, unstableRethrow_server.exports);
+    return unstableRethrow_server.exports;
+}
+
+var unstableRethrow_browser = {exports: {}};
+
+var hasRequiredUnstableRethrow_browser;
+function requireUnstableRethrow_browser() {
+    if (hasRequiredUnstableRethrow_browser) return unstableRethrow_browser.exports;
+    hasRequiredUnstableRethrow_browser = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "unstable_rethrow", {
+            enumerable: true,
+            get: function() {
+                return unstable_rethrow;
+            }
+        });
+        const _bailouttocsr = requireBailoutToCsr();
+        const _isnextroutererror = requireIsNextRouterError();
+        function unstable_rethrow(error) {
+            if ((0, _isnextroutererror.isNextRouterError)(error) || (0, _bailouttocsr.isBailoutToCSRError)(error)) {
+                throw error;
+            }
+            if (error instanceof Error && 'cause' in error) {
+                unstable_rethrow(error.cause);
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(unstableRethrow_browser, unstableRethrow_browser.exports);
+    return unstableRethrow_browser.exports;
+}
+
+var hasRequiredUnstableRethrow;
+function requireUnstableRethrow() {
+    if (hasRequiredUnstableRethrow) return unstableRethrow.exports;
+    hasRequiredUnstableRethrow = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "unstable_rethrow", {
+            enumerable: true,
+            get: function() {
+                return unstable_rethrow;
+            }
+        });
+        const unstable_rethrow = typeof window === 'undefined' ? requireUnstableRethrow_server().unstable_rethrow : requireUnstableRethrow_browser().unstable_rethrow;
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(unstableRethrow, unstableRethrow.exports);
+    return unstableRethrow.exports;
+}
+
+var hasRequiredNavigation_reactServer;
+function requireNavigation_reactServer() {
+    if (hasRequiredNavigation_reactServer) return navigation_reactServer.exports;
+    hasRequiredNavigation_reactServer = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            ReadonlyURLSearchParams: function() {
+                return ReadonlyURLSearchParams;
+            },
+            RedirectType: function() {
+                return _redirecterror.RedirectType;
+            },
+            forbidden: function() {
+                return _forbidden.forbidden;
+            },
+            notFound: function() {
+                return _notfound.notFound;
+            },
+            permanentRedirect: function() {
+                return _redirect.permanentRedirect;
+            },
+            redirect: function() {
+                return _redirect.redirect;
+            },
+            unauthorized: function() {
+                return _unauthorized.unauthorized;
+            },
+            unstable_isUnrecognizedActionError: function() {
+                return unstable_isUnrecognizedActionError;
+            },
+            unstable_rethrow: function() {
+                return _unstablerethrow.unstable_rethrow;
+            }
+        });
+        const _redirect = requireRedirect();
+        const _redirecterror = requireRedirectError();
+        const _notfound = requireNotFound();
+        const _forbidden = requireForbidden();
+        const _unauthorized = requireUnauthorized();
+        const _unstablerethrow = requireUnstableRethrow();
+        class ReadonlyURLSearchParamsError extends Error {
+            constructor(){
+                super('Method unavailable on `ReadonlyURLSearchParams`. Read more: https://nextjs.org/docs/app/api-reference/functions/use-search-params#updating-searchparams');
+            }
+        }
+        class ReadonlyURLSearchParams extends URLSearchParams {
+            /** @deprecated Method unavailable on `ReadonlyURLSearchParams`. Read more: https://nextjs.org/docs/app/api-reference/functions/use-search-params#updating-searchparams */ append() {
+                throw new ReadonlyURLSearchParamsError();
+            }
+            /** @deprecated Method unavailable on `ReadonlyURLSearchParams`. Read more: https://nextjs.org/docs/app/api-reference/functions/use-search-params#updating-searchparams */ delete() {
+                throw new ReadonlyURLSearchParamsError();
+            }
+            /** @deprecated Method unavailable on `ReadonlyURLSearchParams`. Read more: https://nextjs.org/docs/app/api-reference/functions/use-search-params#updating-searchparams */ set() {
+                throw new ReadonlyURLSearchParamsError();
+            }
+            /** @deprecated Method unavailable on `ReadonlyURLSearchParams`. Read more: https://nextjs.org/docs/app/api-reference/functions/use-search-params#updating-searchparams */ sort() {
+                throw new ReadonlyURLSearchParamsError();
+            }
+        }
+        function unstable_isUnrecognizedActionError() {
+            throw Object.defineProperty(new Error('`unstable_isUnrecognizedActionError` can only be used on the client.'), "__NEXT_ERROR_CODE", {
+                value: "E776",
+                enumerable: false,
+                configurable: true
+            });
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(navigation_reactServer, navigation_reactServer.exports);
+    return navigation_reactServer.exports;
+}
+
+var serverInsertedHtml_sharedRuntime = {};
+
+var hasRequiredServerInsertedHtml_sharedRuntime;
+function requireServerInsertedHtml_sharedRuntime() {
+    if (hasRequiredServerInsertedHtml_sharedRuntime) return serverInsertedHtml_sharedRuntime;
+    hasRequiredServerInsertedHtml_sharedRuntime = 1;
+    (function(exports) {
+        'use client';
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            ServerInsertedHTMLContext: function() {
+                return ServerInsertedHTMLContext;
+            },
+            useServerInsertedHTML: function() {
+                return useServerInsertedHTML;
+            }
+        });
+        const _interop_require_wildcard = /*@__PURE__*/ require_interop_require_wildcard();
+        const _react = /*#__PURE__*/ _interop_require_wildcard._(React__default);
+        const ServerInsertedHTMLContext = /*#__PURE__*/ _react.default.createContext(null);
+        function useServerInsertedHTML(callback) {
+            const addInsertedServerHTMLCallback = (0, _react.useContext)(ServerInsertedHTMLContext);
+            // Should have no effects on client where there's no flush effects provider
+            if (addInsertedServerHTMLCallback) {
+                addInsertedServerHTMLCallback(callback);
+            }
+        }
+    
+    })(serverInsertedHtml_sharedRuntime);
+    return serverInsertedHtml_sharedRuntime;
+}
+
+var unrecognizedActionError = {exports: {}};
+
+var hasRequiredUnrecognizedActionError;
+function requireUnrecognizedActionError() {
+    if (hasRequiredUnrecognizedActionError) return unrecognizedActionError.exports;
+    hasRequiredUnrecognizedActionError = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            UnrecognizedActionError: function() {
+                return UnrecognizedActionError;
+            },
+            unstable_isUnrecognizedActionError: function() {
+                return unstable_isUnrecognizedActionError;
+            }
+        });
+        class UnrecognizedActionError extends Error {
+            constructor(...args){
+                super(...args);
+                this.name = 'UnrecognizedActionError';
+            }
+        }
+        function unstable_isUnrecognizedActionError(error) {
+            return !!(error && typeof error === 'object' && error instanceof UnrecognizedActionError);
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(unrecognizedActionError, unrecognizedActionError.exports);
+    return unrecognizedActionError.exports;
+}
+
+var bailoutToClientRendering = {exports: {}};
+
+var hasRequiredBailoutToClientRendering;
+function requireBailoutToClientRendering() {
+    if (hasRequiredBailoutToClientRendering) return bailoutToClientRendering.exports;
+    hasRequiredBailoutToClientRendering = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        Object.defineProperty(exports, "bailoutToClientRendering", {
+            enumerable: true,
+            get: function() {
+                return bailoutToClientRendering;
+            }
+        });
+        const _bailouttocsr = requireBailoutToCsr();
+        const _workasyncstorageexternal = requireWorkAsyncStorage_external();
+        const _workunitasyncstorageexternal = requireWorkUnitAsyncStorage_external();
+        function bailoutToClientRendering(reason) {
+            const workStore = _workasyncstorageexternal.workAsyncStorage.getStore();
+            if (workStore == null ? void 0 : workStore.forceStatic) return;
+            const workUnitStore = _workunitasyncstorageexternal.workUnitAsyncStorage.getStore();
+            if (workUnitStore) {
+                switch(workUnitStore.type){
+                    case 'prerender':
+                    case 'prerender-runtime':
+                    case 'prerender-client':
+                    case 'prerender-ppr':
+                    case 'prerender-legacy':
+                        throw Object.defineProperty(new _bailouttocsr.BailoutToCSRError(reason), "__NEXT_ERROR_CODE", {
+                            value: "E394",
+                            enumerable: false,
+                            configurable: true
+                        });
+                }
+            }
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(bailoutToClientRendering, bailoutToClientRendering.exports);
+    return bailoutToClientRendering.exports;
+}
+
+var hasRequiredNavigation$1;
+function requireNavigation$1() {
+    if (hasRequiredNavigation$1) return navigation$1.exports;
+    hasRequiredNavigation$1 = 1;
+    (function(module, exports) {
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        function _export(target, all) {
+            for(var name in all)Object.defineProperty(target, name, {
+                enumerable: true,
+                get: all[name]
+            });
+        }
+        _export(exports, {
+            ReadonlyURLSearchParams: function() {
+                return _navigationreactserver.ReadonlyURLSearchParams;
+            },
+            RedirectType: function() {
+                return _navigationreactserver.RedirectType;
+            },
+            ServerInsertedHTMLContext: function() {
+                return _serverinsertedhtmlsharedruntime.ServerInsertedHTMLContext;
+            },
+            forbidden: function() {
+                return _navigationreactserver.forbidden;
+            },
+            notFound: function() {
+                return _navigationreactserver.notFound;
+            },
+            permanentRedirect: function() {
+                return _navigationreactserver.permanentRedirect;
+            },
+            redirect: function() {
+                return _navigationreactserver.redirect;
+            },
+            unauthorized: function() {
+                return _navigationreactserver.unauthorized;
+            },
+            unstable_isUnrecognizedActionError: function() {
+                return _unrecognizedactionerror.unstable_isUnrecognizedActionError;
+            },
+            unstable_rethrow: function() {
+                return _navigationreactserver.unstable_rethrow;
+            },
+            useParams: function() {
+                return useParams;
+            },
+            usePathname: function() {
+                return usePathname;
+            },
+            useRouter: function() {
+                return useRouter;
+            },
+            useSearchParams: function() {
+                return useSearchParams;
+            },
+            useSelectedLayoutSegment: function() {
+                return useSelectedLayoutSegment;
+            },
+            useSelectedLayoutSegments: function() {
+                return useSelectedLayoutSegments;
+            },
+            useServerInsertedHTML: function() {
+                return _serverinsertedhtmlsharedruntime.useServerInsertedHTML;
+            }
+        });
+        const _react = React__default;
+        const _approutercontextsharedruntime = requireAppRouterContext_sharedRuntime();
+        const _hooksclientcontextsharedruntime = requireHooksClientContext_sharedRuntime();
+        const _getsegmentvalue = requireGetSegmentValue();
+        const _segment = requireSegment();
+        const _navigationreactserver = requireNavigation_reactServer();
+        const _serverinsertedhtmlsharedruntime = requireServerInsertedHtml_sharedRuntime();
+        const _unrecognizedactionerror = requireUnrecognizedActionError();
+        const useDynamicRouteParams = typeof window === 'undefined' ? requireDynamicRendering().useDynamicRouteParams : undefined;
+        function useSearchParams() {
+            const searchParams = (0, _react.useContext)(_hooksclientcontextsharedruntime.SearchParamsContext);
+            // In the case where this is `null`, the compat types added in
+            // `next-env.d.ts` will add a new overload that changes the return type to
+            // include `null`.
+            const readonlySearchParams = (0, _react.useMemo)(()=>{
+                if (!searchParams) {
+                    // When the router is not ready in pages, we won't have the search params
+                    // available.
+                    return null;
+                }
+                return new _navigationreactserver.ReadonlyURLSearchParams(searchParams);
+            }, [
+                searchParams
+            ]);
+            if (typeof window === 'undefined') {
+                // AsyncLocalStorage should not be included in the client bundle.
+                const { bailoutToClientRendering } = requireBailoutToClientRendering();
+                // TODO-APP: handle dynamic = 'force-static' here and on the client
+                bailoutToClientRendering('useSearchParams()');
+            }
+            return readonlySearchParams;
+        }
+        function usePathname() {
+            useDynamicRouteParams == null ? void 0 : useDynamicRouteParams('usePathname()');
+            // In the case where this is `null`, the compat types added in `next-env.d.ts`
+            // will add a new overload that changes the return type to include `null`.
+            return (0, _react.useContext)(_hooksclientcontextsharedruntime.PathnameContext);
+        }
+        function useRouter() {
+            const router = (0, _react.useContext)(_approutercontextsharedruntime.AppRouterContext);
+            if (router === null) {
+                throw Object.defineProperty(new Error('invariant expected app router to be mounted'), "__NEXT_ERROR_CODE", {
+                    value: "E238",
+                    enumerable: false,
+                    configurable: true
+                });
+            }
+            return router;
+        }
+        function useParams() {
+            useDynamicRouteParams == null ? void 0 : useDynamicRouteParams('useParams()');
+            return (0, _react.useContext)(_hooksclientcontextsharedruntime.PathParamsContext);
+        }
+        /** Get the canonical parameters from the current level to the leaf node. */ // Client components API
+        function getSelectedLayoutSegmentPath(tree, parallelRouteKey, first, segmentPath) {
+            if (first === void 0) first = true;
+            if (segmentPath === void 0) segmentPath = [];
+            let node;
+            if (first) {
+                // Use the provided parallel route key on the first parallel route
+                node = tree[1][parallelRouteKey];
+            } else {
+                // After first parallel route prefer children, if there's no children pick the first parallel route.
+                const parallelRoutes = tree[1];
+                var _parallelRoutes_children;
+                node = (_parallelRoutes_children = parallelRoutes.children) != null ? _parallelRoutes_children : Object.values(parallelRoutes)[0];
+            }
+            if (!node) return segmentPath;
+            const segment = node[0];
+            let segmentValue = (0, _getsegmentvalue.getSegmentValue)(segment);
+            if (!segmentValue || segmentValue.startsWith(_segment.PAGE_SEGMENT_KEY)) {
+                return segmentPath;
+            }
+            segmentPath.push(segmentValue);
+            return getSelectedLayoutSegmentPath(node, parallelRouteKey, false, segmentPath);
+        }
+        function useSelectedLayoutSegments(parallelRouteKey) {
+            if (parallelRouteKey === void 0) parallelRouteKey = 'children';
+            useDynamicRouteParams == null ? void 0 : useDynamicRouteParams('useSelectedLayoutSegments()');
+            const context = (0, _react.useContext)(_approutercontextsharedruntime.LayoutRouterContext);
+            // @ts-expect-error This only happens in `pages`. Type is overwritten in navigation.d.ts
+            if (!context) return null;
+            return getSelectedLayoutSegmentPath(context.parentTree, parallelRouteKey);
+        }
+        function useSelectedLayoutSegment(parallelRouteKey) {
+            if (parallelRouteKey === void 0) parallelRouteKey = 'children';
+            useDynamicRouteParams == null ? void 0 : useDynamicRouteParams('useSelectedLayoutSegment()');
+            const selectedLayoutSegments = useSelectedLayoutSegments(parallelRouteKey);
+            if (!selectedLayoutSegments || selectedLayoutSegments.length === 0) {
+                return null;
+            }
+            const selectedLayoutSegment = parallelRouteKey === 'children' ? selectedLayoutSegments[0] : selectedLayoutSegments[selectedLayoutSegments.length - 1];
+            // if the default slot is showing, we return null since it's not technically "selected" (it's a fallback)
+            // and returning an internal value like `__DEFAULT__` would be confusing.
+            return selectedLayoutSegment === _segment.DEFAULT_SEGMENT_KEY ? null : selectedLayoutSegment;
+        }
+        if ((typeof exports.default === 'function' || typeof exports.default === 'object' && exports.default !== null) && typeof exports.default.__esModule === 'undefined') {
+            Object.defineProperty(exports.default, '__esModule', {
+                value: true
+            });
+            Object.assign(exports.default, exports);
+            module.exports = exports.default;
+        }
+    
+    })(navigation$1, navigation$1.exports);
+    return navigation$1.exports;
+}
+
+var navigation;
+var hasRequiredNavigation;
+function requireNavigation() {
+    if (hasRequiredNavigation) return navigation;
+    hasRequiredNavigation = 1;
+    navigation = requireNavigation$1();
+    return navigation;
+}
+
+var navigationExports = requireNavigation();
+
 function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, user, loading, className = "" }) {
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const menuRef = useRef(null);
-    // Close menu when clicking outside
+    const mobileMenuRef = useRef(null);
+    const pathname = navigationExports.usePathname();
+    // Navigation links
+    const navigationLinks = [
+        {
+            href: '/',
+            label: 'Calculator',
+            icon: Calculator
+        },
+        {
+            href: '/blog',
+            label: 'Travel Guide',
+            icon: BookOpen
+        }
+    ];
+    // Close menus when clicking outside
     useEffect(()=>{
         const handleClickOutside = (event)=>{
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setShowUserMenu(false);
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                setShowMobileMenu(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -5292,16 +12670,31 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         className: "container mx-auto px-4 sm:px-6 lg:px-8"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "flex h-16 items-center justify-between"
-    }, /*#__PURE__*/ React__default.createElement("div", null), /*#__PURE__*/ React__default.createElement("div", {
-        className: "flex items-center space-x-6"
     }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Link, {
+        href: "/",
         className: "flex items-center space-x-2"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "flex flex-col"
     }, /*#__PURE__*/ React__default.createElement("span", {
-        className: "text-lg font-bold text-foreground leading-none"
-    }, "Schengen Calculator"))), /*#__PURE__*/ React__default.createElement("div", {
-        className: "flex items-center space-x-3"
+        className: "text-lg font-bold text-blue-600 leading-none"
+    }, "Schengen Calculator")))), /*#__PURE__*/ React__default.createElement("nav", {
+        className: "hidden md:flex items-center space-x-8"
+    }, navigationLinks.map((link)=>{
+        const IconComponent = link.icon;
+        const isActive = pathname === link.href;
+        return /*#__PURE__*/ React__default.createElement(Link, {
+            key: link.href,
+            href: link.href,
+            className: `flex items-center space-x-2 text-sm font-medium transition-colors hover:text-blue-600 ${isActive ? 'text-blue-600' : 'text-gray-600'}`
+        }, /*#__PURE__*/ React__default.createElement(IconComponent, {
+            className: "h-4 w-4"
+        }), /*#__PURE__*/ React__default.createElement("span", null, link.label));
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center space-x-2 sm:space-x-3"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "hidden sm:flex items-center space-x-3"
     }, loading ? /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2"
     }, /*#__PURE__*/ React__default.createElement("div", {
@@ -5363,6 +12756,59 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
     }, "Log In"), /*#__PURE__*/ React__default.createElement("button", {
         onClick: onSignupClick,
         className: "bg-green-700 hover:bg-green-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm"
+    }, "Start Now"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex sm:hidden items-center space-x-2"
+    }, !loading && !user && /*#__PURE__*/ React__default.createElement(React__default.Fragment, null, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onLoginClick,
+        className: "text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors px-2 py-1"
+    }, "Log In"), /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onSignupClick,
+        className: "bg-green-700 hover:bg-green-800 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
+    }, "Start"))), /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setShowMobileMenu(!showMobileMenu),
+        className: "md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
+    }, showMobileMenu ? /*#__PURE__*/ React__default.createElement(X, {
+        className: "h-5 w-5 text-gray-600"
+    }) : /*#__PURE__*/ React__default.createElement(Menu, {
+        className: "h-5 w-5 text-gray-600"
+    })))), showMobileMenu && /*#__PURE__*/ React__default.createElement("div", {
+        ref: mobileMenuRef,
+        className: "md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50"
+    }, /*#__PURE__*/ React__default.createElement("nav", {
+        className: "container mx-auto px-4 py-4 space-y-2"
+    }, navigationLinks.map((link)=>{
+        const IconComponent = link.icon;
+        const isActive = pathname === link.href;
+        return /*#__PURE__*/ React__default.createElement(Link, {
+            key: link.href,
+            href: link.href,
+            onClick: ()=>setShowMobileMenu(false),
+            className: `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-gray-50 ${isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-700'}`
+        }, /*#__PURE__*/ React__default.createElement(IconComponent, {
+            className: "h-5 w-5"
+        }), /*#__PURE__*/ React__default.createElement("span", {
+            className: "text-base font-medium"
+        }, link.label));
+    }), !user && /*#__PURE__*/ React__default.createElement("div", {
+        className: "pt-4 border-t border-gray-100 space-y-2"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>{
+            onLoginClick?.();
+            setShowMobileMenu(false);
+        },
+        className: "flex items-center w-full px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+    }, /*#__PURE__*/ React__default.createElement(User, {
+        className: "h-5 w-5 mr-3"
+    }), /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-base font-medium"
+    }, "Log In")), /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>{
+            onSignupClick?.();
+            setShowMobileMenu(false);
+        },
+        className: "flex items-center w-full px-4 py-3 bg-green-700 text-white hover:bg-green-800 rounded-lg transition-colors"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-base font-medium"
     }, "Start Now")))))));
 }
 
@@ -14922,6 +22368,764 @@ function LoginModal({ isOpen, onClose, onEmailLogin, onGoogleLogin, onSignupClic
     }, "Sign up for free")))))));
 }
 
+function FeatureButton({ feature, children, user, subscriptionTier, onClick, onAccountCreationRequired, onPremiumUpgradeRequired, variant = 'default', size = 'default', className, showUpgradeHint = true, disabled = false, fullWidth = false }) {
+    const { getFeatureAccess, trackFeatureAttempt, currentTier } = useFeatureAccess({
+        user,
+        subscriptionTier
+    });
+    const analytics = useConversionAnalytics();
+    const [isLoading, setIsLoading] = useState(false);
+    const handleClick = async ()=>{
+        if (disabled || isLoading) return;
+        setIsLoading(true);
+        try {
+            const access = trackFeatureAttempt(feature);
+            if (access.hasAccess) {
+                // User has access - execute the feature
+                await onClick?.();
+            } else {
+                // Track feature attempt blocked for analytics
+                analytics.trackFeatureAttempt(feature, currentTier);
+                // User needs to upgrade or create account
+                if (access.conversionAction === 'create_account') {
+                    analytics.trackAccountCreationPrompt(feature, currentTier);
+                    onAccountCreationRequired?.(feature);
+                } else if (access.conversionAction?.includes('upgrade')) {
+                    analytics.trackPremiumPrompt(feature, currentTier);
+                    onPremiumUpgradeRequired?.(feature, access.currentTier);
+                }
+            }
+        } finally{
+            setIsLoading(false);
+        }
+    };
+    const access = getFeatureAccess(feature);
+    // Get appropriate styling and content based on access level
+    const getButtonAppearance = ()=>{
+        if (access.hasAccess) {
+            // Full access - normal button
+            return {
+                variant: variant,
+                icon: null,
+                badge: null,
+                hint: null
+            };
+        }
+        if (access.requiresAccount) {
+            // Anonymous user - needs account
+            return {
+                variant: 'outline',
+                icon: /*#__PURE__*/ React__default.createElement(Lock, {
+                    className: "w-4 h-4 ml-2"
+                }),
+                badge: showUpgradeHint ? /*#__PURE__*/ React__default.createElement(Badge, {
+                    variant: "secondary",
+                    className: "ml-2 text-xs"
+                }, "Sign Up Required") : null,
+                hint: "Create account to unlock"
+            };
+        }
+        if (access.requiresPremium) {
+            // Account holder - needs premium
+            return {
+                variant: 'outline',
+                icon: /*#__PURE__*/ React__default.createElement(Crown, {
+                    className: "w-4 h-4 ml-2 text-amber-500"
+                }),
+                badge: showUpgradeHint ? /*#__PURE__*/ React__default.createElement(Badge, {
+                    className: "ml-2 text-xs bg-gradient-to-r from-amber-500 to-orange-500"
+                }, "Premium") : null,
+                hint: `Upgrade to ${access.nextTier} to unlock`
+            };
+        }
+        return {
+            variant: 'outline',
+            icon: /*#__PURE__*/ React__default.createElement(Sparkles, {
+                className: "w-4 h-4 ml-2"
+            }),
+            badge: null,
+            hint: "Feature not available"
+        };
+    };
+    const appearance = getButtonAppearance();
+    return /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative group"
+    }, /*#__PURE__*/ React__default.createElement(Button$1, {
+        onClick: handleClick,
+        variant: appearance.variant,
+        size: size,
+        disabled: disabled || isLoading,
+        className: cn("transition-all duration-200", // Mobile-first design (CLAUDE.md requirement)
+        "min-h-[44px] touch-manipulation", fullWidth && "w-full sm:w-auto", // Premium styling hints
+        !access.hasAccess && "border-dashed hover:border-solid", access.requiresPremium && "hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50", className)
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-center"
+    }, children, appearance.icon), appearance.badge), appearance.hint && showUpgradeHint && /*#__PURE__*/ React__default.createElement("div", {
+        className: "absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10"
+    }, appearance.hint, /*#__PURE__*/ React__default.createElement("div", {
+        className: "absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"
+    })), isLoading && /*#__PURE__*/ React__default.createElement("div", {
+        className: "absolute inset-0 bg-white/50 backdrop-blur-sm rounded-md flex items-center justify-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"
+    })));
+}
+// Specialized button variants for common use cases
+function ExportButton({ user, subscriptionTier, onExportClick, onAccountRequired, onUpgradeRequired }) {
+    const { hasFeature } = useFeatureAccess({
+        user,
+        subscriptionTier
+    });
+    if (!user) {
+        return /*#__PURE__*/ React__default.createElement(FeatureButton, {
+            feature: "screenshot_export",
+            user: user,
+            subscriptionTier: subscriptionTier,
+            onClick: onExportClick,
+            onAccountCreationRequired: onAccountRequired,
+            onPremiumUpgradeRequired: onUpgradeRequired,
+            fullWidth: true
+        }, "Export Results");
+    }
+    // Account holder - show both screenshot and PDF options
+    return /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex flex-col sm:flex-row gap-2 w-full"
+    }, /*#__PURE__*/ React__default.createElement(FeatureButton, {
+        feature: "screenshot_export",
+        user: user,
+        subscriptionTier: subscriptionTier,
+        onClick: onExportClick,
+        onAccountCreationRequired: onAccountRequired,
+        onPremiumUpgradeRequired: onUpgradeRequired,
+        variant: hasFeature('screenshot_export') ? 'default' : 'outline',
+        className: "flex-1"
+    }, "Export Screenshot"), /*#__PURE__*/ React__default.createElement(FeatureButton, {
+        feature: "pdf_export",
+        user: user,
+        subscriptionTier: subscriptionTier,
+        onClick: onExportClick,
+        onAccountCreationRequired: onAccountRequired,
+        onPremiumUpgradeRequired: onUpgradeRequired,
+        variant: hasFeature('pdf_export') ? 'default' : 'outline',
+        className: "flex-1"
+    }, "Export PDF"));
+}
+function SaveTripButton({ user, subscriptionTier, onSaveClick, onAccountRequired, onUpgradeRequired }) {
+    return /*#__PURE__*/ React__default.createElement(FeatureButton, {
+        feature: "single_trip_list",
+        user: user,
+        subscriptionTier: subscriptionTier,
+        onClick: onSaveClick,
+        onAccountCreationRequired: onAccountRequired,
+        onPremiumUpgradeRequired: onUpgradeRequired,
+        fullWidth: true
+    }, "Save This Trip");
+}
+function CreateListButton({ user, subscriptionTier, currentListCount = 0, onCreateList, onAccountRequired, onUpgradeRequired }) {
+    const { currentTier, getLimitations } = useFeatureAccess({
+        user,
+        subscriptionTier
+    });
+    const limitations = getLimitations();
+    // Check if user has hit the list limit
+    const hasHitLimit = currentListCount >= limitations.tripLists;
+    const feature = hasHitLimit ? 'unlimited_lists' : 'single_trip_list';
+    return /*#__PURE__*/ React__default.createElement(FeatureButton, {
+        feature: feature,
+        user: user,
+        subscriptionTier: subscriptionTier,
+        onClick: onCreateList,
+        onAccountCreationRequired: onAccountRequired,
+        onPremiumUpgradeRequired: onUpgradeRequired,
+        fullWidth: true
+    }, hasHitLimit ? `Create Another List (${currentListCount}/∞)` : 'Create Trip List');
+}
+function SmartAlertsButton({ user, subscriptionTier, onSetupAlerts, onAccountRequired, onUpgradeRequired }) {
+    const { hasFeature } = useFeatureAccess({
+        user,
+        subscriptionTier
+    });
+    if (hasFeature('basic_alerts') && !hasFeature('smart_alerts')) {
+        // Free user with basic alerts - show upgrade option
+        return /*#__PURE__*/ React__default.createElement("div", {
+            className: "space-y-2 w-full"
+        }, /*#__PURE__*/ React__default.createElement(Button$1, {
+            variant: "outline",
+            className: "w-full",
+            disabled: true
+        }, "Basic Alerts Enabled ✓"), /*#__PURE__*/ React__default.createElement(FeatureButton, {
+            feature: "smart_alerts",
+            user: user,
+            subscriptionTier: subscriptionTier,
+            onClick: onSetupAlerts,
+            onAccountCreationRequired: onAccountRequired,
+            onPremiumUpgradeRequired: onUpgradeRequired,
+            fullWidth: true
+        }, "Upgrade to Smart Alerts"));
+    }
+    return /*#__PURE__*/ React__default.createElement(FeatureButton, {
+        feature: hasFeature('smart_alerts') ? 'smart_alerts' : 'basic_alerts',
+        user: user,
+        subscriptionTier: subscriptionTier,
+        onClick: onSetupAlerts,
+        onAccountCreationRequired: onAccountRequired,
+        onPremiumUpgradeRequired: onUpgradeRequired,
+        fullWidth: true
+    }, hasFeature('smart_alerts') ? 'Smart Alerts' : 'Enable Alerts');
+}
+
+// Feature-specific content for the modal
+const getModalContent = (trigger)=>{
+    const content = {
+        save_trip: {
+            icon: /*#__PURE__*/ React__default.createElement(Save, {
+                className: "w-8 h-8 text-blue-600"
+            }),
+            title: "Save Your Travel Data",
+            subtitle: "Never lose your trip calculations again",
+            benefits: [
+                "Save unlimited trip calculations",
+                "Access your data from any device",
+                "Track your travel history",
+                "Get basic export options"
+            ],
+            cta: "Create account to save this trip"
+        },
+        export: {
+            icon: /*#__PURE__*/ React__default.createElement(FileText, {
+                className: "w-8 h-8 text-green-600"
+            }),
+            title: "Export Your Results",
+            subtitle: "Get professional travel reports",
+            benefits: [
+                "Screenshot exports included",
+                "Save reports for visa applications",
+                "Share with travel agents",
+                "Upgrade later for PDF reports"
+            ],
+            cta: "Create account to export results"
+        },
+        trip_list: {
+            icon: /*#__PURE__*/ React__default.createElement(List, {
+                className: "w-8 h-8 text-purple-600"
+            }),
+            title: "Organize Your Trips",
+            subtitle: "Keep track of multiple destinations",
+            benefits: [
+                "Create and organize trip lists",
+                "Track business vs personal travel",
+                "Plan complex itineraries",
+                "Upgrade for unlimited lists"
+            ],
+            cta: "Create account to organize trips"
+        },
+        alerts: {
+            icon: /*#__PURE__*/ React__default.createElement(Bell, {
+                className: "w-8 h-8 text-amber-600"
+            }),
+            title: "Never Miss Important Deadlines",
+            subtitle: "Get notified about visa compliance",
+            benefits: [
+                "Basic visa deadline alerts",
+                "Email notifications",
+                "Stay compliant automatically",
+                "Upgrade for smart alerts"
+            ],
+            cta: "Create account for alerts"
+        },
+        history: {
+            icon: /*#__PURE__*/ React__default.createElement(History, {
+                className: "w-8 h-8 text-indigo-600"
+            }),
+            title: "Access Your Travel History",
+            subtitle: "See all your past calculations",
+            benefits: [
+                "Complete travel timeline",
+                "Reference past trips",
+                "Track compliance over time",
+                "Export historical data"
+            ],
+            cta: "Create account to view history"
+        },
+        default: {
+            icon: /*#__PURE__*/ React__default.createElement(Save, {
+                className: "w-8 h-8 text-blue-600"
+            }),
+            title: "Unlock Smart Travel Features",
+            subtitle: "Join thousands of compliant travelers",
+            benefits: [
+                "Save unlimited calculations",
+                "Export professional reports",
+                "Get compliance alerts",
+                "Track travel history"
+            ],
+            cta: "Create your free account"
+        }
+    };
+    return content[trigger] || content.default;
+};
+function AccountCreationModal({ isOpen, onClose, trigger, onEmailSignup, onGoogleSignup, loading = false, error = null }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const analytics = useConversionAnalytics();
+    const modalContent = getModalContent(trigger);
+    const handleEmailSubmit = async (e)=>{
+        e.preventDefault();
+        if (!email || !password || !name || loading || isSubmitting) return;
+        try {
+            setIsSubmitting(true);
+            await onEmailSignup(email, password, name);
+            // Track successful account creation
+            analytics.trackAccountCreated(trigger || 'default', 'email');
+        } catch (error) {
+            console.error('Account creation error:', error);
+        } finally{
+            setIsSubmitting(false);
+        }
+    };
+    const handleGoogleSignup = async ()=>{
+        if (loading || isSubmitting) return;
+        try {
+            await onGoogleSignup();
+            // Track successful Google account creation
+            analytics.trackAccountCreated(trigger || 'default', 'google');
+        } catch (error) {
+            console.error('Google signup error:', error);
+        }
+    };
+    const handleClose = (reason)=>{
+        analytics.trackModalDismissed('account', trigger || 'default', reason);
+        onClose();
+    };
+    const isFormValid = email && password && name && password.length >= 6;
+    return /*#__PURE__*/ React__default.createElement(AnimatePresence, null, isOpen && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0
+        },
+        animate: {
+            opacity: 1
+        },
+        exit: {
+            opacity: 0
+        },
+        className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+        onClick: ()=>handleClose('overlay_click')
+    }, /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        animate: {
+            scale: 1,
+            opacity: 1,
+            y: 0
+        },
+        exit: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        transition: {
+            duration: 0.2
+        },
+        className: "bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden",
+        onClick: (e)=>e.stopPropagation()
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 px-6 py-8"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>handleClose('close_button'),
+        className: "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors",
+        "aria-label": "Close modal"
+    }, /*#__PURE__*/ React__default.createElement(X, {
+        className: "h-4 w-4 text-gray-600"
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex justify-center mb-4"
+    }, modalContent.icon), /*#__PURE__*/ React__default.createElement("h2", {
+        className: "text-2xl font-bold text-gray-900 mb-2"
+    }, modalContent.title), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-gray-600 mb-6"
+    }, modalContent.subtitle), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-left"
+    }, /*#__PURE__*/ React__default.createElement("ul", {
+        className: "space-y-2"
+    }, modalContent.benefits.map((benefit, index)=>/*#__PURE__*/ React__default.createElement("li", {
+            key: index,
+            className: "flex items-start text-sm text-gray-700"
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"
+        }), benefit)))))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "px-6 py-6"
+    }, error && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0,
+            y: -10
+        },
+        animate: {
+            opacity: 1,
+            y: 0
+        },
+        className: "bg-red-50 border border-red-200 rounded-lg p-3 mb-4"
+    }, /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-red-700 text-sm"
+    }, error)), /*#__PURE__*/ React__default.createElement(Button$1, {
+        onClick: handleGoogleSignup,
+        disabled: loading || isSubmitting,
+        className: "w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg mb-6"
+    }, /*#__PURE__*/ React__default.createElement(Chromium, {
+        className: "h-5 w-5 mr-3"
+    }), "Continue with Google"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative mb-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "absolute inset-0 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-full border-t border-gray-200"
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative flex justify-center text-xs uppercase"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "bg-white px-2 text-gray-500"
+    }, "Or create with email"))), /*#__PURE__*/ React__default.createElement("form", {
+        onSubmit: handleEmailSubmit,
+        className: "space-y-4"
+    }, /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "name",
+        className: "text-sm font-medium text-gray-700"
+    }, "Your name"), /*#__PURE__*/ React__default.createElement(Input, {
+        id: "name",
+        name: "name",
+        type: "text",
+        value: name,
+        onChange: (e)=>setName(e.target.value),
+        placeholder: "Enter your full name",
+        required: true,
+        disabled: loading || isSubmitting,
+        className: "mt-1"
+    })), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "signup-email",
+        className: "text-sm font-medium text-gray-700"
+    }, "Email address"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative mt-1"
+    }, /*#__PURE__*/ React__default.createElement(Input, {
+        id: "signup-email",
+        name: "email",
+        type: "email",
+        value: email,
+        onChange: (e)=>setEmail(e.target.value),
+        placeholder: "Enter your email",
+        required: true,
+        className: "pl-10",
+        disabled: loading || isSubmitting
+    }), /*#__PURE__*/ React__default.createElement(Mail, {
+        className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+    }))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "signup-password",
+        className: "text-sm font-medium text-gray-700"
+    }, "Password"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative mt-1"
+    }, /*#__PURE__*/ React__default.createElement(Input, {
+        id: "signup-password",
+        name: "password",
+        type: showPassword ? 'text' : 'password',
+        value: password,
+        onChange: (e)=>setPassword(e.target.value),
+        placeholder: "Create a password",
+        required: true,
+        minLength: 6,
+        className: "pl-10 pr-10",
+        disabled: loading || isSubmitting
+    }), /*#__PURE__*/ React__default.createElement(Lock, {
+        className: "absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+    }), /*#__PURE__*/ React__default.createElement("button", {
+        type: "button",
+        onClick: ()=>setShowPassword(!showPassword),
+        className: "absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600",
+        disabled: loading || isSubmitting
+    }, showPassword ? /*#__PURE__*/ React__default.createElement(EyeOff, {
+        className: "h-4 w-4"
+    }) : /*#__PURE__*/ React__default.createElement(Eye, {
+        className: "h-4 w-4"
+    }))), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-xs text-gray-500 mt-1"
+    }, "Minimum 6 characters")), /*#__PURE__*/ React__default.createElement(Button$1, {
+        type: "submit",
+        disabled: !isFormValid || loading || isSubmitting,
+        variant: "outline",
+        className: "w-full font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+    }, isSubmitting ? 'Creating Account...' : modalContent.cta)), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-xs text-gray-500 text-center mt-4"
+    }, "By creating an account, you agree to our", ' ', /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-blue-600 hover:underline cursor-pointer"
+    }, "Terms of Service"), ' ', "and", ' ', /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-blue-600 hover:underline cursor-pointer"
+    }, "Privacy Policy"))))));
+}
+
+// Feature-specific upgrade content
+const getUpgradeContent = (feature, currentTier)=>{
+    const content = {
+        pdf_export: {
+            icon: /*#__PURE__*/ React__default.createElement(FileText, {
+                className: "w-8 h-8 text-green-600"
+            }),
+            title: "Upgrade for Professional PDF Reports",
+            currentLimitation: "Screenshot exports only",
+            premiumBenefit: "Beautiful PDF reports with company branding",
+            description: "Get professional travel reports perfect for visa applications, expense reimbursements, and business documentation."
+        },
+        unlimited_lists: {
+            icon: /*#__PURE__*/ React__default.createElement(List, {
+                className: "w-8 h-8 text-purple-600"
+            }),
+            title: "Create Unlimited Trip Lists",
+            currentLimitation: "1 trip list maximum",
+            premiumBenefit: "Organize trips by project, client, or purpose",
+            description: "Perfect for consultants, business travelers, and anyone managing complex travel schedules."
+        },
+        smart_alerts: {
+            icon: /*#__PURE__*/ React__default.createElement(Bell, {
+                className: "w-8 h-8 text-amber-600"
+            }),
+            title: "Never Miss Important Visa Deadlines",
+            currentLimitation: "Basic alerts only",
+            premiumBenefit: "Smart alerts • Email notifications • Policy updates",
+            description: "Advanced AI-powered alerts that predict compliance issues before they happen."
+        },
+        dark_mode: {
+            icon: /*#__PURE__*/ React__default.createElement(Palette, {
+                className: "w-8 h-8 text-indigo-600"
+            }),
+            title: "Premium Dark Mode Experience",
+            currentLimitation: "Light mode only",
+            premiumBenefit: "Easy on the eyes • Professional appearance",
+            description: "Reduce eye strain and enjoy a premium interface designed for extended use."
+        },
+        no_ads: {
+            icon: /*#__PURE__*/ React__default.createElement(ZapOff, {
+                className: "w-8 h-8 text-red-600"
+            }),
+            title: "Enjoy an Ad-Free Experience",
+            currentLimitation: "Ads present throughout interface",
+            premiumBenefit: "Clean, distraction-free interface",
+            description: "Focus on your travel planning without interruptions or distractions."
+        },
+        default: {
+            icon: /*#__PURE__*/ React__default.createElement(Crown, {
+                className: "w-8 h-8 text-amber-500"
+            }),
+            title: "Upgrade to Premium",
+            currentLimitation: "Limited features",
+            premiumBenefit: "Unlock all premium features",
+            description: "Get the complete travel compliance experience with professional tools."
+        }
+    };
+    return content[feature] || content.default;
+};
+const premiumFeatures = [
+    {
+        icon: /*#__PURE__*/ React__default.createElement(Bell, {
+            className: "w-5 h-5"
+        }),
+        text: "Smart visa deadline alerts"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(List, {
+            className: "w-5 h-5"
+        }),
+        text: "Unlimited trip lists"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(FileText, {
+            className: "w-5 h-5"
+        }),
+        text: "Professional PDF reports"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(Palette, {
+            className: "w-5 h-5"
+        }),
+        text: "Premium dark mode"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(ZapOff, {
+            className: "w-5 h-5"
+        }),
+        text: "Ad-free experience"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(Sparkles, {
+            className: "w-5 h-5"
+        }),
+        text: "Priority support"
+    }
+];
+function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade, loading = false, error = null }) {
+    const [isUpgrading, setIsUpgrading] = useState(false);
+    const [billingCycle, setBillingCycle] = useState('monthly');
+    const analytics = useConversionAnalytics();
+    const upgradeContent = getUpgradeContent(feature);
+    const handleUpgrade = async (tier = 'premium')=>{
+        if (loading || isUpgrading) return;
+        try {
+            setIsUpgrading(true);
+            await onUpgrade(tier, billingCycle);
+            // Track successful premium subscription
+            const amount = tier === 'premium' ? billingCycle === 'yearly' ? 99 : 9.99 : tier === 'pro' ? billingCycle === 'yearly' ? 199 : 19.99 : billingCycle === 'yearly' ? 499 : 49.99;
+            analytics.trackPremiumSubscribed(feature || 'default', billingCycle, amount);
+        } catch (error) {
+            console.error('Upgrade error:', error);
+        } finally{
+            setIsUpgrading(false);
+        }
+    };
+    const handleClose = (reason)=>{
+        analytics.trackModalDismissed('premium', feature || 'default', reason);
+        onClose();
+    };
+    return /*#__PURE__*/ React__default.createElement(AnimatePresence, null, isOpen && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0
+        },
+        animate: {
+            opacity: 1
+        },
+        exit: {
+            opacity: 0
+        },
+        className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+        onClick: ()=>handleClose('overlay_click')
+    }, /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        animate: {
+            scale: 1,
+            opacity: 1,
+            y: 0
+        },
+        exit: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        transition: {
+            duration: 0.2
+        },
+        className: "bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden",
+        onClick: (e)=>e.stopPropagation()
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "relative bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 px-6 py-8"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>handleClose('close_button'),
+        className: "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors",
+        "aria-label": "Close modal"
+    }, /*#__PURE__*/ React__default.createElement(X, {
+        className: "h-4 w-4 text-gray-600"
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex justify-center mb-4"
+    }, upgradeContent.icon), /*#__PURE__*/ React__default.createElement("h2", {
+        className: "text-2xl font-bold text-gray-900 mb-2"
+    }, upgradeContent.title), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-gray-600 mb-4"
+    }, upgradeContent.description), /*#__PURE__*/ React__default.createElement("div", {
+        className: "bg-white/50 rounded-lg p-4 mb-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: "secondary",
+        className: "mb-2"
+    }, "Your Current Plan"), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-sm text-gray-600"
+    }, upgradeContent.currentLimitation)), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement(Badge, {
+        className: "mb-2 bg-gradient-to-r from-amber-500 to-orange-500"
+    }, "Premium"), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-sm text-gray-900 font-medium"
+    }, upgradeContent.premiumBenefit)))))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "px-6 py-6"
+    }, error && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0,
+            y: -10
+        },
+        animate: {
+            opacity: 1,
+            y: 0
+        },
+        className: "bg-red-50 border border-red-200 rounded-lg p-3 mb-4"
+    }, /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-red-700 text-sm"
+    }, error)), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mb-6"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "font-semibold text-gray-900 mb-4 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Crown, {
+        className: "w-5 h-5 text-amber-500 mr-2"
+    }), "Everything in Premium ($9.99/month):"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
+    }, premiumFeatures.map((feature, index)=>/*#__PURE__*/ React__default.createElement("div", {
+            key: index,
+            className: "flex items-center text-sm text-gray-700"
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3"
+        }, /*#__PURE__*/ React__default.createElement(Check, {
+            className: "w-3 h-3 text-green-600"
+        })), /*#__PURE__*/ React__default.createElement("span", null, feature.text))))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mb-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex bg-gray-100 rounded-lg p-1 mb-4"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setBillingCycle('monthly'),
+        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
+    }, "Monthly"), /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setBillingCycle('yearly'),
+        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative ${billingCycle === 'yearly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
+    }, "Yearly", /*#__PURE__*/ React__default.createElement("span", {
+        className: "absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full"
+    }, "Save 20%"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-3xl font-bold text-gray-900"
+    }, "$", billingCycle === 'yearly' ? '99' : '9.99'), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-gray-600"
+    }, "per ", billingCycle === 'yearly' ? 'year' : 'month'), billingCycle === 'yearly' && /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-xs text-green-600 mt-1"
+    }, "💰 Save $20.88 per year"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-xs text-green-600 mt-1"
+    }, "✓ Cancel anytime")))), /*#__PURE__*/ React__default.createElement(Button$1, {
+        onClick: ()=>handleUpgrade('premium'),
+        disabled: loading || isUpgrading,
+        className: "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3 px-4 rounded-lg mb-4"
+    }, /*#__PURE__*/ React__default.createElement(CreditCard, {
+        className: "h-5 w-5 mr-2"
+    }), isUpgrading ? 'Redirecting to Payment...' : `Subscribe ${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} - $${billingCycle === 'yearly' ? '99/year' : '9.99/month'}`), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-xs text-gray-500"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-green-600 font-medium"
+    }, "30-day money-back guarantee"), /*#__PURE__*/ React__default.createElement("br", null), "No questions asked if you're not satisfied")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mt-4 text-center"
+    }, /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-xs text-gray-500"
+    }, "Join ", /*#__PURE__*/ React__default.createElement("span", {
+        className: "font-medium text-blue-600"
+    }, "10,000+ travelers"), " who trust us with their visa compliance"))))));
+}
+
 function CircularProgress({ value, max = 90, size = 120, strokeWidth = 8, progressColor = "#10b981", backgroundColor = "#e5e7eb", textColor = "#374151", className, label, showPercentage = false, animationDuration = 1000 }) {
     // Calculate progress percentage
     const percentage = Math.min(Math.max(value / max * 100, 0), 100);
@@ -19569,5 +27773,5 @@ function useDateOverlapPrevention({ existingTrips, excludeTripId }) {
     };
 }
 
-export { Badge, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, DateOverlapValidator, Header, Input, Label, LoginModal, MobileCalendarDrawer, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useIsMobile, useMediaQuery };
+export { AccountCreationModal, Badge, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Header, Input, Label, LoginModal, MobileCalendarDrawer, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SubscriptionTier, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useConversionAnalytics, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
 //# sourceMappingURL=index.esm.js.map

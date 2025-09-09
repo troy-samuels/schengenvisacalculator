@@ -1,6 +1,6 @@
-# 🌍 Schengen Visa Calculator
+# 🌍 ETIAS Calculator
 
-A smart, user-friendly tool for calculating Schengen visa compliance and planning European travels.
+A professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel with confidence.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/troy-samuels/schengenvisacalculator)
 
@@ -15,7 +15,7 @@ A smart, user-friendly tool for calculating Schengen visa compliance and plannin
 
 ## 🎯 Live Demo
 
-🔗 **[Try it now →](https://your-vercel-url.vercel.app)**
+🔗 **[Try it now →](https://etiascalculator.com)**
 
 ## 🛠️ Tech Stack
 

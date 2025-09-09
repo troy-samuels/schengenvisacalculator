@@ -394,7 +394,9 @@ CREATE TABLE organization_members (
 ```bash
 # Email service
 SENDGRID_API_KEY=your_sendgrid_key
-FROM_EMAIL=noreply@schengenvisacalculator.com
+FROM_EMAIL=info@etiascalculator.com
+CONTACT_EMAIL=info@etiascalculator.com
+SUPPORT_EMAIL=info@etiascalculator.com
 
 # Affiliate tracking
 SAFETYWING_API_KEY=your_safetywing_key
