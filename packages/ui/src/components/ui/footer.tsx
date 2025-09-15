@@ -3,13 +3,14 @@
 import React from 'react'
 import Link from 'next/link'
 import { FooterSocialLinks } from './social-media-links'
-import { Mail, MapPin, Shield, FileText } from 'lucide-react'
+import { Mail, MapPin, Shield, FileText, Star } from 'lucide-react'
 
 export interface FooterProps {
   className?: string
+  onPremiumClick?: () => void
 }
 
-export function Footer({ className = '' }: FooterProps) {
+export function Footer({ className = '', onPremiumClick }: FooterProps) {
   const currentYear = new Date().getFullYear()
   
   return (
@@ -105,9 +106,17 @@ export function Footer({ className = '' }: FooterProps) {
                   Travel Dashboard
                 </Link>
               </li>
-              <li>
-                <span className="text-gray-500 text-sm">Premium Features</span>
-              </li>
+              {onPremiumClick && (
+                <li>
+                  <button
+                    onClick={onPremiumClick}
+                    className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                  >
+                    <Star className="w-3 h-3" />
+                    <span>Premium Features</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -119,6 +128,17 @@ export function Footer({ className = '' }: FooterProps) {
               <FooterSocialLinks />
             </div>
             <ul className="space-y-3">
+              {onPremiumClick && (
+                <li>
+                  <button
+                    onClick={onPremiumClick}
+                    className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                  >
+                    <Star className="w-3 h-3" />
+                    <span>Premium</span>
+                  </button>
+                </li>
+              )}
               <li>
                 <a 
                   href="/privacy-policy" 

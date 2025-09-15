@@ -3,13 +3,13 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
-import { 
-  Button, 
-  CircularProgress, 
-  CalendarModal, 
-  DateOverlapValidator, 
-  useDateOverlapPrevention, 
-  Header, 
+import {
+  Button,
+  CircularProgress,
+  CalendarModal,
+  DateOverlapValidator,
+  useDateOverlapPrevention,
+  Header,
   LoginModal,
   FeatureButton,
   ExportButton,
@@ -20,8 +20,10 @@ import {
   PremiumUpgradeModal,
   useFeatureAccess,
   SubscriptionTier,
-  HeroSocialLinks,
-  Footer
+  Footer,
+  AccuracyVerificationBadge,
+  RollingCalendarView,
+  FutureTripValidator
 } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
@@ -30,6 +32,14 @@ import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
 import { Database } from '../lib/types/database'
 import { useRouter } from 'next/navigation'
+import { useUserStatus } from '../lib/hooks/useUserStatus'
+import { UserStatus } from '../lib/types/user-status'
+import { StrategicAdPlacement, AdFreeBadge } from '../lib/components/DisplayAdvertising'
+import { AffiliateWidgets, ContextualAffiliateWidget } from '../lib/components/AffiliateWidgets'
+import { PDFExportButton } from '../lib/components/PDFExportButton'
+import { SmartAlertsPanel } from '../lib/components/SmartAlertsPanel'
+import { AITravelAssistant } from '../lib/components/AITravelAssistant'
+import { useIntelligentBackground } from '../lib/hooks/useIntelligentBackground'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
@@ -213,7 +223,7 @@ function ProgressCircle({ daysRemaining, size = 80 }: { daysRemaining: number; s
 }
 
 // Star Rating Component
-function StarRating({ rating = 4.9, maxStars = 5, className = "" }: { rating?: number; maxStars?: number; className?: string }) {
+function StarRating({ rating = 5.0, maxStars = 5, className = "" }: { rating?: number; maxStars?: number; className?: string }) {
   return (
     <div className={`flex items-center space-x-1 ${className}`}>
       {[...Array(maxStars)].map((_, i) => (
@@ -226,7 +236,7 @@ function StarRating({ rating = 4.9, maxStars = 5, className = "" }: { rating?: n
             : 'text-gray-300'}`}
         />
       ))}
-      <span className="text-sm font-dm-sans font-normal text-gray-600 ml-2">{rating}</span>
+      <span className="text-sm font-dm-sans font-normal text-gray-600 ml-2">{rating}/{maxStars}</span>
     </div>
   )
 }
@@ -301,9 +311,9 @@ function SocialProofBadge({ className = "" }: { className?: string }) {
     <div className={`flex items-center justify-center space-x-4 ${className}`}>
       <AvatarGroup />
       <div className="flex flex-col items-start">
-        <StarRating rating={4.9} />
+        <StarRating rating={5.0} />
         <span className="text-sm text-gray-600 font-dm-sans font-normal">
-          50,000+ travelers trust us
+          travelers worldwide trust us
         </span>
       </div>
     </div>
@@ -330,7 +340,7 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
   }, [])
   
   return (
-    <section className="pt-20 pb-16 px-4 bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <section className="pt-20 pb-16 px-4 bg-gray-50">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center">
           <motion.h1 
@@ -364,8 +374,8 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-xl font-dm-sans font-normal text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            Navigate European travel with confidence using our precision compliance calculator. 
-            Trusted by 50,000+ travelers worldwide, our tool ensures you stay within legal limits while exploring Europe.
+            Stop worrying about accidentally overstaying your European visa. 
+            Trusted by travelers worldwide, our calculator gives you complete confidence in your travel dates and compliance status.
           </motion.p>
           
           {/* Test DM Sans ExtraLight 200 weight */}
@@ -504,9 +514,48 @@ export default function HomePage() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
+  // B2C 3-Tier User Status System
+  const userContext = useUserStatus()
+  const {
+    user,
+    userStatus,
+    loading,
+    canAddTrips,
+    hasUnlimitedTrips,
+    showDisplayAds,
+    hasAffiliateAccess,
+    hasPremiumFeatures,
+    tripCount,
+    tripLimit,
+    signIn,
+    signInWithGoogle,
+    signUp,
+    signOut,
+    upgradeToFreeAccount,
+    upgradeToPremium,
+    incrementAnonymousTripCount
+  } = userContext
+
+  // AI-powered intelligent background processing (seamless integration)
+  const intelligentBackground = useIntelligentBackground({
+    user,
+    userStatus,
+    trips: entries.filter(entry => entry.country && entry.startDate && entry.endDate).map(entry => ({
+      country: entry.country,
+      startDate: entry.startDate!,
+      endDate: entry.endDate!,
+      id: entry.id
+    })),
+    upcomingTrips: entries.filter(entry => entry.startDate && isFuture(entry.startDate)).map(entry => ({
+      country: entry.country,
+      startDate: entry.startDate!,
+      endDate: entry.endDate!,
+      id: entry.id
+    })),
+    userLocation: 'United Kingdom' // Could be made dynamic based on IP/user profile
+  })
+
   const supabase = createClient()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [showConversionModal, setShowConversionModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showAccountCreationModal, setShowAccountCreationModal] = useState(false)
@@ -514,28 +563,9 @@ export default function HomePage() {
   const [authError, setAuthError] = useState<string | null>(null)
   const [accountCreationTrigger, setAccountCreationTrigger] = useState<string>()
   const [premiumUpgradeTrigger, setPremiumUpgradeTrigger] = useState<string>()
-  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(SubscriptionTier.FREE)
   const calculatorRef = useRef<HTMLDivElement>(null)
 
-  // Check auth state on mount
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
-    }
-    getUser()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
+  // User status is now managed by useUserStatus hook
 
   // Save user progress to database
   const saveUserProgress = async () => {
@@ -578,6 +608,11 @@ export default function HomePage() {
           console.error('Error saving progress:', insertError)
         } else {
           console.log('Progress saved successfully')
+          
+          // AI Enhancement: Trigger context preservation for premium users
+          if (intelligentBackground.enhanceSaveProgressHandler) {
+            intelligentBackground.enhanceSaveProgressHandler(() => {})()
+          }
         }
       }
     } catch (error) {
@@ -679,14 +714,7 @@ export default function HomePage() {
   const handleEmailLogin = async (email: string, password: string) => {
     try {
       setAuthError(null)
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      if (error) {
-        setAuthError(error.message)
-        throw error
-      }
+      await signIn(email, password)
       setShowLoginModal(false)
     } catch (error: any) {
       console.error('Email login error:', error)
@@ -698,16 +726,7 @@ export default function HomePage() {
   const handleGoogleLogin = async () => {
     try {
       setAuthError(null)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`
-        }
-      })
-      if (error) {
-        setAuthError(error.message)
-        throw error
-      }
+      await signInWithGoogle()
     } catch (error: any) {
       console.error('Google login error:', error)
       setAuthError(error.message || 'Google login failed. Please try again.')
@@ -718,16 +737,7 @@ export default function HomePage() {
   const handleSignupClick = async () => {
     try {
       setAuthError(null)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`
-        }
-      })
-      if (error) {
-        setAuthError(error.message)
-        console.error('Signup error:', error)
-      }
+      await signInWithGoogle() // Using Google signup for simplicity
     } catch (error: any) {
       console.error('Signup error:', error)
       setAuthError(error.message || 'Signup failed. Please try again.')
@@ -736,10 +746,7 @@ export default function HomePage() {
 
   const handleLogoutClick = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Logout error:', error)
-      }
+      await signOut()
     } catch (error) {
       console.error('Logout error:', error)
     }
@@ -769,19 +776,7 @@ export default function HomePage() {
   const handleAccountCreation = async (email: string, password: string, name: string) => {
     try {
       setAuthError(null)
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name
-          }
-        }
-      })
-      if (error) {
-        setAuthError(error.message)
-        throw error
-      }
+      await signUp(email, password, name)
       setShowAccountCreationModal(false)
       setAccountCreationTrigger(undefined)
     } catch (error: any) {
@@ -794,16 +789,9 @@ export default function HomePage() {
   const handleGoogleAccountCreation = async () => {
     try {
       setAuthError(null)
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`
-        }
-      })
-      if (error) {
-        setAuthError(error.message)
-        throw error
-      }
+      await signInWithGoogle()
+      setShowAccountCreationModal(false)
+      setAccountCreationTrigger(undefined)
     } catch (error: any) {
       console.error('Google account creation error:', error)
       setAuthError(error.message || 'Google account creation failed. Please try again.')
@@ -811,10 +799,10 @@ export default function HomePage() {
     }
   }
 
-  const handlePremiumUpgrade = async (tier: 'premium' | 'pro' | 'business', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
+  const handlePremiumUpgrade = async (tier: 'lifetime' | 'annual', billingCycle: 'lifetime' | 'yearly') => {
     try {
       setAuthError(null)
-      
+
       // Ensure user is authenticated
       if (!user?.email) {
         throw new Error('User must be logged in to purchase subscription')
@@ -822,17 +810,21 @@ export default function HomePage() {
 
       console.log(`🚀 Creating Stripe checkout for ${tier} (${billingCycle})`)
 
+      // Map new tier format to payment package format
+      const paymentTier = tier === 'lifetime' ? 'premium' : 'premium' // Both map to premium for now
+      const paymentBillingCycle = billingCycle === 'lifetime' ? 'yearly' : 'yearly' // Map to yearly
+
       // Create Stripe checkout session using the payment package
       const { createCheckoutSession, redirectToStripeCheckout } = await import('@schengen/payments')
-      
+
       const session = await createCheckoutSession({
-        tier,
-        billingCycle,
+        tier: paymentTier,
+        billingCycle: paymentBillingCycle,
         userId: user.id,
         userEmail: user.email,
         metadata: {
           feature: premiumUpgradeTrigger || 'general_upgrade',
-          currentTier: subscriptionTier,
+          currentTier: userStatus,
         }
       })
 
@@ -850,7 +842,14 @@ export default function HomePage() {
 
   // Save button handler - redirect to sign-up landing page when not authenticated
   const handleSaveClick = () => {
-    router.push('/save-progress')
+    // AI Enhancement: Enhance save functionality for premium users
+    if (intelligentBackground.enhanceSaveProgressHandler) {
+      intelligentBackground.enhanceSaveProgressHandler(() => {
+        router.push('/save-progress')
+      })()
+    } else {
+      router.push('/save-progress')
+    }
   }
 
   // Scroll to calculator function
@@ -872,18 +871,18 @@ export default function HomePage() {
   const canAddNewRow = (): boolean => {
     if (entries.length === 0) return true // Allow first row
     
-    // Check if user has reached free entry limit
-    if (!user && entries.length >= MAX_FREE_ENTRIES) {
-      return false // Block anonymous users at limit
+    // Use new B2C tier system for trip limits
+    if (!canAddTrips) {
+      return false // Block users who have reached their tier limit
     }
     
     const lastEntry = entries[entries.length - 1]
     return isRowComplete(lastEntry)
   }
 
-  // New helper to check if button is disabled due to free limit specifically
-  const isAtFreeLimitWithoutUser = (): boolean => {
-    return !user && entries.length >= MAX_FREE_ENTRIES
+  // New helper to check if button is disabled due to tier limit specifically
+  const isAtTierLimit = (): boolean => {
+    return !canAddTrips && entries.length >= (tripLimit || 0)
   }
 
   // New helper to check if button is disabled due to incomplete row
@@ -896,8 +895,8 @@ export default function HomePage() {
   const getIncompleteRowMessage = (): string => {
     if (entries.length === 0) return ""
     
-    // If at free limit, don't show completion messages
-    if (isAtFreeLimitWithoutUser()) {
+    // If at tier limit, don't show completion messages
+    if (isAtTierLimit()) {
       return ""
     }
     
@@ -1006,9 +1005,18 @@ export default function HomePage() {
 
     // Calculate overall compliance using dynamic reference date
     const overallReferenceDate = getRowReferenceDate(tripsForCalculation)
-    const compliance = tripsForCalculation.length > 0 
+    const compliance = tripsForCalculation.length > 0
       ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallReferenceDate)
-      : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+      : {
+          totalDaysUsed: 0,
+          daysRemaining: 90,
+          isCompliant: true,
+          overstayDays: 0,
+          referenceDate: overallReferenceDate,
+          periodStart: new Date(overallReferenceDate.getTime() - 180 * 24 * 60 * 60 * 1000),
+          periodEnd: overallReferenceDate,
+          detailedBreakdown: []
+        }
 
     // Update each chronologically sorted entry with calculated values
     // This shows cumulative "Total Used" and "Days Remaining" based on chronological progression
@@ -1103,10 +1111,21 @@ export default function HomePage() {
   }
 
   const addEntry = () => {
-    // Check if user has reached free limit and show conversion modal
-    if (!user && entries.length >= MAX_FREE_ENTRIES) {
-      setShowConversionModal(true)
+    // Check if user has reached tier limit and show appropriate modal
+    if (!canAddTrips) {
+      if (userStatus === UserStatus.FREE) {
+        setShowConversionModal(true)
+      } else {
+        // For free account users who want premium features
+        setShowPremiumUpgradeModal(true)
+        setPremiumUpgradeTrigger('unlimited_trips')
+      }
       return
+    }
+
+    // Increment anonymous trip count for tracking
+    if (userStatus === UserStatus.FREE && incrementAnonymousTripCount) {
+      incrementAnonymousTripCount()
     }
 
     const newEntry: VisaEntry = {
@@ -1121,6 +1140,11 @@ export default function HomePage() {
     }
     const updatedEntries = [...entries, newEntry]
     setEntries(recalculateEntries(updatedEntries))
+    
+    // AI Enhancement: Trigger intelligent background processing for premium users
+    if (intelligentBackground.enhanceAddTripHandler) {
+      intelligentBackground.enhanceAddTripHandler(() => {})()
+    }
   }
 
   const updateEntry = (id: string, field: keyof VisaEntry, value: any) => {
@@ -1203,8 +1227,16 @@ export default function HomePage() {
   }
 
   const handleOpenCalendar = (entryId: string) => {
-    setSelectedEntryId(entryId)
-    setIsCalendarOpen(true)
+    // AI Enhancement: Add date optimization intelligence for premium users
+    if (intelligentBackground.enhanceCalendarHandler) {
+      intelligentBackground.enhanceCalendarHandler((id: string) => {
+        setSelectedEntryId(id)
+        setIsCalendarOpen(true)
+      })(entryId)
+    } else {
+      setSelectedEntryId(entryId)
+      setIsCalendarOpen(true)
+    }
   }
 
   const handleCloseCalendar = () => {
@@ -1258,9 +1290,18 @@ export default function HomePage() {
   // Use "today" as reference date for overall compliance display
   // Overall compliance should always reflect current 90/180 status
   const overallDisplayReferenceDate = getRowReferenceDate(tripsForCalculation) // Falls back to "today" without trip end date
-  const compliance = tripsForCalculation.length > 0 
+  const compliance = tripsForCalculation.length > 0
     ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, overallDisplayReferenceDate)
-    : { totalDaysUsed: 0, daysRemaining: 90, isCompliant: true }
+    : {
+        totalDaysUsed: 0,
+        daysRemaining: 90,
+        isCompliant: true,
+        overstayDays: 0,
+        referenceDate: overallDisplayReferenceDate,
+        periodStart: new Date(overallDisplayReferenceDate.getTime() - 180 * 24 * 60 * 60 * 1000),
+        periodEnd: overallDisplayReferenceDate,
+        detailedBreakdown: []
+      }
   
   // Enhanced mobile debug logging for overall compliance
   console.log('Mobile: Overall compliance calculation:', {
@@ -1294,13 +1335,21 @@ export default function HomePage() {
   const occupiedDateInfo = useMemo(() => getOccupiedDateInfo(), [getOccupiedDateInfo])
 
   return (
-    <div className="min-h-screen font-dm-sans" style={{ backgroundColor: "#F4F2ED" }}>
+    <div className="min-h-screen font-dm-sans bg-gray-50">
       {/* Header Navigation */}
       <Header 
         onLoginClick={handleLoginClick}
         onSignupClick={handleSignupClick}
         onLogoutClick={handleLogoutClick}
         onDashboardClick={handleDashboardClick}
+        onPremiumClick={() => {
+          if (userStatus === UserStatus.FREE) {
+            setShowConversionModal(true)
+          } else {
+            setShowPremiumUpgradeModal(true)
+            setPremiumUpgradeTrigger('header_premium_button')
+          }
+        }}
         user={user}
         loading={loading}
       />
@@ -1308,25 +1357,19 @@ export default function HomePage() {
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
-      {/* Social Media Follow Section */}
-      <section className="py-8 bg-gradient-to-r from-gray-50 to-blue-50/50">
+
+      {/* TODO: Strategic Header Advertising - Temporarily Hidden Until Feature Enabled */}
+      {/* 
+      <section className="py-4">
         <div className="container mx-auto max-w-4xl px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <p className="text-sm font-dm-sans text-gray-600 mb-4">
-              Get daily ETIAS tips and travel updates
-            </p>
-            <HeroSocialLinks className="justify-center" />
-            <p className="text-xs text-gray-500 mt-3">
-              Join 10,000+ travelers following our expert advice
-            </p>
-          </motion.div>
+          <StrategicAdPlacement 
+            userStatus={userStatus} 
+            location="header" 
+            className="flex justify-center"
+          />
         </div>
       </section>
+      */}
 
       {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
@@ -1335,7 +1378,7 @@ export default function HomePage() {
             {/* Column Headers - Desktop */}
             <div
               className="hidden md:grid gap-4 p-6 bg-gray-50 border-b"
-              style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}
+              style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr" }}
             >
               <div className="text-center">
                 <h3 className="font-dm-sans font-semibold text-gray-900">Country</h3>
@@ -1399,14 +1442,14 @@ export default function HomePage() {
                   </div>
 
                   {/* Desktop Layout */}
-                  <div className="hidden md:grid gap-6 items-center" style={{ gridTemplateColumns: "1fr 2fr 1.2fr 1.5fr 1fr" }}>
+                  <div className="hidden md:grid gap-6 items-center" style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr" }}>
                     {/* Country Selection */}
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "country")}`}>
                       <div className="relative">
                                     <select
               value={entry.country}
               onChange={(e) => updateEntry(entry.id, "country", e.target.value)}
-              className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
+              className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-4 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
             >
                           <option value="" disabled>🇪🇺 Select Country</option>
                           {schengenCountries.map(country => (
@@ -1498,7 +1541,7 @@ export default function HomePage() {
                         <select
                           value={entry.country}
                           onChange={(e) => updateEntry(entry.id, "country", e.target.value)}
-                          className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
+                          className="w-full bg-white border-0 shadow-sm h-12 text-center rounded-md px-4 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer hover:bg-white"
                         >
                           <option value="" disabled>🇪🇺 Select Country</option>
                           {schengenCountries.map(country => (
@@ -1591,10 +1634,10 @@ export default function HomePage() {
                 </div>
               ))}
 
-              {/* Action Button - Single unified button */}
+              {/* Action Button - B2C 3-Tier System */}
               <div className="flex justify-center pt-4">
-                {isAtFreeLimitWithoutUser() ? (
-                  /* Save to Continue button at 5-entry limit */
+                {isAtTierLimit() ? (
+                  /* Tier-specific upgrade prompt */
                   <motion.div
                     animate={showFloatingSave && !prefersReducedMotion ? { 
                       scale: [1, 1.05, 1],
@@ -1612,7 +1655,14 @@ export default function HomePage() {
                     className="relative"
                   >
                     <Button
-                      onClick={() => setShowConversionModal(true)}
+                      onClick={() => {
+                        if (userStatus === UserStatus.FREE) {
+                          setShowConversionModal(true)
+                        } else {
+                          setShowPremiumUpgradeModal(true)
+                          setPremiumUpgradeTrigger('unlimited_trips')
+                        }
+                      }}
                       className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
@@ -1620,7 +1670,7 @@ export default function HomePage() {
                     >
                       <Save className="h-4 w-4 flex-shrink-0" />
                       <span className="font-dm-sans font-medium">
-                        Save to Continue
+                        {userStatus === UserStatus.FREE ? 'Create Free Account' : 'Upgrade to Premium'}
                       </span>
                       
                       {/* Static visual indicator for reduced motion users */}
@@ -1733,6 +1783,232 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Compliance Summary & PDF Export - Shows when user has trips */}
+      {totalDays > 0 && (
+        <section className="py-8 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="bg-white rounded-xl shadow-lg border p-6"
+            >
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-poppins font-bold text-gray-900 mb-2">
+                  Travel Compliance Summary
+                </h3>
+                <p className="text-gray-600 font-dm-sans mb-3">
+                  Your current status under the Schengen 90/180-day rule
+                </p>
+                {/* Real-Time Accuracy Verification Badge */}
+                {compliance.verification && (
+                  <div className="flex justify-center mb-2">
+                    <AccuracyVerificationBadge
+                      verification={compliance.verification}
+                      className="shadow-sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Compliance Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="text-center">
+                  <div className="bg-blue-50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-blue-600">{compliance.totalDaysUsed}</span>
+                  </div>
+                  <div className="text-sm font-medium text-gray-900">Days Used</div>
+                  <div className="text-xs text-gray-500">out of 90 allowed</div>
+                </div>
+
+                <div className="text-center">
+                  <div className="bg-green-50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-green-600">{compliance.daysRemaining}</span>
+                  </div>
+                  <div className="text-sm font-medium text-gray-900">Days Remaining</div>
+                  <div className="text-xs text-gray-500">in current period</div>
+                </div>
+
+                <div className="text-center">
+                  <div className={`${compliance.isCompliant ? 'bg-green-50' : 'bg-red-50'} rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center`}>
+                    <span className={`text-2xl ${compliance.isCompliant ? 'text-green-600' : 'text-red-600'}`}>
+                      {compliance.isCompliant ? '✓' : '⚠'}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium text-gray-900">Status</div>
+                  <div className={`text-xs ${compliance.isCompliant ? 'text-green-600' : 'text-red-600'}`}>
+                    {compliance.isCompliant ? 'Compliant' : 'Over Limit'}
+                  </div>
+                </div>
+              </div>
+
+              {/* PDF Export Button */}
+              <div className="flex justify-center">
+                <PDFExportButton
+                  userStatus={userStatus}
+                  trips={tripsForCalculation.map(trip => ({
+                    ...trip,
+                    startDate: trip.startDate,
+                    endDate: trip.endDate,
+                    purpose: 'Tourism' // Default purpose
+                  }))}
+                  complianceData={{
+                    totalDaysUsed: compliance.totalDaysUsed,
+                    remainingDays: compliance.daysRemaining,
+                    isCompliant: compliance.isCompliant,
+                    nextResetDate: new Date(Date.now() + (180 - compliance.totalDaysUsed) * 24 * 60 * 60 * 1000)
+                  }}
+                  userProfile={{
+                    full_name: user?.user_metadata?.full_name || user?.email || undefined
+                  }}
+                  className="w-full max-w-xs"
+                />
+              </div>
+
+              {/* TODO: Premium Feature Highlight - Temporarily Hidden Until Feature Redesign */}
+              {/*
+              {userStatus === UserStatus.FREE && (
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <div className="text-center text-sm text-gray-600">
+                    <span className="inline-flex items-center gap-1">
+                      💡 Premium users get detailed PDF reports with personalized recommendations
+                    </span>
+                  </div>
+                </div>
+              )}
+              */}
+            </motion.div>
+
+            {/* Visual Rolling Calendar with Confidence Score */}
+            {tripsForCalculation.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="mt-8"
+              >
+                <RollingCalendarView
+                  trips={tripsForCalculation}
+                  compliance={compliance}
+                  showConfidenceScore={true}
+                  onDateClick={(date) => {
+                    // Optional: Handle date clicks for future features
+                    console.log('Date clicked:', date)
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {/* Future Trip Validation Engine */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-8"
+            >
+              <FutureTripValidator
+                existingTrips={tripsForCalculation}
+                autoValidate={true}
+                onTripValidated={(validation) => {
+                  // Optional: Handle trip validation results for analytics
+                  console.log('Trip validated:', validation)
+                }}
+              />
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* TODO: Smart Alerts Panel - Temporarily Hidden Until Feature Redesign */}
+      {/*
+      <section className="py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <SmartAlertsPanel
+            userStatus={userStatus}
+            trips={tripsForCalculation.map(trip => ({
+              ...trip,
+              startDate: trip.startDate,
+              endDate: trip.endDate,
+              purpose: 'Tourism' // Default purpose
+            }))}
+            upcomingTrips={tripsForCalculation.filter(trip => 
+              trip.startDate > new Date()
+            ).map(trip => ({
+              ...trip,
+              startDate: trip.startDate,
+              endDate: trip.endDate,
+              purpose: 'Tourism'
+            }))}
+            userEmail={user?.email}
+          />
+        </div>
+      </section>
+      */}
+
+      {/* TODO: AI Travel Assistant - Temporarily Hidden Until Feature Redesign */}
+      {/*
+      <section className="py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <AITravelAssistant
+            userStatus={userStatus}
+            trips={tripsForCalculation.map(trip => ({
+              id: trip.id || `trip-${Date.now()}`,
+              country: trip.country,
+              startDate: trip.startDate,
+              endDate: trip.endDate,
+              purpose: 'Tourism'
+            }))}
+            upcomingTrips={tripsForCalculation.filter(trip => 
+              trip.startDate > new Date()
+            ).map(trip => ({
+              id: trip.id || `trip-${Date.now()}`,
+              country: trip.country,
+              startDate: trip.startDate,
+              endDate: trip.endDate,
+              purpose: 'Tourism'
+            }))}
+            userEmail={user?.email}
+          />
+        </div>
+      </section>
+      */}
+
+      {/* TODO: Ad-Free Badge - Temporarily Hidden Until Feature Redesign */}
+      {/*
+      <section className="py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <AdFreeBadge userStatus={userStatus} />
+        </div>
+      </section>
+      */}
+
+      {/* Affiliate Widgets - Free Account Users Only */}
+      <section className="py-8 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <AffiliateWidgets 
+            userStatus={userStatus}
+            userCountries={entries
+              .filter(entry => entry.country)
+              .map(entry => entry.country)
+              .filter((country, index, array) => array.indexOf(country) === index) // unique countries
+            }
+          />
+        </div>
+      </section>
+
+      {/* TODO: Inline Advertising - Temporarily Hidden Until Feature Enabled */}
+      {/* 
+      <section className="py-4">
+        <div className="container mx-auto max-w-4xl px-4">
+          <StrategicAdPlacement 
+            userStatus={userStatus} 
+            location="inline" 
+            className="flex justify-center"
+          />
+        </div>
+      </section>
+      */}
+
       {/* FAQ Section */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-4xl">
@@ -1839,10 +2115,13 @@ export default function HomePage() {
                   <Save className="w-8 h-8 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-poppins font-bold text-gray-900 mb-2">
-                  Add Unlimited Travel Dates
+                  {userStatus === UserStatus.FREE ? 'Add Unlimited Travel Dates' : 'Upgrade to Premium Features'}
                 </h2>
                 <p className="text-gray-600 font-dm-sans">
-                  Keep building your travel timeline with unlimited entries
+                  {userStatus === UserStatus.FREE 
+                    ? 'Keep building your travel timeline with unlimited entries'
+                    : 'Access family tracking, PDF reports, AI assistant and more'
+                  }
                 </p>
               </div>
 
@@ -1853,33 +2132,44 @@ export default function HomePage() {
                   <h3 className="text-sm font-medium text-blue-900 mb-2">Your Current Progress</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-2xl font-bold text-blue-600">{entries.length}</span>
-                    <span className="text-sm text-blue-700">trips calculated</span>
+                    <span className="text-sm text-blue-700">
+                      trips calculated
+                      {userStatus === UserStatus.FREE && tripLimit && (
+                        <span className="block text-xs">({tripLimit - entries.length} remaining on free tier)</span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
                 {/* Benefits */}
                 <div className="mb-6">
                   <h3 className="text-lg font-poppins font-semibold text-gray-900 mb-3">
-                    Unlock with free account:
+                    {userStatus === UserStatus.FREE ? 'Unlock with free account:' : 'Upgrade to Premium:'}
                   </h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                         <Plus className="w-3 h-3 text-green-600" />
                       </div>
-                      <span className="text-gray-700 font-dm-sans">Unlimited trip entries</span>
+                      <span className="text-gray-700 font-dm-sans">
+                        {userStatus === UserStatus.FREE ? 'Unlimited trip entries' : 'Family trip tracking (4 members)'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                         <Calendar className="w-3 h-3 text-green-600" />
                       </div>
-                      <span className="text-gray-700 font-dm-sans">Analytics dashboard</span>
+                      <span className="text-gray-700 font-dm-sans">
+                        {userStatus === UserStatus.FREE ? 'Trip history and analytics' : 'PDF compliance reports'}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                         <Save className="w-3 h-3 text-green-600" />
                       </div>
-                      <span className="text-gray-700 font-dm-sans">Progress auto-saved</span>
+                      <span className="text-gray-700 font-dm-sans">
+                        {userStatus === UserStatus.FREE ? 'Progress auto-saved' : 'Smart alerts & AI assistant'}
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -1892,6 +2182,20 @@ export default function HomePage() {
                   >
                     Create Free Account
                   </Button>
+                  
+                  {/* Direct Premium Option for Anonymous Users */}
+                  {userStatus === UserStatus.FREE && (
+                    <Button
+                      onClick={() => {
+                        setShowConversionModal(false)
+                        upgradeToPremium()
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-poppins font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                      Skip to Premium - £9.99/year
+                    </Button>
+                  )}
+                  
                   <Button
                     onClick={() => setShowConversionModal(false)}
                     variant="ghost"
@@ -1903,7 +2207,7 @@ export default function HomePage() {
 
                 {/* Trust indicator */}
                 <p className="text-xs text-gray-500 text-center mt-4 font-dm-sans">
-                  No credit card required • Join 50,000+ travelers
+                  No credit card required • Join travelers worldwide
                 </p>
               </div>
             </motion.div>
@@ -1936,7 +2240,7 @@ export default function HomePage() {
         error={authError}
       />
 
-      {/* Premium Upgrade Modal */}
+      {/* Premium Upgrade Modal - Re-enabled for Premium Buttons */}
       <PremiumUpgradeModal
         isOpen={showPremiumUpgradeModal}
         onClose={() => {
@@ -1944,14 +2248,44 @@ export default function HomePage() {
           setPremiumUpgradeTrigger(undefined)
         }}
         feature={premiumUpgradeTrigger}
-        currentTier={subscriptionTier}
+        currentTier={userStatus !== UserStatus.FREE ? SubscriptionTier.PREMIUM : SubscriptionTier.FREE}
         onUpgrade={handlePremiumUpgrade}
         loading={loading}
         error={authError}
       />
 
+      {/* TODO: Footer Advertising - Temporarily Hidden Until Feature Enabled */}
+      {/* 
+      <section className="py-4 bg-gray-50">
+        <div className="container mx-auto max-w-4xl px-4">
+          <StrategicAdPlacement 
+            userStatus={userStatus} 
+            location="footer" 
+            className="flex justify-center"
+          />
+        </div>
+      </section>
+      */}
+
       {/* Footer */}
-      <Footer />
+      <Footer 
+        onPremiumClick={() => {
+          if (userStatus === UserStatus.FREE) {
+            setShowConversionModal(true)
+          } else {
+            setShowPremiumUpgradeModal(true)
+            setPremiumUpgradeTrigger('footer_premium_button')
+          }
+        }}
+      />
+
+      {/* TODO: Mobile Sticky Ad - Temporarily Hidden Until Feature Enabled */}
+      {/* 
+      <StrategicAdPlacement 
+        userStatus={userStatus} 
+        location="mobile-sticky"
+      />
+      */}
 
       </div>
   )

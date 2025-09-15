@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from './button'
 import { Badge } from './badge'
 import { useConversionAnalytics } from '../../hooks/useConversionAnalytics'
-import { X, Crown, FileText, List, Bell, Palette, ZapOff, Check, CreditCard, Sparkles } from 'lucide-react'
+import { X, Crown, FileText, List, Bell, Palette, ZapOff, Check, CreditCard, Sparkles, CheckCircle } from 'lucide-react'
 import { SubscriptionTier } from '../../hooks/useFeatureAccess'
 
 export interface PremiumUpgradeModalProps {
@@ -13,7 +13,7 @@ export interface PremiumUpgradeModalProps {
   onClose: () => void
   feature?: string // Which feature triggered the modal
   currentTier: SubscriptionTier
-  onUpgrade: (tier: 'premium' | 'pro' | 'business', billingCycle: 'monthly' | 'yearly') => Promise<void>
+  onUpgrade: (tier: 'lifetime' | 'annual', billingCycle: 'lifetime' | 'yearly') => Promise<void>
   loading?: boolean
   error?: string | null
 }
@@ -69,12 +69,12 @@ const getUpgradeContent = (feature?: string, currentTier?: SubscriptionTier) => 
 }
 
 const premiumFeatures = [
-  { icon: <Bell className="w-5 h-5" />, text: "Smart visa deadline alerts" },
-  { icon: <List className="w-5 h-5" />, text: "Unlimited trip lists" },
+  { icon: <List className="w-5 h-5" />, text: "Unlimited trips tracking" },
+  { icon: <Bell className="w-5 h-5" />, text: "Smart overstay alerts" },
   { icon: <FileText className="w-5 h-5" />, text: "Professional PDF reports" },
-  { icon: <Palette className="w-5 h-5" />, text: "Premium dark mode" },
-  { icon: <ZapOff className="w-5 h-5" />, text: "Ad-free experience" },
-  { icon: <Sparkles className="w-5 h-5" />, text: "Priority support" }
+  { icon: <Sparkles className="w-5 h-5" />, text: "Family member tracking (up to 4)" },
+  { icon: <ZapOff className="w-5 h-5" />, text: "Date overlap prevention" },
+  { icon: <CheckCircle className="w-5 h-5" />, text: "Lifetime updates included" }
 ]
 
 export function PremiumUpgradeModal({
@@ -87,21 +87,19 @@ export function PremiumUpgradeModal({
   error = null
 }: PremiumUpgradeModalProps) {
   const [isUpgrading, setIsUpgrading] = useState(false)
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [billingCycle, setBillingCycle] = useState<'lifetime' | 'yearly'>('lifetime')
   const analytics = useConversionAnalytics()
   
   const upgradeContent = getUpgradeContent(feature, currentTier)
 
-  const handleUpgrade = async (tier: 'premium' | 'pro' | 'business' = 'premium') => {
+  const handleUpgrade = async (tier: 'lifetime' | 'annual' = 'lifetime') => {
     if (loading || isUpgrading) return
-    
+
     try {
       setIsUpgrading(true)
       await onUpgrade(tier, billingCycle)
       // Track successful premium subscription
-      const amount = tier === 'premium' ? (billingCycle === 'yearly' ? 99 : 9.99) : 
-                    tier === 'pro' ? (billingCycle === 'yearly' ? 199 : 19.99) : 
-                    (billingCycle === 'yearly' ? 499 : 49.99)
+      const amount = billingCycle === 'lifetime' ? 4.99 : 2.99
       analytics.trackPremiumSubscribed(feature || 'default', billingCycle, amount)
     } catch (error) {
       console.error('Upgrade error:', error)
@@ -190,7 +188,7 @@ export function PremiumUpgradeModal({
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
                   <Crown className="w-5 h-5 text-amber-500 mr-2" />
-                  Everything in Premium ($9.99/month):
+                  Everything in Premium:
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {premiumFeatures.map((feature, index) => (
@@ -208,27 +206,27 @@ export function PremiumUpgradeModal({
               <div className="mb-6">
                 <div className="flex bg-gray-100 rounded-lg p-1 mb-4">
                   <button
-                    onClick={() => setBillingCycle('monthly')}
-                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                      billingCycle === 'monthly'
+                    onClick={() => setBillingCycle('lifetime')}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative ${
+                      billingCycle === 'lifetime'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Monthly
+                    Lifetime
+                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      Best Value
+                    </span>
                   </button>
                   <button
                     onClick={() => setBillingCycle('yearly')}
-                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative ${
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
                       billingCycle === 'yearly'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    Yearly
-                    <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                      Save 20%
-                    </span>
+                    Annual
                   </button>
                 </div>
                 
@@ -236,31 +234,36 @@ export function PremiumUpgradeModal({
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-gray-900">
-                      ${billingCycle === 'yearly' ? '99' : '9.99'}
+                      £{billingCycle === 'lifetime' ? '4.99' : '2.99'}
                     </div>
                     <div className="text-sm text-gray-600">
-                      per {billingCycle === 'yearly' ? 'year' : 'month'}
+                      {billingCycle === 'lifetime' ? 'one-time payment' : 'per year'}
                     </div>
-                    {billingCycle === 'yearly' && (
+                    {billingCycle === 'lifetime' && (
                       <div className="text-xs text-green-600 mt-1">
-                        💰 Save $20.88 per year
+                        🎯 Pay once, use forever
                       </div>
                     )}
-                    <div className="text-xs text-green-600 mt-1">✓ Cancel anytime</div>
+                    {billingCycle === 'yearly' && (
+                      <div className="text-xs text-green-600 mt-1">
+                        💰 Includes all future updates
+                      </div>
+                    )}
+                    <div className="text-xs text-green-600 mt-1">✓ 30-day money-back guarantee</div>
                   </div>
                 </div>
               </div>
 
               {/* Upgrade Button */}
               <Button
-                onClick={() => handleUpgrade('premium')}
+                onClick={() => handleUpgrade(billingCycle === 'lifetime' ? 'lifetime' : 'annual')}
                 disabled={loading || isUpgrading}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3 px-4 rounded-lg mb-4"
               >
                 <CreditCard className="h-5 w-5 mr-2" />
-                {isUpgrading 
-                  ? 'Redirecting to Payment...' 
-                  : `Subscribe ${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} - $${billingCycle === 'yearly' ? '99/year' : '9.99/month'}`
+                {isUpgrading
+                  ? 'Redirecting to Payment...'
+                  : `${billingCycle === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Annual'} - £${billingCycle === 'lifetime' ? '4.99' : '2.99'}${billingCycle === 'yearly' ? '/year' : ''}`
                 }
               </Button>
 
@@ -276,7 +279,7 @@ export function PremiumUpgradeModal({
               {/* Social proof */}
               <div className="mt-4 text-center">
                 <p className="text-xs text-gray-500">
-                  Join <span className="font-medium text-blue-600">10,000+ travelers</span> who trust us with their visa compliance
+                  Join <span className="font-medium text-blue-600">3,000+ travelers</span> who trust us with their Schengen compliance
                 </p>
               </div>
             </div>

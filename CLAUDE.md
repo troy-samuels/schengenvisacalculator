@@ -1,53 +1,92 @@
-# CLAUDE.md - Schengen Calculator V2 Platform Guide (Enhanced)
+# CLAUDE.md - Schengen Compliance Tool Guide
 
-This file provides comprehensive guidance to Claude Code for building the Schengen Visa Calculator as a monetized platform with enterprise-grade security.
+This file provides comprehensive guidance for building a focused Schengen 90/180 compliance calculator with unique family tracking features. The platform prioritizes calculation accuracy and family coordination over complex features.
 
-## 🎯 Primary Objective
-Build a revenue-generating travel compliance platform with multiple monetization streams, launching with paid features from Day 1 while maintaining free tier for basic calculator.
+## 🎯 Primary Vision: Compliance Excellence with Family Focus
+Build a reliable Schengen compliance tool where accurate calculations and family coordination justify premium pricing through genuine compliance value. The core philosophy: **Accuracy first, family coordination, sustainable growth**.
 
-## 💰 Monetization Implementation
+### Core Design Principles
+- **Calculation Accuracy**: 100% EU compliance, zero tolerance for errors
+- **Family-First Design**: Multi-person tracking with visual coordination
+- **Mobile Excellence**: Touch-friendly with 44px minimum targets
+- **Professional Polish**: Enterprise-grade reliability and security
+- **Sustainable Monetization**: Value-justified pricing without feature bloat
 
-### Subscription Tiers
+## 💰 Focused Monetization Strategy
+
+### Simplified Tier System (Compliance-Focused)
 ```typescript
-enum SubscriptionTier {
-  FREE = 'free',
-  PREMIUM = 'premium',     // $9.99/month
-  PRO = 'pro',            // $19.99/month  
-  BUSINESS = 'business'   // $49.99/month
+// Schengen Compliance Tool Tiers
+enum UserStatus {
+  FREE = 'free',                  // Basic calculator, 5 trip limit
+  LIFETIME = 'lifetime',          // £4.99 one-time - Family tracking + alerts
+  ANNUAL = 'annual'               // £2.99/year - SMS alerts + priority support
 }
 
-// Feature flags by tier
-const FEATURES = {
-  [SubscriptionTier.FREE]: [
-    'basic_calculator',
-    'single_trip_list',
+// Compliance-First Feature Access Control
+const COMPLIANCE_FEATURES = {
+  [UserStatus.FREE]: [
+    'basic_schengen_calculator',
+    'trip_limit_5',
+    'date_overlap_prevention',
     'screenshot_export'
   ],
-  [SubscriptionTier.PREMIUM]: [
-    ...FEATURES[SubscriptionTier.FREE],
-    'smart_alerts',
-    'unlimited_lists',
-    'pdf_export',
-    'dark_mode',
-    'no_ads',
-    'email_reports'
+  [UserStatus.LIFETIME]: [
+    'unlimited_trips',
+    'family_tracking_4_members',    // UNIQUE: Core competitive advantage
+    'email_alerts',
+    'pdf_compliance_reports',
+    'ad_free_experience'
   ],
-  [SubscriptionTier.PRO]: [
-    ...FEATURES[SubscriptionTier.PREMIUM],
-    'trip_optimizer_pro',
-    'document_vault',
-    'multi_person_tracking',
-    'api_access_basic',
-    'priority_support'
-  ],
-  [SubscriptionTier.BUSINESS]: [
-    ...FEATURES[SubscriptionTier.PRO],
-    'team_management',
-    'white_label',
-    'api_access_full',
-    'dedicated_support',
-    'custom_integrations'
+  [UserStatus.ANNUAL]: [
+    'all_lifetime_features',
+    'sms_alerts',                   // Premium communication
+    'priority_support',
+    'regulatory_updates',
+    'advanced_pdf_templates'
   ]
+};
+
+// Future B2B Expansion (Post-Success)
+const B2B_FEATURES = {
+  CORPORATE: {
+    price: 25,
+    currency: 'GBP',
+    interval: 'month',
+    features: [
+      'employee_management',
+      'corporate_dashboard',
+      'compliance_reporting',
+      'team_coordination',
+      'audit_trails'
+    ]
+  }
+};
+```
+
+### Revenue Model
+```typescript
+// Target Revenue Composition (Month 12)
+const REVENUE_TARGETS = {
+  lifetime_purchases: {
+    users: 800,
+    price: 4.99,
+    revenue: 3992,  // One-time revenue amortized
+    percentage: 60
+  },
+  annual_subscriptions: {
+    users: 200,
+    price: 2.99,
+    revenue: 598,   // Monthly recurring
+    percentage: 25
+  },
+  b2b_corporate: {
+    accounts: 15,
+    price: 25,
+    revenue: 375,   // Monthly recurring
+    percentage: 15
+  },
+  total_monthly: 2500  // £2.5K MRR target
 };
 ```
 
@@ -56,7 +95,7 @@ const FEATURES = {
 #### Development
 ```bash
 npm run dev           # Start development server
-npm run build         # Build for production  
+npm run build         # Build for production
 npm run start         # Start production server
 npm run lint          # Run ESLint
 ```
@@ -65,48 +104,22 @@ npm run lint          # Run ESLint
 ```bash
 npm test              # Run fast test suite
 npm run test:full     # Complete test suite with performance tests
-npm run test:eu       # EU compliance tests only
+npm run test:eu       # EU compliance tests only (MANDATORY 100% pass)
 npm run test:edge     # Edge case tests only
 npm run validate      # Run all validation tests
 npm run benchmark     # Performance benchmarking
 ```
 
-#### Testing & Quality Assurance
-```bash
-npm run test:coverage   # Run tests with coverage report  
-npm run test:e2e       # End-to-end testing with Playwright
-npm run test:mobile    # Mobile-specific testing
-npm run test:security  # Security vulnerability scanning (ZERO vulnerabilities ✅)
-npm run lighthouse     # Performance and accessibility audit
-```
-
-## 🔒 **Enterprise Security Stack (ZERO Vulnerabilities)**
-
-This platform uses an enterprise-grade toolchain with **ZERO security vulnerabilities**:
-
-### **Core Security Architecture**
-- **Testing**: Jest + @swc/jest (Rust-based, memory-safe)
-- **Building**: Rollup + @rollup/plugin-swc (20x faster, secure)
-- **Runtime**: Node.js + Next.js 15 (Vercel-optimized)
-- **Dependencies**: Minimal attack surface (eliminated 1000+ vulnerable deps)
-
-### **Security Validation**
-```bash
-npm audit                    # Returns: found 0 vulnerabilities ✅
-npm run test:eu-compliance   # Returns: 100% pass rate ✅  
-npm run build               # Returns: Zero warnings ✅
-```
-
 ## Architecture Overview
 
-This is a **monetized Next.js platform** for calculating Schengen visa compliance using the 90/180-day rule, architected as a scalable travel platform with enterprise security. The application includes:
+This is a **focused Next.js compliance platform** for calculating Schengen visa compliance using the 90/180-day rule, architected for sustainable growth with enterprise security.
 
 ### Core Architecture
 - **Frontend**: Next.js App Router with TypeScript, Tailwind CSS, shadcn/ui components
 - **Backend**: Next.js API routes, Supabase (PostgreSQL + Auth)
-- **Payments**: Stripe integration with subscription management
-- **Authentication**: Supabase Auth with MFA and enterprise security
-- **Security**: Document vault, audit logging, rate limiting by tier
+- **Payments**: Stripe integration with lifetime + annual subscriptions
+- **Authentication**: Supabase Auth with enterprise security
+- **Security**: Zero vulnerabilities, audit logging, rate limiting by tier
 - **PWA**: Configured with service worker and offline functionality
 
 ### Key Components & Services
@@ -114,112 +127,71 @@ This is a **monetized Next.js platform** for calculating Schengen visa complianc
 #### Schengen Calculator Core (`packages/calculator/`)
 - **`robust-schengen-calculator.ts`**: Main calculation engine implementing exact 90/180-day rule
 - **`date-overlap-validator.ts`**: Prevents date conflicts with visual indicators (CRITICAL)
-- **Enhanced calculator**: Premium features with tier-based access
-- **Trip optimizer Pro**: AI-powered optimization (PRO tier)
+- **Family tracking system**: Multi-person compliance coordination
+- **Alert system**: Email/SMS notifications for compliance deadlines
 
 #### Monetization Packages
-- **`packages/payments/`**: Stripe integration, subscription management
-- **`packages/security/`**: MFA, document vault, audit logging
-- **`packages/analytics/`**: Revenue tracking, conversion metrics
-- **`packages/affiliates/`**: Partner integrations, commission tracking
+- **`packages/payments/`**: Stripe integration, lifetime + annual subscriptions
+- **`packages/ui/`**: Family tracking components, premium features
+- **`packages/calculator/`**: Core compliance engine with 100% EU accuracy
 
 #### Database Schema (`lib/types/database.ts`)
-- **`profiles`**: User profiles with subscription tier and billing
-- **`subscriptions`**: Stripe subscription management and feature flags
+- **`profiles`**: User profiles with subscription tier and family settings
+- **`subscriptions`**: Stripe subscription management for lifetime/annual tiers
 - **`countries`**: Schengen area country data with flags
 - **`visa_entries`**: Individual travel entries with date conflict prevention
-- **`trip_collections`**: Grouped trips with team management (BUSINESS tier)
-- **`documents`**: Encrypted document vault (PRO tier)
-- **`audit_logs`**: Security and compliance tracking
+- **`family_members`**: Family tracking with shared compliance coordination
+- **`alerts`**: Smart notification system for overstay prevention
 
 #### Custom Hooks (`packages/ui/hooks/`)
 - **`useSchengenCalculator.ts`**: Basic calculator hook (FREE tier)
-- **`useEnhancedSchengenCalculator.ts`**: Enhanced calculator with premium features
+- **`useFamilyTracking.ts`**: Family member management (LIFETIME tier)
 - **`useDateOverlapPrevention.ts`**: Date conflict prevention (ALL tiers)
 - **`useSubscriptionTier.ts`**: Feature flag management
-- **`useTripExport.ts`**: PDF export (PREMIUM), Excel (PRO)
-- **`usePaymentFlow.ts`**: Stripe checkout integration
+- **`useComplianceAlerts.ts`**: Smart alert system
 
 #### UI Components (`packages/ui/components/`)
 - **SchengenCalendar**: Date overlap prevention with visual indicators
+- **FamilyTracker**: Multi-person compliance coordination
 - **TripCard**: Premium features based on subscription tier
 - **PaymentModal**: Stripe integration for upgrades
-- **DocumentVault**: Encrypted file storage (PRO tier)
-- **TripOptimizer**: AI-powered planning (PRO tier)
-- **TeamDashboard**: Multi-user management (BUSINESS tier)
-- **PWA components**: Offline status, install prompt
-
-### Monetization Architecture
-Revenue-first platform designed for immediate monetization:
-
-- **Subscription Tiers**: FREE ($0), PREMIUM ($9.99), PRO ($19.99), BUSINESS ($49.99)
-- **Feature Flags**: Tier-based access control with artificial limitations
-- **Payment Integration**: Stripe for subscriptions, one-time payments, trials
-- **Affiliate Revenue**: Insurance, eSIM, booking commissions (15-30% margins)
-- **API Monetization**: Usage-based pricing for enterprise customers
-- **Freemium Model**: Basic calculator free, advanced features paid
-
-### Day 1 Launch Strategy
-```typescript
-// Free tier artificial limitations
-const FREE_TIER_LIMITS = {
-  calculationDelay: 2000,      // 2-second delay
-  exportFormats: ['screenshot'], // No PDF/Excel
-  tripLists: 1,               // Single list only
-  adsEnabled: true,           // Show subtle ads
-  priorityCalculation: false  // Queue behind paid users
-};
-```
+- **ComplianceReports**: PDF generation for border officials
 
 ## Development Guidelines
 
-### Revenue-First Development
-- **Every feature** must have tier-based access control
-- **Payment integration** required for all premium features
-- **Analytics tracking** on all user interactions
-- **A/B testing** for pricing and conversion optimization
+### Core Development Philosophy (Compliance-Focused Strategy)
+- **Accuracy-First**: 100% EU compliance is non-negotiable
+- **Family-Centric**: Multi-person tracking is primary competitive advantage
+- **Mobile-First**: Every feature must work flawlessly on mobile
+- **Sustainable Growth**: Focus on profitable features, avoid complexity
+- **B2B Ready**: Architecture supports future corporate expansion
+- **Zero Vulnerabilities**: Enterprise-grade security throughout
 
-### 🚨 **MANDATORY: MOBILE-FIRST DEVELOPMENT (NON-NEGOTIABLE)**
-**ALL CHANGES MUST INCLUDE MOBILE IMPLEMENTATION AUTOMATICALLY**
-- Every UI change MUST work on mobile (separate responsive layouts)
-- Every state update MUST work on mobile browsers  
-- Every new feature MUST include mobile considerations
-- Every component MUST have mobile-specific testing
-- Every calculation display MUST work on mobile viewports
-- NEVER implement desktop-only features
+### 🚨 **MANDATORY: MOBILE-FIRST + COMPLIANCE ACCURACY (NON-NEGOTIABLE)**
+**ALL CHANGES MUST INCLUDE MOBILE IMPLEMENTATION WITH 100% EU COMPLIANCE**
+- Every UI change MUST work flawlessly on mobile with iOS-like smoothness
+- Every calculation MUST pass 100% of EU compliance tests
+- Every family feature MUST work seamlessly on mobile browsers
+- Every date picker MUST prevent overlaps with visual indicators
+- **Touch Targets**: Minimum 44px with generous spacing
+- **Performance**: <50ms for calculations, <200KB bundle
+- **Compliance**: 100% pass rate on EU test cases (legal requirement)
 
 ### Testing Requirements (NON-NEGOTIABLE)
 - Always run tests before committing: `npm run validate`
 - **EU compliance tests must pass 100%** (legal requirement)
 - **Date overlap prevention must be 100% accurate** (core feature)
-- Performance benchmarks: <50ms calculations, <200KB bundle
-- Payment flow testing: subscription lifecycle, webhooks, refunds
+- **Family coordination must work across all devices** (competitive advantage)
+- **Performance benchmarks**: <50ms calculations, <200KB bundle
+- **Mobile experience**: Touch-friendly with proper spacing
 
 ### Calculator Development
 - **`RobustSchengenCalculator`** class is the source of truth (packages/calculator/)
 - **Date Overlap Prevention** is CRITICAL - no date conflicts allowed
-- Always validate against EU official test cases (KOM series) - 100% pass rate
+- Always validate against EU official test cases - 100% pass rate required
 - Handle edge cases: leap years, timezone transitions, boundary conditions
 - **Visual indicators**: Occupied dates must be greyed out with strikethrough
-- **Interaction prevention**: Clicking occupied dates shows helpful error message
-- Maintain backward compatibility with existing trip data
-
-### Database Operations
-- Use Supabase client from `lib/supabase/client.ts` for browser-side operations
-- Use server client from `lib/supabase/server.ts` for API routes
-- **Row Level Security (RLS)** enforces subscription tier access
-- **Audit logging** for all premium feature usage
-- **Encrypted storage** for document vault (AES-256)
-- **Payment webhooks** update subscription status immediately
-
-### Component Development
-- Use shadcn/ui components for consistency
-- **Mobile-first responsive design** with 44px minimum touch targets
-- **Tier-based feature rendering** - check subscription before showing features
-- **Payment modals** integrated into premium feature interactions
-- **Loading states** for payment processing and subscription checks
-- **Error handling** for payment failures and subscription issues
-- Use TypeScript interfaces from `packages/*/types/`
+- **Family coordination**: Multiple family members with shared compliance
 
 ## 🚫 CRITICAL: Date Overlap Prevention (Core Feature - All Tiers)
 
@@ -230,187 +202,85 @@ const DATE_VISUAL_STATES = {
   occupied: 'bg-gray-200 text-gray-600 line-through cursor-not-allowed opacity-60',
   available: 'bg-gray-50 hover:bg-primary/10 cursor-pointer transition-colors',
   selected: 'bg-primary text-primary-foreground cursor-pointer',
-  conflict: 'bg-red-100 text-red-700 cursor-not-allowed border border-red-200',
-  suggestion: 'bg-green-100 text-green-700 border border-green-200'
+  conflict: 'bg-red-100 text-red-700 cursor-not-allowed border border-red-200'
 };
 ```
 
-### Validation Logic (100% Accuracy Required)
+### Family Coordination System
 ```typescript
-class DateOverlapValidator {
-  /**
-   * CRITICAL: Validates if new date range conflicts with existing trips
-   * Must be 100% accurate for EU Schengen compliance
-   */
-  validateDateRange(newRange: DateRange, existingTrips: Trip[]): ValidationResult {
-    const conflicts = existingTrips.filter(trip => 
-      this.rangesOverlap(newRange, {
-        start: trip.startDate,
-        end: trip.endDate
-      })
-    );
-    
-    return {
-      isValid: conflicts.length === 0,
-      conflicts: conflicts,
-      message: conflicts.length > 0 
-        ? `Dates overlap with existing trip: ${conflicts[0].country}`
-        : 'Dates are available'
-    };
-  }
-  
-  /**
-   * Returns array of dates that should be disabled in date picker
-   * These dates MUST be visually greyed out with strikethrough
-   */
-  getDisabledDates(existingTrips: Trip[]): Date[] {
-    const disabledDates: Date[] = [];
-    
-    existingTrips.forEach(trip => {
-      let currentDate = new Date(trip.startDate);
-      const endDate = new Date(trip.endDate);
-      
-      while (currentDate <= endDate) {
-        disabledDates.push(new Date(currentDate));
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-    });
-    
-    return disabledDates;
-  }
+// Family member management (LIFETIME tier)
+interface FamilyMember {
+  id: string;
+  name: string;
+  nationality: string;
+  relationship: 'self' | 'spouse' | 'child' | 'parent';
+  trips: Trip[];
+  complianceStatus: ComplianceResult;
+  alerts: AlertPreference[];
+}
+
+// Shared family compliance
+interface FamilyCompliance {
+  familyId: string;
+  members: FamilyMember[];
+  sharedTrips: SharedTrip[];
+  coordinatedAlerts: boolean;
+  complianceOverview: FamilyComplianceResult;
 }
 ```
 
-### User Experience Requirements
-1. **Visual Feedback**: Occupied dates MUST be greyed out with strikethrough
-2. **Interaction Prevention**: Clicking occupied dates shows helpful error message  
-3. **Tooltip Information**: Hover shows which trip occupies the date
-4. **Mobile Optimization**: Touch-friendly with clear visual indicators
-5. **Accessibility**: Screen reader compatible with proper ARIA labels
-
-### Testing Requirements (100% Coverage)
-```typescript
-// MANDATORY test cases
-describe('DateOverlapPrevention', () => {
-  it('should grey out and strikethrough occupied dates', () => {
-    // Visual indicator test
-  });
-  
-  it('should prevent clicking on occupied dates', () => {
-    // Interaction prevention test  
-  });
-  
-  it('should detect exact date overlaps', () => {
-    // Validation logic test
-  });
-  
-  it('should show helpful error messages', () => {
-    // User experience test
-  });
-});
-```
-
-### Mobile Development Standards (MANDATORY FOR ALL CHANGES)
-- **Touch Targets**: Minimum 44x44px for all interactive elements
-- **Responsive Design**: Mobile-first approach with breakpoints at 640px, 768px, 1024px
-- **Performance**: Target <50ms for calculations, <200KB initial bundle size
-- **PWA Requirements**: Offline functionality, service worker, app manifest
-- **Accessibility**: WCAG AA compliance, screen reader support, keyboard navigation
-
-### 📱 **CRITICAL: MOBILE-FIRST DEVELOPMENT RULE**
-**ANY CHANGES TO THE APPLICATION MUST AUTOMATICALLY INCLUDE MOBILE IMPLEMENTATION**
-
-When making ANY changes to the app, you MUST:
-1. **Implement changes for BOTH desktop AND mobile layouts simultaneously**
-2. **Test mobile responsiveness and touch interactions**
-3. **Verify state updates work correctly on mobile browsers**
-4. **Ensure conditional rendering works on both desktop and mobile**
-5. **Add mobile-specific debug logging when implementing new features**
-6. **Check that new UI components have proper mobile styling**
-
-### Mobile Implementation Checklist (REQUIRED)
-- [ ] Desktop implementation complete
-- [ ] Mobile responsive design applied (separate mobile layout in code)  
-- [ ] Touch event handling tested
-- [ ] State management works on mobile browsers
-- [ ] Display conditions work for mobile viewport
-- [ ] Debug logging added for mobile troubleshooting
-- [ ] Mobile-specific edge cases considered
-- [ ] Cross-device testing completed
-
-**NEVER implement features for desktop only - mobile must be included automatically.**
-
-### API Development Guidelines
-- **Versioning**: Use `/api/v1/` prefix for all new endpoints
-- **Authentication**: JWT tokens with Supabase Auth
-- **Rate Limiting**: Implement rate limits for all public endpoints
-- **Error Handling**: Consistent error response format across all APIs
-- **Documentation**: OpenAPI/Swagger documentation for all endpoints
-
 ## Environment Variables
 
-Required environment variables:
+Required environment variables for Schengen Compliance Platform:
 ```bash
-# Supabase
+# Supabase Database & Auth
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Stripe (REQUIRED for monetization)
+# Stripe Payment Processing (Simplified Tiers)
 STRIPE_SECRET_KEY=sk_live_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-# Pricing (Day 1 Launch)
-STRIPE_PRICE_PREMIUM_MONTHLY=price_premium_monthly
-STRIPE_PRICE_PREMIUM_YEARLY=price_premium_yearly
-STRIPE_PRICE_PRO_MONTHLY=price_pro_monthly
-STRIPE_PRICE_PRO_YEARLY=price_pro_yearly
-STRIPE_PRICE_BUSINESS_MONTHLY=price_business_monthly
-STRIPE_PRICE_BUSINESS_YEARLY=price_business_yearly
+# Focused Pricing (No AI Premium)
+STRIPE_PRICE_LIFETIME=price_lifetime_4_99
+STRIPE_PRICE_ANNUAL=price_annual_2_99
 
-# Security Features
-ENCRYPTION_KEY=your_aes_256_key
-MFA_SECRET=your_mfa_secret
+# Email & SMS Alerts
+FROM_EMAIL=info@schengentracker.com
+SUPPORT_EMAIL=support@schengentracker.com
+SENDGRID_API_KEY=your_sendgrid_key
+SMS_API_KEY=your_sms_provider_key
 
-# Analytics & Tracking
+# App Configuration
+NEXT_PUBLIC_APP_URL=https://schengentracker.com
+
+# Analytics (Simple)
 POSTHOG_API_KEY=your_posthog_key
 GOOGLE_ANALYTICS_ID=GA_MEASUREMENT_ID
 
-# Email Configuration (ETIAS Calculator)
-FROM_EMAIL=info@etiascalculator.com
-CONTACT_EMAIL=info@etiascalculator.com
-SUPPORT_EMAIL=info@etiascalculator.com
-ADMIN_EMAIL=info@etiascalculator.com
-SENDGRID_API_KEY=your_sendgrid_key
-
-# App Configuration
-NEXT_PUBLIC_APP_URL=https://etiascalculator.com
-
-# Affiliate Revenue
-SAFETYWING_API_KEY=your_safetywing_key
-WORLDNOMADS_API_KEY=your_worldnomads_key
-AIRALO_API_KEY=your_airalo_key
-AFFILIATE_ID=your_affiliate_id
+# Security & Encryption
+ENCRYPTION_KEY=your_aes_256_key
+JWT_SECRET=your_jwt_secret
 ```
 
 ## Important Files & Directories
 
-### Monetization Core
-- `packages/payments/` - Stripe integration, subscription management
-- `packages/security/` - MFA, document vault, audit logging
-- `packages/analytics/` - Revenue tracking, conversion metrics
-- `packages/affiliates/` - Partner integrations, commission tracking
-
-### Calculator Core
+### Core Compliance
 - `packages/calculator/src/calculator/robust-schengen-calculator.ts` - Main calculation engine
 - `packages/calculator/src/validators/date-overlap-validator.ts` - Date conflict prevention
-- `packages/calculator/src/__tests__/` - Comprehensive test suites
+- `packages/calculator/src/__tests__/` - Comprehensive test suites (100% pass required)
 
-### UI Components
-- `packages/ui/src/components/schengen-calendar.tsx` - Date picker with overlap prevention
-- `packages/ui/src/components/trip-card.tsx` - Trip display with tier-based features
-- `packages/ui/src/components/ui/` - shadcn/ui component library
+### Family Tracking
+- `packages/ui/src/components/family-tracker.tsx` - Family member management
+- `packages/ui/src/components/family-coordination.tsx` - Multi-person trip planning
+- `packages/ui/src/hooks/useFamilyTracking.ts` - Family state management
+
+### Premium Features
+- `packages/ui/src/components/compliance-reports.tsx` - PDF generation
+- `packages/ui/src/components/alert-system.tsx` - Email/SMS notifications
+- `packages/payments/` - Stripe integration for lifetime/annual tiers
 
 ### Configuration
 - `turbo.json` - Monorepo build configuration
@@ -418,184 +288,28 @@ AFFILIATE_ID=your_affiliate_id
 - `packages/*/tailwind.config.ts` - Tailwind CSS configurations
 
 ## Critical Requirements (NON-NEGOTIABLE)
-- **EU compliance tests must always pass 100%** - This is the single most important requirement
+- **EU compliance tests must always pass 100%** - Legal requirement
 - **Date overlap prevention must be 100% accurate** - Core feature for all tiers
-- **Payment integration must work flawlessly** - Revenue depends on this
-- **Performance benchmarks must be maintained** (<50ms calculations, <200KB bundle)
+- **Family tracking must work flawlessly** - Primary competitive advantage
 - **Mobile-first design principles must be preserved** (44px touch targets)
-- **Security features must be enterprise-grade** (MFA, encryption, audit logs)
+- **Performance benchmarks must be maintained** (<50ms calculations, <200KB bundle)
 - **🚨 MOBILE IMPLEMENTATION IS MANDATORY FOR ALL CHANGES** - Desktop + Mobile simultaneously
 
-## Revenue Architecture
+## Success Metrics
 
-### Subscription Tiers Implementation
-```typescript
-// Feature access control
-function hasFeature(tier: SubscriptionTier, feature: string): boolean {
-  return FEATURES[tier].includes(feature);
-}
+### Business Metrics (Realistic Targets)
+- **Month 6**: £800 MRR (break-even)
+- **Month 12**: £2,500 MRR (sustainable business)
+- **Lifetime Conversion**: 3% of free users
+- **Family Feature Adoption**: 35% of premium users
+- **Annual Retention**: >60% for premium users
 
-// Payment enforcement
-function requiresPayment(feature: string): boolean {
-  return !FEATURES[SubscriptionTier.FREE].includes(feature);
-}
-
-// Usage tracking for analytics
-function trackFeatureUsage(userId: string, feature: string, tier: SubscriptionTier) {
-  analytics.track('feature_used', {
-    userId,
-    feature,
-    tier,
-    timestamp: new Date(),
-    revenue: TIER_PRICES[tier]
-  });
-}
-```
-
-## Launch Day Checklist
-
-### Day 1 Launch Requirements
-- [ ] Stripe products configured with correct pricing
-- [ ] Payment flow tested end-to-end
-- [ ] Feature flags properly restrict free tier
-- [ ] Date overlap prevention working 100%
-- [ ] Mobile responsiveness verified
-- [ ] Security features enabled (MFA, encryption)
-- [ ] Analytics tracking implemented
-- [ ] Affiliate partnerships activated
-- [ ] Email campaigns ready
-- [ ] Support documentation complete
-
-### Success Metrics
-- **Revenue**: Target $10K MRR by month 3
-- **Conversion**: 5% free-to-paid conversion rate
-- **Performance**: <50ms calculation, <200KB bundle
-- **Compliance**: 100% EU test pass rate
-- **Security**: Zero high/critical vulnerabilities
-
-## 🚀 Deployment Guide
-
-### Vercel Deployment Process
-
-This Next.js monorepo is configured for automatic Vercel deployment with the following architecture:
-
-#### Pre-Deployment Checklist
-```bash
-# 1. Build all packages locally to catch TypeScript issues
-npm run build
-
-# 2. Run full test suite to ensure 100% EU compliance
-npm run test
-
-# 3. Verify all monorepo dependencies build correctly
-turbo build
-
-# 4. Check for TypeScript export conflicts (critical for Vercel)
-cd packages/ui && npm run build   # Should complete without "Duplicate export" errors
-cd packages/calculator && npm run build
-```
-
-#### Common Deployment Issues & Solutions
-
-**1. TypeScript Export Conflicts**
-- **Problem**: `Module '"@schengen/ui"' has no exported member 'DateOverlapValidator'`
-- **Root Cause**: Conflicting exports between packages or duplicate type names
-- **Solution**: Use specific exports in `types-only.ts` to avoid conflicts
-```typescript
-// ❌ Problematic - causes conflicts
-export * from "./components/ui/calendar-modal"
-export * from "./validators/date-overlap-validator" 
-
-// ✅ Correct - specific exports prevent conflicts
-export type { CalendarDateRange, CalendarModalProps } from "./components/ui/calendar-modal"
-export { CalendarModal } from "./components/ui/calendar-modal"
-export * from "./validators/date-overlap-validator"
-```
-
-**2. Monorepo Build Order Issues**
-- **Problem**: Dependencies not building in correct order
-- **Solution**: Vercel automatically handles this with `turbo.json` configuration
-- **Verification**: Check `turbo.json` has proper dependency graph
-
-**3. Environment Variables Missing**
-- **Problem**: Build succeeds but runtime failures occur
-- **Solution**: Ensure all required environment variables are set in Vercel dashboard
-```bash
-# Required for monetization features
-STRIPE_SECRET_KEY=sk_live_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Required for database operations  
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-```
-
-#### Deployment Commands & Workflow
-
-```bash
-# Local development and testing
-npm run dev                    # Start development server
-npm run build                  # Test production build locally
-npm run test                   # Run full test suite
-
-# Git workflow for deployment  
-git add -A                     # Stage all changes
-git commit -m "feat: description"   # Commit with conventional format
-git push origin main           # Push to trigger Vercel deployment
-
-# Manual Vercel deployment (if needed)
-vercel                         # Deploy current directory
-vercel --prod                  # Deploy to production domain
-```
-
-#### TypeScript Build Configuration
-
-The monorepo uses a specific TypeScript build setup to prevent conflicts:
-
-**packages/ui/rollup.config.js**
-- Type declarations built from `src/types-only.ts` (not `src/index.ts`)
-- This separates runtime code from type exports for cleaner builds
-- Prevents "Conflicting re-exports" issues in production
-
-**Critical Files for Deployment**
-- `packages/ui/src/types-only.ts` - Controls TypeScript exports for production
-- `packages/ui/src/index.ts` - Controls runtime exports for development
-- `turbo.json` - Monorepo build configuration and dependency order
-- `vercel.json` - Vercel-specific deployment configuration (if present)
-
-#### Monitoring Deployment
-
-**Build Logs Analysis**
-- Rollup warnings are acceptable (e.g., "use client" directives ignored)
-- TypeScript errors are deployment blockers and must be resolved
-- Build time should be <2 minutes for the entire monorepo
-
-**Post-Deployment Verification**
-```bash
-# Test critical features after deployment
-curl -I https://your-domain.vercel.app                    # Check homepage loads
-curl https://your-domain.vercel.app/api/health           # Check API routes (if implemented)
-
-# Manual testing checklist
-- [ ] Date overlap prevention works correctly (CRITICAL)
-- [ ] Payment flow functions (for monetized features)  
-- [ ] Mobile responsiveness maintained
-- [ ] All EU compliance tests pass in production
-```
-
-#### Rollback Strategy
-
-```bash
-# Quick rollback to previous version
-vercel rollback [deployment-url]
-
-# Or revert Git commit and push
-git revert HEAD
-git push origin main
-```
+### Technical Metrics
+- **EU Compliance**: 100% test pass rate (NON-NEGOTIABLE)
+- **Performance**: <50ms calculation time, <200KB bundle
+- **Mobile Experience**: >95% mobile usability score
+- **Family Coordination**: Zero date conflicts across family members
 
 ---
 
-**This is a revenue-generating platform with enterprise security, not a basic calculator. Every development decision must consider monetization impact.**
+**This is a focused Schengen compliance tool that prioritizes calculation accuracy and family coordination over feature complexity. Every development decision must maintain compliance excellence while building sustainable competitive advantages.**

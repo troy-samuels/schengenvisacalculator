@@ -29,6 +29,9 @@ export * from "./components/ui/calendar-modal"
 export * from "./components/ui/mobile-calendar-drawer"
 export * from "./components/ui/social-media-links"
 export * from "./components/ui/footer"
+export * from "./components/ui/accuracy-verification-badge"
+export * from "./components/ui/rolling-calendar-view"
+export * from "./components/ui/future-trip-validator"
 export type { CalendarDateRange } from "./components/ui/calendar-modal"
 
 // Date overlap prevention system

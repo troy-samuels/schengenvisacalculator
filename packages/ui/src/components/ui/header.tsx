@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from './button'
-import { User, ChevronDown, LogOut, Settings, BarChart3, Menu, X, BookOpen, Calculator, Home } from 'lucide-react'
+import { User, ChevronDown, LogOut, Settings, BarChart3, Menu, X, BookOpen, Calculator, Home, Star } from 'lucide-react'
 import { HeaderSocialLinks } from './social-media-links'
 
 export interface HeaderProps {
@@ -12,6 +12,7 @@ export interface HeaderProps {
   onSignupClick?: () => void
   onLogoutClick?: () => void
   onDashboardClick?: () => void
+  onPremiumClick?: () => void
   user?: any
   loading?: boolean
   className?: string
@@ -22,6 +23,7 @@ export function Header({
   onSignupClick, 
   onLogoutClick,
   onDashboardClick,
+  onPremiumClick,
   user, 
   loading, 
   className = "" 
@@ -86,14 +88,25 @@ export function Header({
                 </Link>
               )
             })}
+            
+            {/* Premium Button */}
+            {onPremiumClick && (
+              <button
+                onClick={onPremiumClick}
+                className="flex items-center space-x-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors"
+              >
+                <Star className="h-4 w-4" />
+                <span>Premium</span>
+              </button>
+            )}
           </nav>
 
           {/* Right side - Auth Buttons & Mobile Menu */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Social Icons & Auth Buttons - Desktop */}
+            {/* Auth Buttons - Desktop */}
             <div className="hidden sm:flex items-center space-x-4">
-              {/* Social Media Links */}
-              <HeaderSocialLinks className="mr-2" />
+              {/* TODO: Social Media Links - Temporarily Hidden */}
+              {/* <HeaderSocialLinks className="mr-2" /> */}
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />

@@ -38,6 +38,15 @@ export * from "./components/ui/social-media-links"
 // Footer
 export * from "./components/ui/footer"
 
+// Accuracy verification badge
+export * from "./components/ui/accuracy-verification-badge"
+
+// Rolling calendar view
+export * from "./components/ui/rolling-calendar-view"
+
+// Future trip validator
+export * from "./components/ui/future-trip-validator"
+
 // Date overlap prevention system (exports DateOverlapValidator and OccupiedDateInfo)
 export * from "./validators/date-overlap-validator"
 

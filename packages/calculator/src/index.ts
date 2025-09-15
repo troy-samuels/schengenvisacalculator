@@ -23,7 +23,10 @@ export type {
   RollingWindowCheck,
   PlannedTripValidation,
   TripValidationResult,
-  EnhancedTrip
+  EnhancedTrip,
+  AccuracyVerification,
+  FutureTripValidation,
+  TripRecommendation
 } from './types'
 
 export type {
