@@ -54,6 +54,9 @@ export interface InternalLink {
   context: string
 }
 
+// Import manually generated blog posts
+import { GENERATED_BLOG_POSTS } from './content/generated-blog-posts'
+
 export const blogPosts: BlogPost[] = [
   {
     id: "1",
@@ -3757,7 +3760,9 @@ Ready to transform your health while exploring Europe's wellness capitals? Use o
 
 *Your wellness transformation begins with a single step—and in Europe, every step leads to greater health and happiness.*
     `
-  }
+  },
+  // Add manually generated blog posts
+  ...GENERATED_BLOG_POSTS
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {
