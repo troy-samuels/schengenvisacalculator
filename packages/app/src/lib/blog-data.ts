@@ -15,6 +15,43 @@ export interface BlogPost {
   keywords: string[]
   image: string
   imageAlt: string
+  // LLM Optimization fields (optional for backward compatibility)
+  primaryKeyword?: string
+  targetAudience?: string
+  wordCount?: number
+  seoScore?: number
+  llmOptimizationScore?: number
+  faqSection?: FAQ[]
+  structuredData?: {
+    type: 'Article' | 'HowTo' | 'FAQ'
+    schema: Record<string, any>
+  }
+  aiGenerated?: boolean
+  lastUpdated?: string
+  contentSource?: 'manual' | 'ai_generated' | 'hybrid'
+  relatedPosts?: string[] // Post IDs
+  internalLinks?: InternalLink[]
+  // Publishing automation
+  scheduledPublishDate?: string
+  publishStatus?: 'draft' | 'scheduled' | 'published' | 'archived'
+  contentQuality?: {
+    grammarScore: number
+    readabilityScore: number
+    seoOptimization: number
+    llmFriendliness: number
+  }
+}
+
+export interface FAQ {
+  question: string
+  answer: string
+  keywords: string[]
+}
+
+export interface InternalLink {
+  text: string
+  url: string
+  context: string
 }
 
 export const blogPosts: BlogPost[] = [
@@ -34,6 +71,53 @@ export const blogPosts: BlogPost[] = [
     featured: true,
     image: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
     imageAlt: "European Union passport control with multiple passports and travel documents",
+
+    // LLM Optimization fields
+    primaryKeyword: "ETIAS 2025",
+    targetAudience: "International travelers to Europe",
+    wordCount: 1850,
+    seoScore: 92,
+    llmOptimizationScore: 88,
+    faqSection: [
+      {
+        question: "How much does ETIAS cost?",
+        answer: "ETIAS costs €7 for adults. It's free for travelers under 18 and over 70 years old.",
+        keywords: ["ETIAS cost", "ETIAS price", "ETIAS fee"]
+      },
+      {
+        question: "How long is ETIAS valid?",
+        answer: "ETIAS authorization is valid for 3 years or until your passport expires, whichever comes first.",
+        keywords: ["ETIAS validity", "ETIAS duration", "ETIAS expiry"]
+      }
+    ],
+    structuredData: {
+      type: 'Article',
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: 'ETIAS 2025: Complete Guide to Europe\'s New Travel Authorization System',
+        description: 'Everything you need to know about ETIAS - Europe\'s new €7 travel authorization system starting mid-2025.',
+        author: { '@type': 'Person', name: 'Travel Compliance Expert' }
+      }
+    },
+    aiGenerated: false,
+    lastUpdated: "2025-01-15",
+    contentSource: 'manual',
+    relatedPosts: [],
+    internalLinks: [
+      {
+        text: "Schengen Calculator",
+        url: "/calculator",
+        context: "Use our calculator to track your days"
+      }
+    ],
+    publishStatus: 'published',
+    contentQuality: {
+      grammarScore: 95,
+      readabilityScore: 88,
+      seoOptimization: 92,
+      llmFriendliness: 88
+    },
     content: `
 # ETIAS 2025: Complete Guide to Europe's New Travel Authorization System
 

@@ -18,19 +18,19 @@
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg": {
     "id": 64863,
     "files": [
-      "static/chunks/vendor-ed3a304810e7063d.js"
+      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify": {
     "id": 87836,
     "files": [
-      "static/chunks/vendor-ed3a304810e7063d.js"
+      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   },
   "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas": {
     "id": 21525,
     "files": [
-      "static/chunks/vendor-ed3a304810e7063d.js"
+      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   },
   "app/page.tsx -> @schengen/payments": {
@@ -42,13 +42,13 @@
   "lib/services/pdf-report-generator.ts -> jspdf": {
     "id": 62676,
     "files": [
-      "static/chunks/vendor-ed3a304810e7063d.js"
+      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   },
   "lib/services/pdf-report-generator.ts -> jspdf-autotable": {
     "id": 26860,
     "files": [
-      "static/chunks/vendor-ed3a304810e7063d.js"
+      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   }
 }
