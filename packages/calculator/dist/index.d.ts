@@ -18,6 +18,22 @@ interface ComplianceResult {
     periodStart: Date;
     periodEnd: Date;
     detailedBreakdown: DayBreakdown[];
+    verification?: AccuracyVerification;
+}
+/**
+ * Real-time accuracy verification for building user trust
+ */
+interface AccuracyVerification {
+    confidenceScore: number;
+    verificationStatus: 'verified' | 'partial' | 'unverified';
+    euCompliant: boolean;
+    lastValidated: Date;
+    validationSources: string[];
+    dataQuality: {
+        completeness: number;
+        consistency: number;
+        recency: number;
+    };
 }
 interface DayBreakdown {
     date: Date;
@@ -44,6 +60,40 @@ interface PlannedTripValidation {
     isValid: boolean;
     violationDays: number;
     violationDate: Date | null;
+    recommendations?: TripRecommendation[];
+}
+/**
+ * Smart recommendations for trip planning
+ */
+interface TripRecommendation {
+    type: 'date_adjustment' | 'duration_reduction' | 'split_trip' | 'delay_trip';
+    severity: 'info' | 'warning' | 'error';
+    message: string;
+    suggestedStartDate?: Date;
+    suggestedEndDate?: Date;
+    maxDuration?: number;
+    alternativeOptions?: {
+        startDate: Date;
+        endDate: Date;
+        duration: number;
+        daysRemaining: number;
+    }[];
+}
+/**
+ * Real-time future trip validation for intelligent planning
+ */
+interface FutureTripValidation {
+    plannedTrip: Partial<Trip>;
+    validation: PlannedTripValidation;
+    currentCompliance: ComplianceResult;
+    smartSuggestions: TripRecommendation[];
+    optimalStartDate?: Date;
+    maxTripDuration: number;
+    safeTravelPeriods: {
+        start: Date;
+        end: Date;
+        maxDuration: number;
+    }[];
 }
 interface TripValidationResult {
     isValid: boolean;
@@ -143,6 +193,44 @@ declare class RobustSchengenCalculator {
      * Check if a trip crosses February 29th in a leap year
      */
     private static tripCrossesLeapDay;
+    /**
+     * Generate real-time accuracy verification for building user trust
+     * This creates transparency about calculation reliability and EU compliance
+     */
+    private static generateAccuracyVerification;
+    /**
+     * Calculate data completeness score (0-100)
+     */
+    private static calculateDataCompleteness;
+    /**
+     * Calculate data consistency score (0-100)
+     */
+    private static calculateDataConsistency;
+    /**
+     * Calculate data recency score (0-100)
+     */
+    private static calculateDataRecency;
+    /**
+     * Advanced future trip validation with intelligent recommendations
+     * This prevents violations before they happen with smart suggestions
+     */
+    static validateFutureTrip(existingTrips: Trip[], plannedTrip: Partial<Trip>, baseDate?: Date): FutureTripValidation;
+    /**
+     * Generate intelligent trip recommendations based on validation results
+     */
+    private static generateTripRecommendations;
+    /**
+     * Calculate safe travel periods for the next 12 months
+     */
+    private static calculateSafeTravelPeriods;
+    /**
+     * Find the optimal start date for a trip of specified duration
+     */
+    private static findOptimalStartDate;
+    /**
+     * Merge similar safe travel periods to reduce noise
+     */
+    private static mergeSimilarPeriods;
 }
 
 interface DateRange {
@@ -376,4 +464,4 @@ declare const EU_EEA_SWISS_COUNT: number;
 declare const TOTAL_COUNTRIES_COUNT: number;
 
 export { AFFECTED_COUNTRIES_COUNT, ALL_COUNTRIES_FOR_CITIZENSHIP, COUNTRIES_AFFECTED_BY_90_180, DateOverlapValidator, EU_EEA_SWISS_COUNT, EU_EEA_SWISS_COUNTRIES, RobustSchengenCalculator, SCHENGEN_COUNTRIES, SCHENGEN_COUNTRIES_COUNT, TOTAL_COUNTRIES_COUNT, benchmarkCumulativePerformance as benchmarkPerformance, getCountriesForCitizenshipSelect, getCountriesForSelect, getCountryByCode, getCountryByName, getCountryClassification, getEUMemberCountries, getNonEUSchengenCountries, getRuleApplicability, isSubjectTo90180Rule, validateCumulativeCalculation as validateCumulative, validateMobileCumulativeCalculation as validateMobile, validateChronologicalSequence as validateSequence };
-export type { ComplianceResult, ConflictDetail, CountryClassification, CumulativeValidationResult, DateRange, DayBreakdown, EnhancedTrip, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripValidationResult, ValidationError, ValidationResult };
+export type { AccuracyVerification, ComplianceResult, ConflictDetail, CountryClassification, CumulativeValidationResult, DateRange, DayBreakdown, EnhancedTrip, FutureTripValidation, OverlapPreventionConfig, PlannedTripValidation, RollingWindowCheck, SchengenCountry, Trip, TripRecommendation, TripValidationResult, ValidationError, ValidationResult };

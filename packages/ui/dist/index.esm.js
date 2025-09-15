@@ -4,9 +4,10 @@ import * as React from 'react';
 import React__default, { useState, useEffect, useCallback, forwardRef, createElement, createContext, useContext, useRef, useLayoutEffect, useMemo, useId as useId$1, useInsertionEffect as useInsertionEffect$1, Children, isValidElement, Fragment as Fragment$1, Component } from 'react';
 import require$$1, { jsx, Fragment, jsxs } from 'react/jsx-runtime';
 import { cva } from 'class-variance-authority';
-import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, subMonths, eachDayOfInterval, isToday as isToday$1 } from 'date-fns';
+import { addDays as addDays$1, addMonths, addWeeks, addYears, differenceInCalendarDays, differenceInCalendarMonths, eachMonthOfInterval, endOfISOWeek, endOfMonth, endOfWeek, endOfYear, format, getISOWeek, getMonth, getYear, getWeek, isAfter, isBefore, isDate, isSameDay as isSameDay$1, isSameMonth, isSameYear, max, min, setMonth, setYear, startOfDay as startOfDay$1, startOfISOWeek, startOfMonth, startOfWeek, startOfYear, subMonths, eachDayOfInterval, isToday as isToday$1, subDays, isValid } from 'date-fns';
 import * as ReactDOM from 'react-dom';
 import ReactDOM__default, { createPortal } from 'react-dom';
+import { RobustSchengenCalculator } from '@schengen/calculator';
 
 /**
  * Utility function to merge Tailwind CSS classes with conditional logic
@@ -841,7 +842,25 @@ const createLucideIcon = (iconName, iconNode)=>{
     return Component;
 };
 
-const __iconNode$t = [
+const __iconNode$H = [
+    [
+        "path",
+        {
+            d: "M5 12h14",
+            key: "1ays0h"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m12 5 7 7-7 7",
+            key: "xquz4c"
+        }
+    ]
+];
+const ArrowRight = createLucideIcon("arrow-right", __iconNode$H);
+
+const __iconNode$G = [
     [
         "path",
         {
@@ -857,9 +876,9 @@ const __iconNode$t = [
         }
     ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$t);
+const Bell = createLucideIcon("bell", __iconNode$G);
 
-const __iconNode$s = [
+const __iconNode$F = [
     [
         "path",
         {
@@ -875,9 +894,9 @@ const __iconNode$s = [
         }
     ]
 ];
-const BookOpen = createLucideIcon("book-open", __iconNode$s);
+const BookOpen = createLucideIcon("book-open", __iconNode$F);
 
-const __iconNode$r = [
+const __iconNode$E = [
     [
         "rect",
         {
@@ -959,9 +978,123 @@ const __iconNode$r = [
         }
     ]
 ];
-const Calculator = createLucideIcon("calculator", __iconNode$r);
+const Calculator = createLucideIcon("calculator", __iconNode$E);
 
-const __iconNode$q = [
+const __iconNode$D = [
+    [
+        "path",
+        {
+            d: "M8 2v4",
+            key: "1cmpym"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 2v4",
+            key: "4m81vk"
+        }
+    ],
+    [
+        "rect",
+        {
+            width: "18",
+            height: "18",
+            x: "3",
+            y: "4",
+            rx: "2",
+            key: "1hopcy"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 10h18",
+            key: "8toen8"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 14h.01",
+            key: "6423bh"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 14h.01",
+            key: "1etili"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 14h.01",
+            key: "1gbofw"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M8 18h.01",
+            key: "lrp35t"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 18h.01",
+            key: "mhygvu"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 18h.01",
+            key: "kzsmim"
+        }
+    ]
+];
+const CalendarDays = createLucideIcon("calendar-days", __iconNode$D);
+
+const __iconNode$C = [
+    [
+        "path",
+        {
+            d: "M8 2v4",
+            key: "1cmpym"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M16 2v4",
+            key: "4m81vk"
+        }
+    ],
+    [
+        "rect",
+        {
+            width: "18",
+            height: "18",
+            x: "3",
+            y: "4",
+            rx: "2",
+            key: "1hopcy"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 10h18",
+            key: "8toen8"
+        }
+    ]
+];
+const Calendar$1 = createLucideIcon("calendar", __iconNode$C);
+
+const __iconNode$B = [
     [
         "path",
         {
@@ -991,9 +1124,9 @@ const __iconNode$q = [
         }
     ]
 ];
-const ChartColumn = createLucideIcon("chart-column", __iconNode$q);
+const ChartColumn = createLucideIcon("chart-column", __iconNode$B);
 
-const __iconNode$p = [
+const __iconNode$A = [
     [
         "path",
         {
@@ -1002,9 +1135,9 @@ const __iconNode$p = [
         }
     ]
 ];
-const Check = createLucideIcon("check", __iconNode$p);
+const Check = createLucideIcon("check", __iconNode$A);
 
-const __iconNode$o = [
+const __iconNode$z = [
     [
         "path",
         {
@@ -1013,9 +1146,9 @@ const __iconNode$o = [
         }
     ]
 ];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$o);
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$z);
 
-const __iconNode$n = [
+const __iconNode$y = [
     [
         "path",
         {
@@ -1024,9 +1157,9 @@ const __iconNode$n = [
         }
     ]
 ];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$n);
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$y);
 
-const __iconNode$m = [
+const __iconNode$x = [
     [
         "path",
         {
@@ -1035,9 +1168,9 @@ const __iconNode$m = [
         }
     ]
 ];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$m);
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$x);
 
-const __iconNode$l = [
+const __iconNode$w = [
     [
         "path",
         {
@@ -1078,9 +1211,74 @@ const __iconNode$l = [
         }
     ]
 ];
-const Chromium = createLucideIcon("chromium", __iconNode$l);
+const Chromium = createLucideIcon("chromium", __iconNode$w);
 
-const __iconNode$k = [
+const __iconNode$v = [
+    [
+        "path",
+        {
+            d: "M21.801 10A10 10 0 1 1 17 3.335",
+            key: "yps3ct"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m9 11 3 3L22 4",
+            key: "1pflzl"
+        }
+    ]
+];
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$v);
+
+const __iconNode$u = [
+    [
+        "circle",
+        {
+            cx: "12",
+            cy: "12",
+            r: "10",
+            key: "1mglay"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m15 9-6 6",
+            key: "1uzhvr"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m9 9 6 6",
+            key: "z0biqf"
+        }
+    ]
+];
+const CircleX = createLucideIcon("circle-x", __iconNode$u);
+
+const __iconNode$t = [
+    [
+        "path",
+        {
+            d: "M12 6v6l4 2",
+            key: "mmk7yg"
+        }
+    ],
+    [
+        "circle",
+        {
+            cx: "12",
+            cy: "12",
+            r: "10",
+            key: "1mglay"
+        }
+    ]
+];
+const Clock = createLucideIcon("clock", __iconNode$t);
+
+const __iconNode$s = [
     [
         "rect",
         {
@@ -1103,9 +1301,9 @@ const __iconNode$k = [
         }
     ]
 ];
-const CreditCard = createLucideIcon("credit-card", __iconNode$k);
+const CreditCard = createLucideIcon("credit-card", __iconNode$s);
 
-const __iconNode$j = [
+const __iconNode$r = [
     [
         "path",
         {
@@ -1121,9 +1319,37 @@ const __iconNode$j = [
         }
     ]
 ];
-const Crown = createLucideIcon("crown", __iconNode$j);
+const Crown = createLucideIcon("crown", __iconNode$r);
 
-const __iconNode$i = [
+const __iconNode$q = [
+    [
+        "ellipse",
+        {
+            cx: "12",
+            cy: "5",
+            rx: "9",
+            ry: "3",
+            key: "msslwz"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 5V19A9 3 0 0 0 21 19V5",
+            key: "1wlel7"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 12A9 3 0 0 0 21 12",
+            key: "mv7ke4"
+        }
+    ]
+];
+const Database = createLucideIcon("database", __iconNode$q);
+
+const __iconNode$p = [
     [
         "path",
         {
@@ -1153,9 +1379,9 @@ const __iconNode$i = [
         }
     ]
 ];
-const EyeOff = createLucideIcon("eye-off", __iconNode$i);
+const EyeOff = createLucideIcon("eye-off", __iconNode$p);
 
-const __iconNode$h = [
+const __iconNode$o = [
     [
         "path",
         {
@@ -1173,9 +1399,9 @@ const __iconNode$h = [
         }
     ]
 ];
-const Eye = createLucideIcon("eye", __iconNode$h);
+const Eye = createLucideIcon("eye", __iconNode$o);
 
-const __iconNode$g = [
+const __iconNode$n = [
     [
         "path",
         {
@@ -1212,9 +1438,9 @@ const __iconNode$g = [
         }
     ]
 ];
-const FileText = createLucideIcon("file-text", __iconNode$g);
+const FileText = createLucideIcon("file-text", __iconNode$n);
 
-const __iconNode$f = [
+const __iconNode$m = [
     [
         "path",
         {
@@ -1237,9 +1463,36 @@ const __iconNode$f = [
         }
     ]
 ];
-const History = createLucideIcon("history", __iconNode$f);
+const History = createLucideIcon("history", __iconNode$m);
 
-const __iconNode$e = [
+const __iconNode$l = [
+    [
+        "circle",
+        {
+            cx: "12",
+            cy: "12",
+            r: "10",
+            key: "1mglay"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 16v-4",
+            key: "1dtifu"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 8h.01",
+            key: "e9boi3"
+        }
+    ]
+];
+const Info = createLucideIcon("info", __iconNode$l);
+
+const __iconNode$k = [
     [
         "rect",
         {
@@ -1270,9 +1523,34 @@ const __iconNode$e = [
         }
     ]
 ];
-const Instagram = createLucideIcon("instagram", __iconNode$e);
+const Instagram = createLucideIcon("instagram", __iconNode$k);
 
-const __iconNode$d = [
+const __iconNode$j = [
+    [
+        "path",
+        {
+            d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5",
+            key: "1gvzjb"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M9 18h6",
+            key: "x1upvd"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M10 22h4",
+            key: "ceow96"
+        }
+    ]
+];
+const Lightbulb = createLucideIcon("lightbulb", __iconNode$j);
+
+const __iconNode$i = [
     [
         "path",
         {
@@ -1316,9 +1594,9 @@ const __iconNode$d = [
         }
     ]
 ];
-const List = createLucideIcon("list", __iconNode$d);
+const List = createLucideIcon("list", __iconNode$i);
 
-const __iconNode$c = [
+const __iconNode$h = [
     [
         "rect",
         {
@@ -1339,9 +1617,9 @@ const __iconNode$c = [
         }
     ]
 ];
-const Lock = createLucideIcon("lock", __iconNode$c);
+const Lock = createLucideIcon("lock", __iconNode$h);
 
-const __iconNode$b = [
+const __iconNode$g = [
     [
         "path",
         {
@@ -1364,9 +1642,9 @@ const __iconNode$b = [
         }
     ]
 ];
-const LogOut = createLucideIcon("log-out", __iconNode$b);
+const LogOut = createLucideIcon("log-out", __iconNode$g);
 
-const __iconNode$a = [
+const __iconNode$f = [
     [
         "path",
         {
@@ -1386,9 +1664,9 @@ const __iconNode$a = [
         }
     ]
 ];
-const Mail = createLucideIcon("mail", __iconNode$a);
+const Mail = createLucideIcon("mail", __iconNode$f);
 
-const __iconNode$9 = [
+const __iconNode$e = [
     [
         "path",
         {
@@ -1406,9 +1684,9 @@ const __iconNode$9 = [
         }
     ]
 ];
-const MapPin = createLucideIcon("map-pin", __iconNode$9);
+const MapPin = createLucideIcon("map-pin", __iconNode$e);
 
-const __iconNode$8 = [
+const __iconNode$d = [
     [
         "path",
         {
@@ -1431,9 +1709,9 @@ const __iconNode$8 = [
         }
     ]
 ];
-const Menu = createLucideIcon("menu", __iconNode$8);
+const Menu = createLucideIcon("menu", __iconNode$d);
 
-const __iconNode$7 = [
+const __iconNode$c = [
     [
         "path",
         {
@@ -1482,9 +1760,27 @@ const __iconNode$7 = [
         }
     ]
 ];
-const Palette = createLucideIcon("palette", __iconNode$7);
+const Palette = createLucideIcon("palette", __iconNode$c);
 
-const __iconNode$6 = [
+const __iconNode$b = [
+    [
+        "path",
+        {
+            d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8",
+            key: "1357e3"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M3 3v5h5",
+            key: "1xhq8a"
+        }
+    ]
+];
+const RotateCcw = createLucideIcon("rotate-ccw", __iconNode$b);
+
+const __iconNode$a = [
     [
         "path",
         {
@@ -1507,9 +1803,9 @@ const __iconNode$6 = [
         }
     ]
 ];
-const Save = createLucideIcon("save", __iconNode$6);
+const Save = createLucideIcon("save", __iconNode$a);
 
-const __iconNode$5 = [
+const __iconNode$9 = [
     [
         "path",
         {
@@ -1527,9 +1823,27 @@ const __iconNode$5 = [
         }
     ]
 ];
-const Settings = createLucideIcon("settings", __iconNode$5);
+const Settings = createLucideIcon("settings", __iconNode$9);
 
-const __iconNode$4 = [
+const __iconNode$8 = [
+    [
+        "path",
+        {
+            d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+            key: "oel41y"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m9 12 2 2 4-4",
+            key: "dzmm74"
+        }
+    ]
+];
+const ShieldCheck = createLucideIcon("shield-check", __iconNode$8);
+
+const __iconNode$7 = [
     [
         "path",
         {
@@ -1538,9 +1852,9 @@ const __iconNode$4 = [
         }
     ]
 ];
-const Shield = createLucideIcon("shield", __iconNode$4);
+const Shield = createLucideIcon("shield", __iconNode$7);
 
-const __iconNode$3 = [
+const __iconNode$6 = [
     [
         "path",
         {
@@ -1572,7 +1886,61 @@ const __iconNode$3 = [
         }
     ]
 ];
-const Sparkles = createLucideIcon("sparkles", __iconNode$3);
+const Sparkles = createLucideIcon("sparkles", __iconNode$6);
+
+const __iconNode$5 = [
+    [
+        "path",
+        {
+            d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z",
+            key: "r04s7s"
+        }
+    ]
+];
+const Star = createLucideIcon("star", __iconNode$5);
+
+const __iconNode$4 = [
+    [
+        "path",
+        {
+            d: "M16 7h6v6",
+            key: "box55l"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "m22 7-8.5 8.5-5-5L2 17",
+            key: "1t1m79"
+        }
+    ]
+];
+const TrendingUp = createLucideIcon("trending-up", __iconNode$4);
+
+const __iconNode$3 = [
+    [
+        "path",
+        {
+            d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3",
+            key: "wmoenq"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 9v4",
+            key: "juzpu7"
+        }
+    ],
+    [
+        "path",
+        {
+            d: "M12 17h.01",
+            key: "p32p05"
+        }
+    ]
+];
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$3);
 
 const __iconNode$2 = [
     [
@@ -12818,7 +13186,7 @@ function ModalSocialLinks({ className }) {
     });
 }
 
-function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, user, loading, className = "" }) {
+function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, className = "" }) {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const menuRef = useRef(null);
@@ -12877,13 +13245,16 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         }, /*#__PURE__*/ React__default.createElement(IconComponent, {
             className: "h-4 w-4"
         }), /*#__PURE__*/ React__default.createElement("span", null, link.label));
-    })), /*#__PURE__*/ React__default.createElement("div", {
+    }), onPremiumClick && /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onPremiumClick,
+        className: "flex items-center space-x-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-full transition-colors"
+    }, /*#__PURE__*/ React__default.createElement(Star, {
+        className: "h-4 w-4"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Premium"))), /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2 sm:space-x-3"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "hidden sm:flex items-center space-x-4"
-    }, /*#__PURE__*/ React__default.createElement(HeaderSocialLinks, {
-        className: "mr-2"
-    }), loading ? /*#__PURE__*/ React__default.createElement("div", {
+    }, loading ? /*#__PURE__*/ React__default.createElement("div", {
         className: "flex items-center space-x-2"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "h-8 w-8 rounded-full bg-gray-200 animate-pulse"
@@ -23119,16 +23490,16 @@ const getUpgradeContent = (feature, currentTier)=>{
 };
 const premiumFeatures = [
     {
-        icon: /*#__PURE__*/ React__default.createElement(Bell, {
-            className: "w-5 h-5"
-        }),
-        text: "Smart visa deadline alerts"
-    },
-    {
         icon: /*#__PURE__*/ React__default.createElement(List, {
             className: "w-5 h-5"
         }),
-        text: "Unlimited trip lists"
+        text: "Unlimited trips tracking"
+    },
+    {
+        icon: /*#__PURE__*/ React__default.createElement(Bell, {
+            className: "w-5 h-5"
+        }),
+        text: "Smart overstay alerts"
     },
     {
         icon: /*#__PURE__*/ React__default.createElement(FileText, {
@@ -23137,36 +23508,36 @@ const premiumFeatures = [
         text: "Professional PDF reports"
     },
     {
-        icon: /*#__PURE__*/ React__default.createElement(Palette, {
+        icon: /*#__PURE__*/ React__default.createElement(Sparkles, {
             className: "w-5 h-5"
         }),
-        text: "Premium dark mode"
+        text: "Family member tracking (up to 4)"
     },
     {
         icon: /*#__PURE__*/ React__default.createElement(ZapOff, {
             className: "w-5 h-5"
         }),
-        text: "Ad-free experience"
+        text: "Date overlap prevention"
     },
     {
-        icon: /*#__PURE__*/ React__default.createElement(Sparkles, {
+        icon: /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
             className: "w-5 h-5"
         }),
-        text: "Priority support"
+        text: "Lifetime updates included"
     }
 ];
 function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade, loading = false, error = null }) {
     const [isUpgrading, setIsUpgrading] = useState(false);
-    const [billingCycle, setBillingCycle] = useState('monthly');
+    const [billingCycle, setBillingCycle] = useState('lifetime');
     const analytics = useConversionAnalytics();
     const upgradeContent = getUpgradeContent(feature);
-    const handleUpgrade = async (tier = 'premium')=>{
+    const handleUpgrade = async (tier = 'lifetime')=>{
         if (loading || isUpgrading) return;
         try {
             setIsUpgrading(true);
             await onUpgrade(tier, billingCycle);
             // Track successful premium subscription
-            const amount = tier === 'premium' ? billingCycle === 'yearly' ? 99 : 9.99 : tier === 'pro' ? billingCycle === 'yearly' ? 199 : 19.99 : billingCycle === 'yearly' ? 499 : 49.99;
+            const amount = billingCycle === 'lifetime' ? 4.99 : 2.99;
             analytics.trackPremiumSubscribed(feature || 'default', billingCycle, amount);
         } catch (error) {
             console.error('Upgrade error:', error);
@@ -23264,7 +23635,7 @@ function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade,
         className: "font-semibold text-gray-900 mb-4 flex items-center"
     }, /*#__PURE__*/ React__default.createElement(Crown, {
         className: "w-5 h-5 text-amber-500 mr-2"
-    }), "Everything in Premium ($9.99/month):"), /*#__PURE__*/ React__default.createElement("div", {
+    }), "Everything in Premium:"), /*#__PURE__*/ React__default.createElement("div", {
         className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
     }, premiumFeatures.map((feature, index)=>/*#__PURE__*/ React__default.createElement("div", {
             key: index,
@@ -23278,32 +23649,34 @@ function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade,
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "flex bg-gray-100 rounded-lg p-1 mb-4"
     }, /*#__PURE__*/ React__default.createElement("button", {
-        onClick: ()=>setBillingCycle('monthly'),
-        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
-    }, "Monthly"), /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setBillingCycle('lifetime'),
+        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative ${billingCycle === 'lifetime' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
+    }, "Lifetime", /*#__PURE__*/ React__default.createElement("span", {
+        className: "absolute -top-1 -right-1 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full"
+    }, "Best Value")), /*#__PURE__*/ React__default.createElement("button", {
         onClick: ()=>setBillingCycle('yearly'),
-        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all relative ${billingCycle === 'yearly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
-    }, "Yearly", /*#__PURE__*/ React__default.createElement("span", {
-        className: "absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full"
-    }, "Save 20%"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: `flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`
+    }, "Annual")), /*#__PURE__*/ React__default.createElement("div", {
         className: "bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "text-center"
     }, /*#__PURE__*/ React__default.createElement("div", {
         className: "text-3xl font-bold text-gray-900"
-    }, "$", billingCycle === 'yearly' ? '99' : '9.99'), /*#__PURE__*/ React__default.createElement("div", {
+    }, "£", billingCycle === 'lifetime' ? '4.99' : '2.99'), /*#__PURE__*/ React__default.createElement("div", {
         className: "text-sm text-gray-600"
-    }, "per ", billingCycle === 'yearly' ? 'year' : 'month'), billingCycle === 'yearly' && /*#__PURE__*/ React__default.createElement("div", {
+    }, billingCycle === 'lifetime' ? 'one-time payment' : 'per year'), billingCycle === 'lifetime' && /*#__PURE__*/ React__default.createElement("div", {
         className: "text-xs text-green-600 mt-1"
-    }, "💰 Save $20.88 per year"), /*#__PURE__*/ React__default.createElement("div", {
+    }, "🎯 Pay once, use forever"), billingCycle === 'yearly' && /*#__PURE__*/ React__default.createElement("div", {
         className: "text-xs text-green-600 mt-1"
-    }, "✓ Cancel anytime")))), /*#__PURE__*/ React__default.createElement(Button$1, {
-        onClick: ()=>handleUpgrade('premium'),
+    }, "💰 Includes all future updates"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-xs text-green-600 mt-1"
+    }, "✓ 30-day money-back guarantee")))), /*#__PURE__*/ React__default.createElement(Button$1, {
+        onClick: ()=>handleUpgrade(billingCycle === 'lifetime' ? 'lifetime' : 'annual'),
         disabled: loading || isUpgrading,
         className: "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3 px-4 rounded-lg mb-4"
     }, /*#__PURE__*/ React__default.createElement(CreditCard, {
         className: "h-5 w-5 mr-2"
-    }), isUpgrading ? 'Redirecting to Payment...' : `Subscribe ${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} - $${billingCycle === 'yearly' ? '99/year' : '9.99/month'}`), /*#__PURE__*/ React__default.createElement("div", {
+    }), isUpgrading ? 'Redirecting to Payment...' : `${billingCycle === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Annual'} - £${billingCycle === 'lifetime' ? '4.99' : '2.99'}${billingCycle === 'yearly' ? '/year' : ''}`), /*#__PURE__*/ React__default.createElement("div", {
         className: "text-center"
     }, /*#__PURE__*/ React__default.createElement("p", {
         className: "text-xs text-gray-500"
@@ -23315,7 +23688,7 @@ function PremiumUpgradeModal({ isOpen, onClose, feature, currentTier, onUpgrade,
         className: "text-xs text-gray-500"
     }, "Join ", /*#__PURE__*/ React__default.createElement("span", {
         className: "font-medium text-blue-600"
-    }, "10,000+ travelers"), " who trust us with their visa compliance"))))));
+    }, "3,000+ travelers"), " who trust us with their Schengen compliance"))))));
 }
 
 function CircularProgress({ value, max = 90, size = 120, strokeWidth = 8, progressColor = "#10b981", backgroundColor = "#e5e7eb", textColor = "#374151", className, label, showPercentage = false, animationDuration = 1000 }) {
@@ -27815,7 +28188,7 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
     }, "Done")))), document.body) : null;
 }
 
-function Footer({ className = '' }) {
+function Footer({ className = '', onPremiumClick }) {
     const currentYear = new Date().getFullYear();
     return /*#__PURE__*/ React__default.createElement("footer", {
         className: `bg-gray-900 text-gray-300 ${className}`
@@ -27869,9 +28242,12 @@ function Footer({ className = '' }) {
     }, "Save Progress")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement(Link, {
         href: "/dashboard",
         className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
-    }, "Travel Dashboard")), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("span", {
-        className: "text-gray-500 text-sm"
-    }, "Premium Features")))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
+    }, "Travel Dashboard")), onPremiumClick && /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onPremiumClick,
+        className: "flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+    }, /*#__PURE__*/ React__default.createElement(Star, {
+        className: "w-3 h-3"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Premium Features"))))), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
         className: "text-lg font-semibold text-white mb-4"
     }, "Connect"), /*#__PURE__*/ React__default.createElement("div", {
         className: "mb-6"
@@ -27879,7 +28255,12 @@ function Footer({ className = '' }) {
         className: "text-gray-400 text-sm mb-3"
     }, "Follow us for daily ETIAS updates:"), /*#__PURE__*/ React__default.createElement(FooterSocialLinks, null)), /*#__PURE__*/ React__default.createElement("ul", {
         className: "space-y-3"
-    }, /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("a", {
+    }, onPremiumClick && /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: onPremiumClick,
+        className: "flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+    }, /*#__PURE__*/ React__default.createElement(Star, {
+        className: "w-3 h-3"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Premium"))), /*#__PURE__*/ React__default.createElement("li", null, /*#__PURE__*/ React__default.createElement("a", {
         href: "/privacy-policy",
         className: "flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
     }, /*#__PURE__*/ React__default.createElement(Shield, {
@@ -27924,6 +28305,745 @@ function Footer({ className = '' }) {
             })
         }
     }));
+}
+
+function AccuracyVerificationBadge({ verification, className, showDetailedModal = true }) {
+    const [showModal, setShowModal] = useState(false);
+    // Determine badge appearance based on verification status
+    const getBadgeConfig = ()=>{
+        switch(verification.verificationStatus){
+            case 'verified':
+                return {
+                    icon: /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
+                        className: "w-3 h-3"
+                    }),
+                    text: 'EU-Verified',
+                    variant: 'default',
+                    bgColor: 'bg-green-50 border-green-200',
+                    textColor: 'text-green-700',
+                    iconColor: 'text-green-600'
+                };
+            case 'partial':
+                return {
+                    icon: /*#__PURE__*/ React__default.createElement(TriangleAlert, {
+                        className: "w-3 h-3"
+                    }),
+                    text: 'Partially Verified',
+                    variant: 'secondary',
+                    bgColor: 'bg-amber-50 border-amber-200',
+                    textColor: 'text-amber-700',
+                    iconColor: 'text-amber-600'
+                };
+            case 'unverified':
+                return {
+                    icon: /*#__PURE__*/ React__default.createElement(CircleX, {
+                        className: "w-3 h-3"
+                    }),
+                    text: 'Unverified',
+                    variant: 'destructive',
+                    bgColor: 'bg-red-50 border-red-200',
+                    textColor: 'text-red-700',
+                    iconColor: 'text-red-600'
+                };
+        }
+    };
+    const badgeConfig = getBadgeConfig();
+    return /*#__PURE__*/ React__default.createElement(React__default.Fragment, null, /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: badgeConfig.variant,
+        className: cn("inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium cursor-pointer transition-all hover:scale-105", badgeConfig.bgColor, badgeConfig.textColor, className),
+        onClick: ()=>showDetailedModal && setShowModal(true)
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: badgeConfig.iconColor
+    }, badgeConfig.icon), badgeConfig.text, /*#__PURE__*/ React__default.createElement("span", {
+        className: "font-semibold"
+    }, verification.confidenceScore, "%"), showDetailedModal && /*#__PURE__*/ React__default.createElement(Info, {
+        className: "w-3 h-3 opacity-60"
+    })), /*#__PURE__*/ React__default.createElement(AnimatePresence, null, showModal && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0
+        },
+        animate: {
+            opacity: 1
+        },
+        exit: {
+            opacity: 0
+        },
+        className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+        onClick: ()=>setShowModal(false)
+    }, /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        animate: {
+            scale: 1,
+            opacity: 1,
+            y: 0
+        },
+        exit: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        className: "bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden",
+        onClick: (e)=>e.stopPropagation()
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "bg-gradient-to-r from-blue-50 to-green-50 px-6 py-8 relative"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setShowModal(false),
+        className: "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors"
+    }, /*#__PURE__*/ React__default.createElement(X, {
+        className: "w-4 h-4 text-gray-600"
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex justify-center mb-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg"
+    }, /*#__PURE__*/ React__default.createElement(ShieldCheck, {
+        className: "w-8 h-8 text-green-600"
+    }))), /*#__PURE__*/ React__default.createElement("h2", {
+        className: "text-2xl font-bold text-gray-900 mb-2"
+    }, "Calculation Accuracy Report"), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-gray-600"
+    }, "Transparency in every calculation we make for you"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "px-6 py-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center mb-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-4xl font-bold text-gray-900 mb-1"
+    }, verification.confidenceScore, "%"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-gray-600"
+    }, "Confidence Score"), /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: badgeConfig.variant,
+        className: cn("mt-2", badgeConfig.bgColor, badgeConfig.textColor)
+    }, badgeConfig.text)), /*#__PURE__*/ React__default.createElement("div", {
+        className: "space-y-4 mb-6"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "font-semibold text-gray-900 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Database, {
+        className: "w-4 h-4 mr-2"
+    }), "Data Quality Breakdown"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm text-gray-600"
+    }, "Data Completeness"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-24 h-2 bg-gray-200 rounded-full mr-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "h-2 bg-blue-500 rounded-full transition-all duration-500",
+        style: {
+            width: `${verification.dataQuality.completeness}%`
+        }
+    })), /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm font-medium w-10"
+    }, verification.dataQuality.completeness, "%"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm text-gray-600"
+    }, "Data Consistency"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-24 h-2 bg-gray-200 rounded-full mr-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "h-2 bg-green-500 rounded-full transition-all duration-500",
+        style: {
+            width: `${verification.dataQuality.consistency}%`
+        }
+    })), /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm font-medium w-10"
+    }, verification.dataQuality.consistency, "%"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm text-gray-600"
+    }, "Data Recency"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-24 h-2 bg-gray-200 rounded-full mr-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "h-2 bg-purple-500 rounded-full transition-all duration-500",
+        style: {
+            width: `${verification.dataQuality.recency}%`
+        }
+    })), /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm font-medium w-10"
+    }, verification.dataQuality.recency, "%")))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mb-6"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "font-semibold text-gray-900 mb-3 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(TrendingUp, {
+        className: "w-4 h-4 mr-2"
+    }), "Validation Sources"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 gap-2"
+    }, verification.validationSources.map((source, index)=>/*#__PURE__*/ React__default.createElement("div", {
+            key: index,
+            className: "flex items-center text-sm"
+        }, /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
+            className: "w-4 h-4 text-green-500 mr-2"
+        }), /*#__PURE__*/ React__default.createElement("span", {
+            className: "text-gray-700"
+        }, source === 'EU_OFFICIAL' && 'Official EU 90/180 Rule Implementation', source === 'CROSS_VALIDATION' && 'Cross-validated with Multiple Methods', source === 'TEST_CASES' && 'Validated Against Edge Cases'))))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "bg-green-50 border border-green-200 rounded-lg p-4 mb-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
+        className: "w-5 h-5 text-green-600 mr-2"
+    }), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("div", {
+        className: "font-medium text-green-900"
+    }, "EU Compliant Calculation"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-green-700"
+    }, "Implements exact European Union 90/180-day rule")))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-center text-xs text-gray-500"
+    }, /*#__PURE__*/ React__default.createElement(Clock, {
+        className: "w-3 h-3 mr-1"
+    }), "Last validated: ", verification.lastValidated.toLocaleString()))))));
+}
+
+function RollingCalendarView({ trips, compliance, className, onDateClick, showConfidenceScore = true }) {
+    const [currentViewDate, setCurrentViewDate] = useState(new Date());
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    // Calculate rolling window bounds
+    const referenceDate = compliance.referenceDate || new Date();
+    const windowStart = subDays(referenceDate, 179) // 180-day window
+    ;
+    const windowEnd = referenceDate;
+    // Generate calendar days for current month view
+    const calendarDays = useMemo(()=>{
+        const monthStart = startOfMonth(currentViewDate);
+        const monthEnd = endOfMonth(currentViewDate);
+        const calendarStart = subDays(monthStart, monthStart.getDay()) // Start from Sunday
+        ;
+        const calendarEnd = addDays$1(monthEnd, 6 - monthEnd.getDay()) // End on Saturday
+        ;
+        const days = eachDayOfInterval({
+            start: calendarStart,
+            end: calendarEnd
+        });
+        return days.map((date)=>{
+            const dayNumber = date.getDate();
+            const isCurrentMonth = isSameMonth(date, currentViewDate);
+            const isCurrentDay = isToday$1(date);
+            // Check if this date has any trips
+            const tripsOnDate = trips.filter((trip)=>date >= trip.startDate && date <= trip.endDate);
+            // Check if date is within the rolling window
+            const isInWindow = date >= windowStart && date <= windowEnd;
+            // Calculate days from reference date
+            const daysFromRef = Math.abs(Math.ceil((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)));
+            // Calculate confidence score for this date (based on data quality)
+            let confidence = 100;
+            if (tripsOnDate.length > 0) {
+                // Lower confidence if trip data seems incomplete
+                const hasIncompleteTrips = tripsOnDate.some((trip)=>!trip.country || !trip.startDate || !trip.endDate);
+                if (hasIncompleteTrips) confidence = 70;
+            }
+            return {
+                date,
+                dayNumber,
+                isCurrentMonth,
+                isToday: isCurrentDay,
+                hasTrip: tripsOnDate.length > 0,
+                tripCountries: tripsOnDate.map((t)=>t.country),
+                isInRollingWindow: isInWindow,
+                daysFromReference: daysFromRef,
+                confidence
+            };
+        });
+    }, [
+        currentViewDate,
+        trips,
+        windowStart,
+        windowEnd,
+        referenceDate
+    ]);
+    // Calculate overall confidence score
+    const overallConfidence = useMemo(()=>{
+        if (compliance.verification) {
+            return compliance.verification.confidenceScore;
+        }
+        // Fallback calculation
+        const totalTrips = trips.length;
+        const completeTrips = trips.filter((trip)=>trip.country && trip.startDate && trip.endDate).length;
+        return totalTrips > 0 ? Math.round(completeTrips / totalTrips * 100) : 100;
+    }, [
+        trips,
+        compliance.verification
+    ]);
+    const handleDateClick = (day)=>{
+        setSelectedDate(day.date);
+        setShowDetailModal(true);
+        onDateClick?.(day.date);
+    };
+    const navigateMonth = (direction)=>{
+        setCurrentViewDate((prev)=>direction === 'prev' ? subDays(startOfMonth(prev), 1) : addDays$1(endOfMonth(prev), 1));
+    };
+    const goToToday = ()=>{
+        setCurrentViewDate(new Date());
+    };
+    const getDateCellStyle = (day)=>{
+        let baseClasses = "relative p-2 text-center cursor-pointer transition-all duration-200 rounded-lg";
+        if (!day.isCurrentMonth) {
+            baseClasses += " text-gray-300";
+        } else {
+            baseClasses += " text-gray-900";
+        }
+        if (day.isToday) {
+            baseClasses += " bg-blue-100 border-2 border-blue-500 font-bold";
+        } else if (day.hasTrip) {
+            baseClasses += " bg-green-100 border border-green-300 font-medium";
+        } else if (day.isInRollingWindow) {
+            baseClasses += " bg-gray-50 border border-gray-200";
+        } else {
+            baseClasses += " hover:bg-gray-50";
+        }
+        return baseClasses;
+    };
+    return /*#__PURE__*/ React__default.createElement(React__default.Fragment, null, /*#__PURE__*/ React__default.createElement("div", {
+        className: cn("bg-white rounded-xl shadow-lg border p-6", className)
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between mb-6"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "text-xl font-bold text-gray-900 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Calendar$1, {
+        className: "w-5 h-5 mr-2 text-blue-600"
+    }), "Rolling Window Calendar"), showConfidenceScore && /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: overallConfidence >= 90 ? 'default' : overallConfidence >= 70 ? 'secondary' : 'destructive',
+        className: "flex items-center gap-1"
+    }, /*#__PURE__*/ React__default.createElement(TrendingUp, {
+        className: "w-3 h-3"
+    }), overallConfidence, "% Confidence")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between mb-4"
+    }, /*#__PURE__*/ React__default.createElement(Button$1, {
+        variant: "outline",
+        size: "sm",
+        onClick: ()=>navigateMonth('prev'),
+        className: "p-2"
+    }, /*#__PURE__*/ React__default.createElement(ChevronLeft, {
+        className: "w-4 h-4"
+    })), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "text-lg font-semibold"
+    }, format(currentViewDate, 'MMMM yyyy')), /*#__PURE__*/ React__default.createElement(Button$1, {
+        variant: "outline",
+        size: "sm",
+        onClick: goToToday,
+        className: "text-xs px-2 py-1"
+    }, /*#__PURE__*/ React__default.createElement(RotateCcw, {
+        className: "w-3 h-3 mr-1"
+    }), "Today")), /*#__PURE__*/ React__default.createElement(Button$1, {
+        variant: "outline",
+        size: "sm",
+        onClick: ()=>navigateMonth('next'),
+        className: "p-2"
+    }, /*#__PURE__*/ React__default.createElement(ChevronRight, {
+        className: "w-4 h-4"
+    }))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-7 gap-1 mb-4"
+    }, [
+        'Sun',
+        'Mon',
+        'Tue',
+        'Wed',
+        'Thu',
+        'Fri',
+        'Sat'
+    ].map((day)=>/*#__PURE__*/ React__default.createElement("div", {
+            key: day,
+            className: "p-2 text-center text-sm font-medium text-gray-500"
+        }, day)), calendarDays.map((day, index)=>/*#__PURE__*/ React__default.createElement(motion.div, {
+            key: index,
+            className: getDateCellStyle(day),
+            onClick: ()=>handleDateClick(day),
+            whileHover: {
+                scale: 1.05
+            },
+            whileTap: {
+                scale: 0.95
+            }
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "text-sm"
+        }, day.dayNumber), day.hasTrip && /*#__PURE__*/ React__default.createElement("div", {
+            className: "absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5"
+        }, day.tripCountries.slice(0, 3).map((_, i)=>/*#__PURE__*/ React__default.createElement("div", {
+                key: i,
+                className: "w-1.5 h-1.5 bg-green-500 rounded-full"
+            })), day.tripCountries.length > 3 && /*#__PURE__*/ React__default.createElement("div", {
+            className: "text-xs text-green-600 font-bold"
+        }, "+")), day.isInRollingWindow && !day.hasTrip && /*#__PURE__*/ React__default.createElement("div", {
+            className: "absolute top-1 right-1 w-2 h-2 bg-blue-400 rounded-full opacity-50"
+        })))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-2 md:grid-cols-4 gap-3 text-xs"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-4 h-4 bg-blue-100 border-2 border-blue-500 rounded"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Today")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-4 h-4 bg-green-100 border border-green-300 rounded"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Trip Days")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-4 h-4 bg-gray-50 border border-gray-200 rounded relative"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-full"
+    })), /*#__PURE__*/ React__default.createElement("span", null, "180-Day Window")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "w-4 h-4 border border-gray-300 rounded"
+    }), /*#__PURE__*/ React__default.createElement("span", null, "Outside Period"))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "mt-4 p-3 bg-blue-50 rounded-lg"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-blue-900"
+    }, /*#__PURE__*/ React__default.createElement("strong", null, "Current 180-day window:"), ' ', format(windowStart, 'MMM d, yyyy'), " → ", format(windowEnd, 'MMM d, yyyy')), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-xs text-blue-700 mt-1"
+    }, "Days used in this period: ", compliance.totalDaysUsed, " / 90"))), /*#__PURE__*/ React__default.createElement(AnimatePresence, null, showDetailModal && selectedDate && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0
+        },
+        animate: {
+            opacity: 1
+        },
+        exit: {
+            opacity: 0
+        },
+        className: "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4",
+        onClick: ()=>setShowDetailModal(false)
+    }, /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        animate: {
+            scale: 1,
+            opacity: 1,
+            y: 0
+        },
+        exit: {
+            scale: 0.95,
+            opacity: 0,
+            y: 20
+        },
+        className: "bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden",
+        onClick: (e)=>e.stopPropagation()
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 relative"
+    }, /*#__PURE__*/ React__default.createElement("button", {
+        onClick: ()=>setShowDetailModal(false),
+        className: "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors"
+    }, /*#__PURE__*/ React__default.createElement(X, {
+        className: "w-4 h-4 text-gray-600"
+    })), /*#__PURE__*/ React__default.createElement("h3", {
+        className: "text-lg font-bold text-gray-900"
+    }, format(selectedDate, 'EEEE, MMMM d, yyyy'))), /*#__PURE__*/ React__default.createElement("div", {
+        className: "p-6"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "space-y-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm text-gray-600"
+    }, "In 180-day window:"), /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: selectedDate >= windowStart && selectedDate <= windowEnd ? 'default' : 'secondary'
+    }, selectedDate >= windowStart && selectedDate <= windowEnd ? 'Yes' : 'No')), /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between"
+    }, /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm text-gray-600"
+    }, "Days from today:"), /*#__PURE__*/ React__default.createElement("span", {
+        className: "text-sm font-medium"
+    }, Math.abs(Math.ceil((selectedDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))), " days", selectedDate < new Date() ? ' ago' : ' from now')), (()=>{
+        const tripsOnDate = trips.filter((trip)=>selectedDate >= trip.startDate && selectedDate <= trip.endDate);
+        if (tripsOnDate.length > 0) {
+            return /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("h4", {
+                className: "font-medium text-gray-900 mb-2"
+            }, "Trips on this date:"), /*#__PURE__*/ React__default.createElement("div", {
+                className: "space-y-2"
+            }, tripsOnDate.map((trip, index)=>/*#__PURE__*/ React__default.createElement("div", {
+                    key: index,
+                    className: "bg-green-50 p-3 rounded-lg"
+                }, /*#__PURE__*/ React__default.createElement("div", {
+                    className: "font-medium text-green-900"
+                }, trip.country), /*#__PURE__*/ React__default.createElement("div", {
+                    className: "text-sm text-green-700"
+                }, format(trip.startDate, 'MMM d'), " - ", format(trip.endDate, 'MMM d, yyyy'), "(", trip.days, " days)")))));
+        } else {
+            return /*#__PURE__*/ React__default.createElement("div", {
+                className: "text-sm text-gray-500 italic"
+            }, "No trips recorded for this date");
+        }
+    })()))))));
+}
+
+function FutureTripValidator({ existingTrips, onTripValidated, className, autoValidate = true }) {
+    const [plannerState, setPlannerState] = useState({
+        country: '',
+        startDate: '',
+        endDate: '',
+        duration: 7
+    });
+    const [validation, setValidation] = useState(null);
+    const [showRecommendations, setShowRecommendations] = useState(false);
+    // Real-time validation as user types
+    const validatedTrip = useMemo(()=>{
+        if (!plannerState.country) return null;
+        let startDate;
+        let endDate;
+        if (plannerState.startDate) {
+            startDate = new Date(plannerState.startDate);
+            if (!isValid(startDate)) startDate = undefined;
+        }
+        if (plannerState.endDate) {
+            endDate = new Date(plannerState.endDate);
+            if (!isValid(endDate)) endDate = undefined;
+        }
+        // If only start date and duration, calculate end date
+        if (startDate && !endDate && plannerState.duration > 0) {
+            endDate = addDays$1(startDate, plannerState.duration - 1);
+        }
+        // If only end date and duration, calculate start date
+        if (endDate && !startDate && plannerState.duration > 0) {
+            startDate = addDays$1(endDate, -(plannerState.duration - 1));
+        }
+        const plannedTrip = {
+            id: 'planned',
+            country: plannerState.country,
+            startDate,
+            endDate,
+            days: plannerState.duration
+        };
+        return RobustSchengenCalculator.validateFutureTrip(existingTrips, plannedTrip);
+    }, [
+        existingTrips,
+        plannerState
+    ]);
+    // Update validation when trip changes
+    useEffect(()=>{
+        if (validatedTrip && autoValidate) {
+            setValidation(validatedTrip);
+            onTripValidated?.(validatedTrip);
+        }
+    }, [
+        validatedTrip,
+        autoValidate,
+        onTripValidated
+    ]);
+    const handleInputChange = (field, value)=>{
+        setPlannerState((prev)=>({
+                ...prev,
+                [field]: value
+            }));
+    };
+    const applySuggestion = (recommendation)=>{
+        if (recommendation.suggestedStartDate && recommendation.suggestedEndDate) {
+            setPlannerState((prev)=>({
+                    ...prev,
+                    startDate: format(recommendation.suggestedStartDate, 'yyyy-MM-dd'),
+                    endDate: format(recommendation.suggestedEndDate, 'yyyy-MM-dd'),
+                    duration: recommendation.maxDuration || prev.duration
+                }));
+        }
+    };
+    const getSeverityColor = (severity)=>{
+        switch(severity){
+            case 'error':
+                return 'text-red-600 bg-red-50 border-red-200';
+            case 'warning':
+                return 'text-amber-600 bg-amber-50 border-amber-200';
+            case 'info':
+            default:
+                return 'text-blue-600 bg-blue-50 border-blue-200';
+        }
+    };
+    const getSeverityIcon = (severity)=>{
+        switch(severity){
+            case 'error':
+                return /*#__PURE__*/ React__default.createElement(TriangleAlert, {
+                    className: "w-4 h-4"
+                });
+            case 'warning':
+                return /*#__PURE__*/ React__default.createElement(Clock, {
+                    className: "w-4 h-4"
+                });
+            case 'info':
+            default:
+                return /*#__PURE__*/ React__default.createElement(Info, {
+                    className: "w-4 h-4"
+                });
+        }
+    };
+    return /*#__PURE__*/ React__default.createElement("div", {
+        className: cn("bg-white rounded-xl shadow-lg border p-6", className)
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between mb-6"
+    }, /*#__PURE__*/ React__default.createElement("h3", {
+        className: "text-xl font-bold text-gray-900 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(TrendingUp, {
+        className: "w-5 h-5 mr-2 text-purple-600"
+    }), "Future Trip Validator"), /*#__PURE__*/ React__default.createElement(Badge, {
+        variant: "outline",
+        className: "flex items-center gap-1"
+    }, /*#__PURE__*/ React__default.createElement(Lightbulb, {
+        className: "w-3 h-3"
+    }), "Smart Planning")), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+    }, /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "country",
+        className: "text-sm font-medium text-gray-700 mb-2 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(MapPin, {
+        className: "w-4 h-4 mr-1"
+    }), "Destination Country"), /*#__PURE__*/ React__default.createElement(Input, {
+        id: "country",
+        type: "text",
+        placeholder: "e.g., France, Germany, Spain",
+        value: plannerState.country,
+        onChange: (e)=>handleInputChange('country', e.target.value),
+        className: "w-full"
+    })), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "duration",
+        className: "text-sm font-medium text-gray-700 mb-2 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(CalendarDays, {
+        className: "w-4 h-4 mr-1"
+    }), "Trip Duration (days)"), /*#__PURE__*/ React__default.createElement(Input, {
+        id: "duration",
+        type: "number",
+        min: "1",
+        max: "90",
+        value: plannerState.duration,
+        onChange: (e)=>handleInputChange('duration', parseInt(e.target.value) || 1),
+        className: "w-full"
+    })), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "startDate",
+        className: "text-sm font-medium text-gray-700 mb-2 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Calendar$1, {
+        className: "w-4 h-4 mr-1"
+    }), "Start Date"), /*#__PURE__*/ React__default.createElement(Input, {
+        id: "startDate",
+        type: "date",
+        value: plannerState.startDate,
+        onChange: (e)=>handleInputChange('startDate', e.target.value),
+        className: "w-full"
+    })), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement(Label, {
+        htmlFor: "endDate",
+        className: "text-sm font-medium text-gray-700 mb-2 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Calendar$1, {
+        className: "w-4 h-4 mr-1"
+    }), "End Date"), /*#__PURE__*/ React__default.createElement(Input, {
+        id: "endDate",
+        type: "date",
+        value: plannerState.endDate,
+        onChange: (e)=>handleInputChange('endDate', e.target.value),
+        className: "w-full"
+    }))), /*#__PURE__*/ React__default.createElement(AnimatePresence, null, validation && plannerState.country && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0,
+            y: 10
+        },
+        animate: {
+            opacity: 1,
+            y: 0
+        },
+        exit: {
+            opacity: 0,
+            y: -10
+        },
+        className: "space-y-4"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center justify-between p-4 rounded-lg border"
+    }, /*#__PURE__*/ React__default.createElement("div", {
+        className: "flex items-center"
+    }, validation.validation.isValid ? /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
+        className: "w-5 h-5 text-green-600 mr-3"
+    }) : /*#__PURE__*/ React__default.createElement(TriangleAlert, {
+        className: "w-5 h-5 text-red-600 mr-3"
+    }), /*#__PURE__*/ React__default.createElement("div", null, /*#__PURE__*/ React__default.createElement("div", {
+        className: "font-medium"
+    }, validation.validation.isValid ? 'Trip is Compliant!' : `Violation: ${validation.validation.violationDays} days over limit`), /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-sm text-gray-600"
+    }, "You can travel for up to ", validation.maxTripDuration, " consecutive days"))), validation.smartSuggestions.length > 0 && /*#__PURE__*/ React__default.createElement(Button$1, {
+        variant: "outline",
+        size: "sm",
+        onClick: ()=>setShowRecommendations(!showRecommendations),
+        className: "flex items-center gap-2"
+    }, /*#__PURE__*/ React__default.createElement(Lightbulb, {
+        className: "w-4 h-4"
+    }), showRecommendations ? 'Hide' : 'Show', " Suggestions")), /*#__PURE__*/ React__default.createElement(AnimatePresence, null, showRecommendations && validation.smartSuggestions.length > 0 && /*#__PURE__*/ React__default.createElement(motion.div, {
+        initial: {
+            opacity: 0,
+            height: 0
+        },
+        animate: {
+            opacity: 1,
+            height: 'auto'
+        },
+        exit: {
+            opacity: 0,
+            height: 0
+        },
+        className: "space-y-3"
+    }, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "font-medium text-gray-900 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(Lightbulb, {
+        className: "w-4 h-4 mr-2 text-amber-500"
+    }), "Smart Recommendations"), validation.smartSuggestions.map((recommendation, index)=>/*#__PURE__*/ React__default.createElement(motion.div, {
+            key: index,
+            initial: {
+                opacity: 0,
+                x: -10
+            },
+            animate: {
+                opacity: 1,
+                x: 0
+            },
+            transition: {
+                delay: index * 0.1
+            },
+            className: cn("p-4 rounded-lg border", getSeverityColor(recommendation.severity))
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "flex items-start justify-between"
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "flex items-start"
+        }, getSeverityIcon(recommendation.severity), /*#__PURE__*/ React__default.createElement("div", {
+            className: "ml-3 flex-1"
+        }, /*#__PURE__*/ React__default.createElement("div", {
+            className: "font-medium"
+        }, recommendation.message), recommendation.alternativeOptions && /*#__PURE__*/ React__default.createElement("div", {
+            className: "mt-2 space-y-2"
+        }, recommendation.alternativeOptions.map((option, optionIndex)=>/*#__PURE__*/ React__default.createElement("div", {
+                key: optionIndex,
+                className: "text-sm"
+            }, "Trip ", optionIndex + 1, ": ", format(option.startDate, 'MMM d'), " - ", format(option.endDate, 'MMM d, yyyy'), "(", option.duration, " days, ", option.daysRemaining, " days remaining after)"))), recommendation.suggestedStartDate && recommendation.suggestedEndDate && /*#__PURE__*/ React__default.createElement("div", {
+            className: "mt-2 text-sm"
+        }, /*#__PURE__*/ React__default.createElement("strong", null, "Suggested:"), " ", format(recommendation.suggestedStartDate, 'MMM d'), " - ", format(recommendation.suggestedEndDate, 'MMM d, yyyy')))), recommendation.suggestedStartDate && recommendation.suggestedEndDate && /*#__PURE__*/ React__default.createElement(Button$1, {
+            variant: "outline",
+            size: "sm",
+            onClick: ()=>applySuggestion(recommendation),
+            className: "ml-2 flex items-center gap-1"
+        }, "Apply", /*#__PURE__*/ React__default.createElement(ArrowRight, {
+            className: "w-3 h-3"
+        }))))))), validation.safeTravelPeriods.length > 0 && /*#__PURE__*/ React__default.createElement("div", {
+        className: "p-4 bg-green-50 rounded-lg border border-green-200"
+    }, /*#__PURE__*/ React__default.createElement("h4", {
+        className: "font-medium text-green-900 mb-2 flex items-center"
+    }, /*#__PURE__*/ React__default.createElement(CircleCheckBig, {
+        className: "w-4 h-4 mr-2"
+    }), "Upcoming Safe Travel Periods"), /*#__PURE__*/ React__default.createElement("div", {
+        className: "grid grid-cols-1 md:grid-cols-2 gap-2 text-sm"
+    }, validation.safeTravelPeriods.slice(0, 4).map((period, index)=>/*#__PURE__*/ React__default.createElement("div", {
+            key: index,
+            className: "text-green-700"
+        }, format(period.start, 'MMM d'), " - ", format(period.end, 'MMM d, yyyy'), /*#__PURE__*/ React__default.createElement("span", {
+            className: "text-green-600 ml-2"
+        }, "(up to ", period.maxDuration, " days)"))))))), !plannerState.country && /*#__PURE__*/ React__default.createElement("div", {
+        className: "text-center text-gray-500 py-8"
+    }, /*#__PURE__*/ React__default.createElement(TrendingUp, {
+        className: "w-12 h-12 mx-auto text-gray-400 mb-3"
+    }), /*#__PURE__*/ React__default.createElement("p", {
+        className: "text-sm"
+    }, "Enter your destination to get instant validation and smart travel recommendations")));
 }
 
 /**
@@ -28076,5 +29196,5 @@ function useDateOverlapPrevention({ existingTrips, excludeTripId }) {
     };
 }
 
-export { AccountCreationModal, Badge, BlogSocialLinks, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useConversionAnalytics, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
+export { AccountCreationModal, AccuracyVerificationBadge, Badge, BlogSocialLinks, Button$1 as Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, FutureTripValidator, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, RollingCalendarView, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useConversionAnalytics, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
 //# sourceMappingURL=index.esm.js.map

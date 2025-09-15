@@ -7,6 +7,7 @@ import { VariantProps } from 'class-variance-authority';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import { DayPickerProps } from 'react-day-picker';
 import * as LabelPrimitive from '@radix-ui/react-label';
+import { AccuracyVerification, Trip, ComplianceResult, FutureTripValidation } from '@schengen/calculator';
 export { ConflictDetail, DateRange, OverlapPreventionConfig, Trip, ValidationResult } from '@schengen/calculator';
 
 /**
@@ -217,11 +218,12 @@ interface HeaderProps {
     onSignupClick?: () => void;
     onLogoutClick?: () => void;
     onDashboardClick?: () => void;
+    onPremiumClick?: () => void;
     user?: any;
     loading?: boolean;
     className?: string;
 }
-declare function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
+declare function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -296,7 +298,7 @@ interface PremiumUpgradeModalProps {
     onClose: () => void;
     feature?: string;
     currentTier: SubscriptionTier;
-    onUpgrade: (tier: 'premium' | 'pro' | 'business', billingCycle: 'monthly' | 'yearly') => Promise<void>;
+    onUpgrade: (tier: 'lifetime' | 'annual', billingCycle: 'lifetime' | 'yearly') => Promise<void>;
     loading?: boolean;
     error?: string | null;
 }
@@ -481,8 +483,33 @@ declare function ModalSocialLinks({ className }: {
 
 interface FooterProps {
     className?: string;
+    onPremiumClick?: () => void;
 }
-declare function Footer({ className }: FooterProps): react_jsx_runtime.JSX.Element;
+declare function Footer({ className, onPremiumClick }: FooterProps): react_jsx_runtime.JSX.Element;
 
-export { AccountCreationModal, Badge, BlogSocialLinks, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
-export type { AccountCreationModalProps, BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, FeatureAccessResult, FeatureButtonProps, FooterProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, PremiumUpgradeModalProps, SocialMediaLinksProps, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn, UseFeatureAccessProps };
+interface AccuracyVerificationBadgeProps {
+    verification: AccuracyVerification;
+    className?: string;
+    showDetailedModal?: boolean;
+}
+declare function AccuracyVerificationBadge({ verification, className, showDetailedModal }: AccuracyVerificationBadgeProps): react_jsx_runtime.JSX.Element;
+
+interface RollingCalendarViewProps {
+    trips: Trip[];
+    compliance: ComplianceResult;
+    className?: string;
+    onDateClick?: (date: Date) => void;
+    showConfidenceScore?: boolean;
+}
+declare function RollingCalendarView({ trips, compliance, className, onDateClick, showConfidenceScore }: RollingCalendarViewProps): react_jsx_runtime.JSX.Element;
+
+interface FutureTripValidatorProps {
+    existingTrips: Trip[];
+    onTripValidated?: (validation: FutureTripValidation) => void;
+    className?: string;
+    autoValidate?: boolean;
+}
+declare function FutureTripValidator({ existingTrips, onTripValidated, className, autoValidate }: FutureTripValidatorProps): react_jsx_runtime.JSX.Element;
+
+export { AccountCreationModal, AccuracyVerificationBadge, Badge, BlogSocialLinks, Button, Calendar, CalendarModal, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CircularProgress, CreateListButton, DateOverlapValidator, ExportButton, FEATURES, FREE_TIER_LIMITS, FeatureButton, Footer, FooterSocialLinks, FutureTripValidator, Header, HeaderSocialLinks, HeroSocialLinks, Input, Label, LoginModal, MobileCalendarDrawer, ModalSocialLinks, PremiumUpgradeModal, RollingCalendarView, SaveTripButton, SmartAlertsButton, SocialMediaLinks, SubscriptionTier, TikTokIcon, addDays, badgeVariants, buttonVariants, cn, daysBetween, debounce, endOfDay, formatDateKey, formatDateRange, formatDisplayDate, generateId, getAvailableFeatures, getDateRange, isDateInRange, isFutureDate, isMobile, isPastDate, isSameDay, isToday, isTouchDevice, labelVariants, startOfDay, subtractDays, throttle, useDateOverlapPrevention, useFeatureAccess, useIsMobile, useMediaQuery };
+export type { AccountCreationModalProps, AccuracyVerificationBadgeProps, BadgeProps, ButtonProps, CalendarDateRange, CalendarModalProps, CalendarProps, CircularProgressProps, FeatureAccessResult, FeatureButtonProps, FooterProps, FutureTripValidatorProps, HeaderProps, InputProps, LoginModalProps, MobileCalendarDrawerProps, OccupiedDateInfo, PremiumUpgradeModalProps, RollingCalendarViewProps, SocialMediaLinksProps, TripEntry, UseDateOverlapPreventionProps, UseDateOverlapPreventionReturn, UseFeatureAccessProps };

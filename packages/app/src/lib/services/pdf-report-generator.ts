@@ -6,16 +6,37 @@
 
 'use client'
 
-import { jsPDF } from 'jspdf'
-import 'jspdf-autotable'
+// Dynamic imports for better Next.js compatibility
+let jsPDF: any;
+let autoTable: any;
+
+const loadPDFLibraries = async () => {
+  if (!jsPDF) {
+    const jsPDFModule = await import('jspdf');
+    jsPDF = jsPDFModule.jsPDF;
+    await import('jspdf-autotable');
+  }
+  return jsPDF;
+};
 import { SchengenTrip } from '../types/schengen-trip'
 import { UserProfile } from '../types/user-status'
 import { format, differenceInDays, startOfDay, endOfDay } from 'date-fns'
 
 // Extend jsPDF with autoTable
-interface jsPDFWithPlugin extends jsPDF {
+interface jsPDFWithPlugin {
   autoTable: (options: any) => void
   lastAutoTable?: { finalY: number }
+  // Include other jsPDF methods we use
+  setFontSize: (size: number) => void
+  setTextColor: (...args: any[]) => void
+  setFillColor: (...args: any[]) => void
+  setDrawColor: (...args: any[]) => void
+  text: (text: string, x: number, y: number) => void
+  rect: (x: number, y: number, width: number, height: number, style?: string) => void
+  addPage: () => void
+  setPage: (page: number) => void
+  output: (type: string) => Blob
+  internal: any
 }
 
 export interface ComplianceReportData {
@@ -73,7 +94,8 @@ export class PDFReportGenerator {
       branding: true
     }
   ): Promise<Blob> {
-    const doc = new jsPDF() as jsPDFWithPlugin
+    const jsPDFClass = await loadPDFLibraries()
+    const doc = new jsPDFClass() as jsPDFWithPlugin
     let yPosition = 20
 
     // Add header with branding
@@ -123,7 +145,8 @@ export class PDFReportGenerator {
     trips: SchengenTrip[],
     complianceStatus: ComplianceReportData['complianceStatus']
   ): Promise<Blob> {
-    const doc = new jsPDF() as jsPDFWithPlugin
+    const jsPDFClass = await loadPDFLibraries()
+    const doc = new jsPDFClass() as jsPDFWithPlugin
     let yPosition = 20
 
     // Basic header

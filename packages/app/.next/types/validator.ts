@@ -89,6 +89,36 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/save-progress">
 }
 
+// Validate ../../src/app/api/ai-assistant/chat/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/ai-assistant/chat/route.js")
+  handler satisfies RouteHandlerConfig<"/api/ai-assistant/chat">
+}
+
+// Validate ../../src/app/api/ai-assistant/recommendations/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/ai-assistant/recommendations/route.js")
+  handler satisfies RouteHandlerConfig<"/api/ai-assistant/recommendations">
+}
+
+// Validate ../../src/app/api/intelligence/openai/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/intelligence/openai/route.js")
+  handler satisfies RouteHandlerConfig<"/api/intelligence/openai">
+}
+
+// Validate ../../src/app/api/intelligence/openrouter/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/intelligence/openrouter/route.js")
+  handler satisfies RouteHandlerConfig<"/api/intelligence/openrouter">
+}
+
+// Validate ../../src/app/api/intelligence/perplexity/route.ts
+{
+  const handler = {} as typeof import("../../src/app/api/intelligence/perplexity/route.js")
+  handler satisfies RouteHandlerConfig<"/api/intelligence/perplexity">
+}
+
 // Validate ../../src/app/api/stripe/create-checkout-session/route.ts
 {
   const handler = {} as typeof import("../../src/app/api/stripe/create-checkout-session/route.js")

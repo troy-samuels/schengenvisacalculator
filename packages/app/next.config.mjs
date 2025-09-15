@@ -134,6 +134,18 @@ const nextConfig = {
       );
     }
 
+    // Fix for jsPDF and related packages
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      canvas: false,
+      encoding: false,
+      fs: false,
+      path: false,
+      stream: false,
+      util: false,
+      zlib: false,
+    };
+
     // Optimization for monorepo
     config.resolve.alias = {
       ...config.resolve.alias,
