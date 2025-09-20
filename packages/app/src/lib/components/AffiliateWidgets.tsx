@@ -28,7 +28,7 @@ const AFFILIATE_PARTNERS = {
       rating: 4.8,
       price_from: '£2.50',
       url: 'https://www.globelink.co.uk',
-      affiliate_code: 'ETIAS_CALC',
+      affiliate_code: 'EUBORDER_REF',
       logo: '🛡️'
     },
     worldnomads: {
@@ -39,7 +39,7 @@ const AFFILIATE_PARTNERS = {
       rating: 4.6,
       price_from: '£3.20',
       url: 'https://www.worldnomads.com',
-      affiliate_code: 'ETIAS_REF',
+      affiliate_code: 'EUBORDER_REF',
       logo: '🌍'
     }
   },
@@ -151,7 +151,7 @@ function TravelInsuranceWidget({ userStatus, userCountries }: AffiliateWidgetsPr
     })
     
     // In production, this would redirect with affiliate tracking
-    const affiliateUrl = `${partner.url}?ref=${partner.affiliate_code}&utm_source=etias_calculator&utm_medium=widget`
+    const affiliateUrl = `${partner.url}?ref=${partner.affiliate_code}&utm_source=euborder&utm_medium=widget`
     window.open(affiliateUrl, '_blank')
   }
 
@@ -200,7 +200,7 @@ function ESIMWidget({ userStatus, userCountries }: AffiliateWidgetsProps) {
       countries: userCountries
     })
     
-    const affiliateUrl = `${partner.url}?ref=${partner.affiliate_code}&utm_source=etias_calculator&utm_medium=widget`
+    const affiliateUrl = `${partner.url}?ref=${partner.affiliate_code}&utm_source=euborder&utm_medium=widget`
     window.open(affiliateUrl, '_blank')
   }
 
@@ -244,7 +244,7 @@ function AccommodationWidget({ userStatus, userCountries }: AffiliateWidgetsProp
       countries: userCountries
     })
     
-    const affiliateUrl = `${partner.url}?aid=${partner.affiliate_code}&utm_source=etias_calculator&utm_medium=widget`
+    const affiliateUrl = `${partner.url}?aid=${partner.affiliate_code}&utm_source=euborder&utm_medium=widget`
     window.open(affiliateUrl, '_blank')
   }
 

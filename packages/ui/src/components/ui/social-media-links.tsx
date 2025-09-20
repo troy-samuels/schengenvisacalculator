@@ -32,8 +32,8 @@ export function SocialMediaLinks({
   size = 'md',
   showLabels = false,
   className = '',
-  instagramHandle = 'etiascalculator',
-  tiktokHandle = 'etiascalculator'
+  instagramHandle = 'euborder',
+  tiktokHandle = 'euborder'
 }: SocialMediaLinksProps) {
   // Size classes
   const sizeClasses = {
@@ -113,7 +113,7 @@ export function SocialMediaLinks({
                 link.hoverColor,
                 touchTarget
               )}
-              aria-label={`Follow ETIAS Calculator on ${link.platform}`}
+              aria-label={`Follow EU Border Authority on ${link.platform}`}
               title={`Follow us on ${link.platform}`}
             >
               <IconComponent className={iconSize} />

@@ -1,54 +1,24 @@
 {
   "../../../node_modules/@supabase/auth-js/dist/module/lib/helpers.js -> @supabase/node-fetch": {
-    "id": 45068,
+    "id": 5068,
     "files": []
   },
   "../../../node_modules/@supabase/functions-js/dist/module/helper.js -> @supabase/node-fetch": {
-    "id": 45068,
+    "id": 5068,
     "files": []
   },
   "../../../node_modules/@supabase/realtime-js/dist/module/RealtimeClient.js -> @supabase/node-fetch": {
-    "id": 45068,
+    "id": 5068,
     "files": []
   },
   "../../../node_modules/@supabase/storage-js/dist/module/lib/helpers.js -> @supabase/node-fetch": {
-    "id": 45068,
+    "id": 5068,
     "files": []
-  },
-  "../../../node_modules/jspdf/dist/jspdf.es.min.js -> canvg": {
-    "id": 64863,
-    "files": [
-      "static/chunks/vendor-dda3d0d23e56d685.js"
-    ]
-  },
-  "../../../node_modules/jspdf/dist/jspdf.es.min.js -> dompurify": {
-    "id": 87836,
-    "files": [
-      "static/chunks/vendor-dda3d0d23e56d685.js"
-    ]
-  },
-  "../../../node_modules/jspdf/dist/jspdf.es.min.js -> html2canvas": {
-    "id": 21525,
-    "files": [
-      "static/chunks/vendor-dda3d0d23e56d685.js"
-    ]
   },
   "app/page.tsx -> @schengen/payments": {
     "id": 367,
     "files": [
       "static/chunks/367.e6336e5fd157f4af.js"
-    ]
-  },
-  "lib/services/pdf-report-generator.ts -> jspdf": {
-    "id": 62676,
-    "files": [
-      "static/chunks/vendor-dda3d0d23e56d685.js"
-    ]
-  },
-  "lib/services/pdf-report-generator.ts -> jspdf-autotable": {
-    "id": 26860,
-    "files": [
-      "static/chunks/vendor-dda3d0d23e56d685.js"
     ]
   }
 }

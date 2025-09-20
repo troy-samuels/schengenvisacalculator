@@ -4,13 +4,13 @@
 
 [36m
 [1msrc/index.ts[22m → [1mdist/index.esm.js[22m...[39m
-[32mcreated [1mdist/index.esm.js[22m in [1m111ms[22m[39m
+[32mcreated [1mdist/index.esm.js[22m in [1m382ms[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.cjs.js[22m...[39m
-[32mcreated [1mdist/index.cjs.js[22m in [1m60ms[22m[39m
+[32mcreated [1mdist/index.cjs.js[22m in [1m83ms[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.umd.min.js[22m...[39m
-[32mcreated [1mdist/index.umd.min.js[22m in [1m375ms[22m[39m
+[32mcreated [1mdist/index.umd.min.js[22m in [1m632ms[22m[39m
 [36m
 [1msrc/index.ts[22m → [1mdist/index.d.ts[22m...[39m
-[32mcreated [1mdist/index.d.ts[22m in [1m945ms[22m[39m
+[32mcreated [1mdist/index.d.ts[22m in [1m1.6s[22m[39m

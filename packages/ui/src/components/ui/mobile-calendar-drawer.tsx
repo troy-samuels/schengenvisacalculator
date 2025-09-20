@@ -358,8 +358,8 @@ export function MobileCalendarDrawer({
 
     return (
       <div className="px-4">
-        {/* Month header - centered and 2 font sizes smaller */}
-        <div className="text-center font-bold text-sm mb-6 text-gray-900 pt-6">
+        {/* Month header - centered and larger font */}
+        <div className="text-center font-bold text-lg mb-6 text-black pt-6 border-b border-gray-200 pb-3">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
@@ -367,7 +367,7 @@ export function MobileCalendarDrawer({
         {isFirstMonth && (
           <div className="grid grid-cols-7 gap-1 mb-3">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-              <div key={index} className="text-center text-sm font-medium text-gray-500 py-2">
+              <div key={index} className="text-center text-sm font-medium text-black py-2">
                 {day}
               </div>
             ))}
@@ -406,30 +406,34 @@ export function MobileCalendarDrawer({
                   "flex items-center justify-center",
                   {
                     // All valid dates styling - clickable (current, past, future months)
-                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": 
+                    "text-gray-900 !text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer":
                       !disabled && !occupied && !inRange,
-                    
+
                     // Other month dates that are outside valid range - lighter but still clickable
-                    "text-gray-500": 
+                    "text-gray-500 !text-gray-500":
                       !isCurrentMonth && !disabled && !occupied,
-                    
+
                     // Disabled styling
-                    "text-gray-200 cursor-not-allowed": disabled,
-                    
+                    "text-gray-200 cursor-not-allowed !text-gray-200": disabled,
+
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied,
-                    
-                    // Remove today auto-highlighting - no special styling for today
-                    
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60 !text-gray-600": occupied,
+
                     // Range start and end styling - clear black circles
-                    "bg-black text-white rounded-full font-semibold": 
+                    "bg-black text-white rounded-full font-semibold !text-white":
                       (rangeStart || rangeEnd) && !occupied,
-                    
+
                     // Range middle styling - light background
-                    "bg-gray-100 text-gray-900": 
+                    "bg-gray-100 text-gray-900 !text-gray-900":
                       inRange && !rangeStart && !rangeEnd && !occupied,
                   }
                 )}
+                style={{
+                  color: (rangeStart || rangeEnd) && !occupied ? 'white' :
+                         occupied ? '#4b5563' :
+                         disabled ? '#e5e7eb' :
+                         !isCurrentMonth ? '#6b7280' : '#111827'
+                }}
               >
                 <span className={occupied ? "line-through" : ""}>
                   {date.getDate()}
@@ -467,7 +471,7 @@ export function MobileCalendarDrawer({
           
           {/* Header */}
           <div className="text-center px-6 mb-6">
-            <h2 className="text-lg font-semibold">Select dates</h2>
+            <h2 className="text-lg font-semibold text-black">Select dates</h2>
           </div>
 
           {/* Content area - True Airbnb seamless scrolling */}
@@ -481,12 +485,13 @@ export function MobileCalendarDrawer({
             )}
 
             {/* True Airbnb-style seamless scrolling calendar */}
-            <div 
+            <div
               ref={scrollContainerRef}
-              className="h-full overflow-y-auto overscroll-y-contain"
-              style={{ 
+              className="h-full overflow-y-auto overscroll-y-contain scroll-smooth"
+              style={{
                 WebkitOverflowScrolling: 'touch',
-                scrollBehavior: 'smooth'
+                scrollBehavior: 'smooth',
+                touchAction: 'pan-y'
               }}
               data-testid="scrollable-months"
             >

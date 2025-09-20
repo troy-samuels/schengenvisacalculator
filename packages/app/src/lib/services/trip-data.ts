@@ -66,11 +66,20 @@ export class TripDataService {
 
     try {
       if (trip.id && trip.id !== 'new') {
-        // Update existing trip
-        // @ts-ignore - Supabase type generation issue
-        const { data, error } = await this.supabase
+        // Update existing trip - exclude id from update data
+        const updateData: VisaEntryUpdate = {
+          user_id: userId,
+          country: trip.country,
+          start_date: trip.startDate ? trip.startDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          end_date: trip.endDate ? trip.endDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          entry_type: trip.entry_type || 'schengen',
+          notes: trip.notes || null
+        }
+
+        // @ts-ignore - Supabase type generation issue with update method
+        const { data, error } = await (this.supabase as any)
           .from('visa_entries')
-          .update(dbData)
+          .update(updateData)
           .eq('id', trip.id)
           .eq('user_id', userId)
           .select()
@@ -85,7 +94,8 @@ export class TripDataService {
         return dbToTripFormat(data)
       } else {
         // Insert new trip
-        const { data, error } = await this.supabase
+        // @ts-ignore - Supabase type generation issue
+        const { data, error } = await (this.supabase as any)
           .from('visa_entries')
           .insert(dbData)
           .select()
@@ -139,7 +149,8 @@ export class TripDataService {
     console.log('🗑️ Deleting trip:', tripId)
 
     try {
-      const { error } = await this.supabase
+      // @ts-ignore - Supabase type generation issue
+      const { error } = await (this.supabase as any)
         .from('visa_entries')
         .delete()
         .eq('id', tripId)
@@ -164,7 +175,8 @@ export class TripDataService {
     console.log('📁 Creating default trip collection for user:', userId)
 
     try {
-      const { error } = await this.supabase
+      // @ts-ignore - Supabase type generation issue
+      const { error } = await (this.supabase as any)
         .from('trip_collections')
         .insert({
           user_id: userId,
@@ -207,7 +219,8 @@ export class TripDataService {
     try {
       const dbData = validTrips.map(trip => tripToDbFormat(trip, userId))
 
-      const { data, error } = await this.supabase
+      // @ts-ignore - Supabase type generation issue
+      const { data, error } = await (this.supabase as any)
         .from('visa_entries')
         .insert(dbData)
         .select()

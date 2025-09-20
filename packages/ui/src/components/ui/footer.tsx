@@ -19,18 +19,17 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand & Description */}
           <div className="md:col-span-1">
-            <h3 className="text-xl font-bold text-white mb-4">ETIAS Calculator</h3>
+            <h3 className="text-xl font-bold text-white mb-4">EU Border Authority</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Professional ETIAS and Schengen visa calculator trusted by 50,000+ travelers worldwide. 
-              Stay compliant with EU regulations.
+              The definitive EU border compliance authority for EES preparation and comprehensive Schengen travel tracking with 100% accurate calculations.
             </p>
             <div className="flex items-center space-x-2 text-sm text-gray-400 mb-2">
               <Mail className="w-4 h-4" />
-              <a 
-                href="mailto:info@etiascalculator.com" 
+              <a
+                href="mailto:info@euborder.com"
                 className="hover:text-gray-200 transition-colors"
               >
-                info@etiascalculator.com
+                info@euborder.com
               </a>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-400">
@@ -87,7 +86,7 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
                   href="/" 
                   className="text-gray-400 hover:text-gray-200 transition-colors text-sm"
                 >
-                  ETIAS Calculator
+                  EU Border Calculator
                 </Link>
               </li>
               <li>
@@ -99,11 +98,19 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
                 </Link>
               </li>
               <li>
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className="text-gray-400 hover:text-gray-200 transition-colors text-sm"
                 >
                   Travel Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/ees-preparation"
+                  className="text-gray-400 hover:text-gray-200 transition-colors text-sm"
+                >
+                  Entry/Exit System
                 </Link>
               </li>
               {onPremiumClick && (
@@ -124,7 +131,7 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Connect</h4>
             <div className="mb-6">
-              <p className="text-gray-400 text-sm mb-3">Follow us for daily ETIAS updates:</p>
+              <p className="text-gray-400 text-sm mb-3">Follow us for daily EU border updates:</p>
               <FooterSocialLinks />
             </div>
             <ul className="space-y-3">
@@ -165,7 +172,7 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-400">
-              © {currentYear} ETIAS Calculator. All rights reserved.
+              © {currentYear} EU Border Authority. All rights reserved.
             </div>
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <span>🇪🇺 EU Regulation Compliant</span>
@@ -185,17 +192,17 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "ETIAS Calculator",
-            "url": "https://etiascalculator.com",
-            "logo": "https://etiascalculator.com/logo.png",
+            "name": "EU Border Authority",
+            "url": "https://euborder.com",
+            "logo": "https://euborder.com/logo.png",
             "sameAs": [
-              "https://instagram.com/etiascalculator",
-              "https://tiktok.com/@etiascalculator"
+              "https://instagram.com/euborder",
+              "https://tiktok.com/@euborder"
             ],
             "contactPoint": {
               "@type": "ContactPoint",
               "contactType": "customer service",
-              "email": "info@etiascalculator.com",
+              "email": "info@euborder.com",
               "areaServed": "Worldwide",
               "availableLanguage": "English"
             },

@@ -71,6 +71,60 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/dashboard">
 }
 
+// Validate ../../src/app/ees/countries/france/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/countries/france/page.js")
+  handler satisfies AppPageConfig<"/ees/countries/france">
+}
+
+// Validate ../../src/app/ees/countries/germany/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/countries/germany/page.js")
+  handler satisfies AppPageConfig<"/ees/countries/germany">
+}
+
+// Validate ../../src/app/ees/countries/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/countries/page.js")
+  handler satisfies AppPageConfig<"/ees/countries">
+}
+
+// Validate ../../src/app/ees/countries/spain/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/countries/spain/page.js")
+  handler satisfies AppPageConfig<"/ees/countries/spain">
+}
+
+// Validate ../../src/app/ees/digital-nomads/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/digital-nomads/page.js")
+  handler satisfies AppPageConfig<"/ees/digital-nomads">
+}
+
+// Validate ../../src/app/ees/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/page.js")
+  handler satisfies AppPageConfig<"/ees">
+}
+
+// Validate ../../src/app/ees/preparation-kit/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/preparation-kit/page.js")
+  handler satisfies AppPageConfig<"/ees/preparation-kit">
+}
+
+// Validate ../../src/app/ees/preparation/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/preparation/page.js")
+  handler satisfies AppPageConfig<"/ees/preparation">
+}
+
+// Validate ../../src/app/ees/vs-etias/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/ees/vs-etias/page.js")
+  handler satisfies AppPageConfig<"/ees/vs-etias">
+}
+
 // Validate ../../src/app/page.tsx
 {
   const handler = {} as typeof import("../../src/app/page.js")

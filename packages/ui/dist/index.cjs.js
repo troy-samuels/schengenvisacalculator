@@ -54,7 +54,7 @@ function styleInject(css, ref) {
     }
 }
 
-var css_248z = "@import \"tailwindcss/base\";@import \"tailwindcss/components\";@import \"tailwindcss/utilities\";@import url(\"https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap\");@layer base{:root{--background:0 0% 100%;--foreground:222.2 84% 4.9%;--card:0 0% 100%;--card-foreground:222.2 84% 4.9%;--popover:0 0% 100%;--popover-foreground:222.2 84% 4.9%;--primary:24 100% 58%;--primary-foreground:210 40% 98%;--secondary:210 40% 96%;--secondary-foreground:222.2 84% 4.9%;--muted:210 40% 96%;--muted-foreground:215.4 16.3% 46.9%;--accent:210 40% 96%;--accent-foreground:222.2 84% 4.9%;--destructive:0 84.2% 60.2%;--destructive-foreground:210 40% 98%;--border:214.3 31.8% 91.4%;--input:214.3 31.8% 91.4%;--ring:24 100% 58%;--radius:0.5rem}.dark{--background:222.2 84% 4.9%;--foreground:210 40% 98%;--card:222.2 84% 4.9%;--card-foreground:210 40% 98%;--popover:222.2 84% 4.9%;--popover-foreground:210 40% 98%;--primary:24 100% 58%;--primary-foreground:222.2 84% 4.9%;--secondary:217.2 32.6% 17.5%;--secondary-foreground:210 40% 98%;--muted:217.2 32.6% 17.5%;--muted-foreground:215 20.2% 65.1%;--accent:217.2 32.6% 17.5%;--accent-foreground:210 40% 98%;--destructive:0 62.8% 30.6%;--destructive-foreground:210 40% 98%;--border:217.2 32.6% 17.5%;--input:217.2 32.6% 17.5%;--ring:24 100% 58%}*,body{@apply bg-background text-foreground font-sans}}@layer base{@media (max-width:767px){.touch-target,[role=button],button,input[type=button],input[type=submit]{@apply min-h-[44px] min-w-[44px]}}}@layer components{.schengen-available-date,.schengen-calendar,.schengen-conflict-date,.schengen-occupied-date,.schengen-selected-date{@apply bg-red-100 text-red-700 cursor-not-allowed border border-red-200}.schengen-brand-gradient{background:linear-gradient(135deg,#fa9937,#f93 50%,#e6802a)}.schengen-glass{@apply bg-white/80 backdrop-blur-md border border-white/20}.schengen-shadow{box-shadow:0 1px 3px 0 rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1),0 4px 6px -1px rgba(250,153,55,.1)}.schengen-focus-ring{@apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2}.date-picker-occupied:after,.date-picker-occupied:before{content:\"\";@apply absolute top-1/2 left-1/2 w-6 h-0.5 bg-gray-600 transform -translate-x-1/2 -translate-y-1/2 rotate-45}@media (max-width:767px){.mobile-calendar-day,.mobile-spacing,.mobile-touch-target{@apply px-4 py-3}}.sr-only{@apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0}@media (prefers-contrast:high){.schengen-occupied-date,.schengen-selected-date{@apply border-2 border-white}}@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}@media print{.schengen-calendar,.schengen-occupied-date,.schengen-selected-date{@apply bg-gray-800 text-white}}}@layer utilities{.text-shadow-sm{text-shadow:0 1px 2px rgba(0,0,0,.05)}.text-shadow{text-shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}.text-shadow-lg{text-shadow:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05)}.animate-fade-in-up{animation:fade-in-up .3s ease-out forwards}.animate-bounce-subtle{animation:bounce-subtle 2s infinite}.focus-visible{@apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2}}";
+var css_248z = "@import \"tailwindcss/base\";@import \"tailwindcss/components\";@import \"tailwindcss/utilities\";@import \"react-day-picker/style.css\";@import url(\"https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap\");@layer base{:root{--background:0 0% 100%;--foreground:222.2 84% 4.9%;--card:0 0% 100%;--card-foreground:222.2 84% 4.9%;--popover:0 0% 100%;--popover-foreground:222.2 84% 4.9%;--primary:24 100% 58%;--primary-foreground:210 40% 98%;--secondary:210 40% 96%;--secondary-foreground:222.2 84% 4.9%;--muted:210 40% 96%;--muted-foreground:215.4 16.3% 46.9%;--accent:210 40% 96%;--accent-foreground:222.2 84% 4.9%;--destructive:0 84.2% 60.2%;--destructive-foreground:210 40% 98%;--border:214.3 31.8% 91.4%;--input:214.3 31.8% 91.4%;--ring:24 100% 58%;--radius:0.5rem}.dark{--background:222.2 84% 4.9%;--foreground:210 40% 98%;--card:222.2 84% 4.9%;--card-foreground:210 40% 98%;--popover:222.2 84% 4.9%;--popover-foreground:210 40% 98%;--primary:24 100% 58%;--primary-foreground:222.2 84% 4.9%;--secondary:217.2 32.6% 17.5%;--secondary-foreground:210 40% 98%;--muted:217.2 32.6% 17.5%;--muted-foreground:215 20.2% 65.1%;--accent:217.2 32.6% 17.5%;--accent-foreground:210 40% 98%;--destructive:0 62.8% 30.6%;--destructive-foreground:210 40% 98%;--border:217.2 32.6% 17.5%;--input:217.2 32.6% 17.5%;--ring:24 100% 58%}*,body{@apply bg-background text-foreground font-sans}}@layer base{@media (max-width:767px){.touch-target,[role=button],button,input[type=button],input[type=submit]{@apply min-h-[44px] min-w-[44px]}}}@layer components{.schengen-available-date,.schengen-calendar,.schengen-conflict-date,.schengen-occupied-date,.schengen-selected-date{@apply bg-red-100 text-red-700 cursor-not-allowed border border-red-200}.schengen-brand-gradient{background:linear-gradient(135deg,#fa9937,#f93 50%,#e6802a)}.schengen-glass{@apply bg-white/80 backdrop-blur-md border border-white/20}.schengen-shadow{box-shadow:0 1px 3px 0 rgba(0,0,0,.1),0 1px 2px -1px rgba(0,0,0,.1),0 4px 6px -1px rgba(250,153,55,.1)}.schengen-focus-ring{@apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2}.rdp{--rdp-cell-size:40px;--rdp-caption-font-size:18px;--rdp-accent-color:theme(\"colors.primary.DEFAULT\");--rdp-background-color:theme(\"colors.primary.DEFAULT\");--rdp-accent-color-dark:theme(\"colors.primary.DEFAULT\");--rdp-background-color-dark:theme(\"colors.primary.DEFAULT\");color:theme(\"colors.gray.900\")!important}.rdp-caption_label,.rdp-head_cell{@apply text-gray-600 font-medium !important}.rdp-day{@apply hover:bg-gray-100 rounded-md text-gray-900 !important;color:theme(\"colors.gray.900\")!important}.rdp-day_selected{@apply bg-primary text-white !important;color:#fff!important}.rdp-day_today{@apply bg-blue-100 text-blue-900 font-semibold !important;color:theme(\"colors.blue.900\")!important}.rdp-day button,.rdp-day_button{@apply text-gray-900 !important;color:theme(\"colors.gray.900\")!important}.rdp-day_selected .rdp-day_button,.rdp-day_selected button{@apply text-white !important;color:#fff!important}.rdp-day_today .rdp-day_button,.rdp-day_today button{@apply text-blue-900 !important;color:theme(\"colors.blue.900\")!important}[data-testid=desktop-calendar-modal] .text-gray-900,[data-testid=desktop-calendar-modal] button{color:theme(\"colors.gray.900\")!important}[data-testid=desktop-calendar-modal] .text-white{color:#fff!important}[data-testid=mobile-drawer] .text-gray-900,[data-testid=mobile-drawer] button{color:theme(\"colors.gray.900\")!important}.date-picker-occupied:after,.date-picker-occupied:before{content:\"\";@apply absolute top-1/2 left-1/2 w-6 h-0.5 bg-gray-600 transform -translate-x-1/2 -translate-y-1/2 rotate-45}@media (max-width:767px){.mobile-calendar-day,.mobile-spacing,.mobile-touch-target{@apply px-4 py-3}}.sr-only{@apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0}@media (prefers-contrast:high){.schengen-occupied-date,.schengen-selected-date{@apply border-2 border-white}}@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}@media print{.schengen-calendar,.schengen-occupied-date,.schengen-selected-date{@apply bg-gray-800 text-white}}}@layer utilities{.text-shadow-sm{text-shadow:0 1px 2px rgba(0,0,0,.05)}.text-shadow{text-shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06)}.text-shadow-lg{text-shadow:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05)}.animate-fade-in-up{animation:fade-in-up .3s ease-out forwards}.animate-bounce-subtle{animation:bounce-subtle 2s infinite}.focus-visible{@apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2}}";
 styleInject(css_248z);
 
 /**
@@ -6346,7 +6346,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
             months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
             month: "space-y-4",
             caption: "flex justify-center pt-1 relative items-center",
-            caption_label: "text-sm font-medium",
+            caption_label: "text-sm font-medium text-gray-900",
             nav: "space-x-1 flex items-center",
             nav_button: cn(buttonVariants({
                 variant: "outline",
@@ -13123,7 +13123,7 @@ function TikTokIcon({ className = "" }) {
         d: "M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"
     }));
 }
-function SocialMediaLinks({ variant = 'footer', size = 'md', showLabels = false, className = '', instagramHandle = 'etiascalculator', tiktokHandle = 'etiascalculator' }) {
+function SocialMediaLinks({ variant = 'footer', size = 'md', showLabels = false, className = '', instagramHandle = 'euborder', tiktokHandle = 'euborder' }) {
     // Size classes
     const sizeClasses = {
         sm: 'w-4 h-4',
@@ -13186,7 +13186,7 @@ function SocialMediaLinks({ variant = 'footer', size = 'md', showLabels = false,
             target: "_blank",
             rel: "noopener noreferrer",
             className: cn('flex items-center justify-center rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2', baseClasses, link.hoverColor, touchTarget),
-            "aria-label": `Follow ETIAS Calculator on ${link.platform}`,
+            "aria-label": `Follow EU Border Authority on ${link.platform}`,
             title: `Follow us on ${link.platform}`
         }, /*#__PURE__*/ React.createElement(IconComponent, {
             className: iconSize
@@ -13234,7 +13234,7 @@ function ModalSocialLinks({ className }) {
     });
 }
 
-function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, className = "" }) {
+function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, signupLoading = false, className = "" }) {
     const [showUserMenu, setShowUserMenu] = React.useState(false);
     const [showMobileMenu, setShowMobileMenu] = React.useState(false);
     const menuRef = React.useRef(null);
@@ -13281,7 +13281,7 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         className: "flex flex-col"
     }, /*#__PURE__*/ React.createElement("span", {
         className: "text-lg font-bold text-blue-600 leading-none"
-    }, "ETIAS Calculator")))), /*#__PURE__*/ React.createElement("nav", {
+    }, "EU Border Authority")))), /*#__PURE__*/ React.createElement("nav", {
         className: "hidden md:flex items-center space-x-8"
     }, navigationLinks.map((link)=>{
         const IconComponent = link.icon;
@@ -13362,16 +13362,50 @@ function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, 
         className: "text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors px-3 py-2"
     }, "Log In"), /*#__PURE__*/ React.createElement("button", {
         onClick: onSignupClick,
-        className: "bg-green-700 hover:bg-green-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm"
-    }, "Start Now"))), /*#__PURE__*/ React.createElement("div", {
+        disabled: signupLoading,
+        className: "bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm flex items-center space-x-2"
+    }, signupLoading && /*#__PURE__*/ React.createElement("svg", {
+        className: "animate-spin h-4 w-4 text-white",
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24"
+    }, /*#__PURE__*/ React.createElement("circle", {
+        className: "opacity-25",
+        cx: "12",
+        cy: "12",
+        r: "10",
+        stroke: "currentColor",
+        strokeWidth: "4"
+    }), /*#__PURE__*/ React.createElement("path", {
+        className: "opacity-75",
+        fill: "currentColor",
+        d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    })), /*#__PURE__*/ React.createElement("span", null, signupLoading ? 'Starting...' : 'Start Now')))), /*#__PURE__*/ React.createElement("div", {
         className: "flex sm:hidden items-center space-x-2"
     }, !loading && !user && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("button", {
         onClick: onLoginClick,
         className: "text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors px-2 py-1"
     }, "Log In"), /*#__PURE__*/ React.createElement("button", {
         onClick: onSignupClick,
-        className: "bg-green-700 hover:bg-green-800 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
-    }, "Start"))), /*#__PURE__*/ React.createElement("button", {
+        disabled: signupLoading,
+        className: "bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium px-3 py-1.5 rounded transition-colors flex items-center space-x-1"
+    }, signupLoading && /*#__PURE__*/ React.createElement("svg", {
+        className: "animate-spin h-3 w-3 text-white",
+        xmlns: "http://www.w3.org/2000/svg",
+        fill: "none",
+        viewBox: "0 0 24 24"
+    }, /*#__PURE__*/ React.createElement("circle", {
+        className: "opacity-25",
+        cx: "12",
+        cy: "12",
+        r: "10",
+        stroke: "currentColor",
+        strokeWidth: "4"
+    }), /*#__PURE__*/ React.createElement("path", {
+        className: "opacity-75",
+        fill: "currentColor",
+        d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    })), /*#__PURE__*/ React.createElement("span", null, signupLoading ? '...' : 'Start')))), /*#__PURE__*/ React.createElement("button", {
         onClick: ()=>setShowMobileMenu(!showMobileMenu),
         className: "md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
     }, showMobileMenu ? /*#__PURE__*/ React.createElement(X, {
@@ -27833,7 +27867,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         return /*#__PURE__*/ React.createElement("div", {
             className: "px-4"
         }, /*#__PURE__*/ React.createElement("div", {
-            className: "text-center font-bold text-sm mb-6 text-gray-900 pt-6"
+            className: "text-center font-bold text-lg mb-6 text-black pt-6 border-b border-gray-200 pb-3"
         }, dateFns.format(monthDate, 'MMMM yyyy')), isFirstMonth && /*#__PURE__*/ React.createElement("div", {
             className: "grid grid-cols-7 gap-1 mb-3"
         }, [
@@ -27846,7 +27880,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
             'S'
         ].map((day, index)=>/*#__PURE__*/ React.createElement("div", {
                 key: index,
-                className: "text-center text-sm font-medium text-gray-500 py-2"
+                className: "text-center text-sm font-medium text-black py-2"
             }, day))), /*#__PURE__*/ React.createElement("div", {
             className: "grid grid-cols-7 gap-1 mb-2",
             "data-testid": "mobile-calendar-content"
@@ -27875,19 +27909,21 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
                 className: cn(// Airbnb-style: 44px touch targets, clean design
                 "h-11 w-11 text-sm font-medium transition-all duration-150 relative", "flex items-center justify-center", {
                     // All valid dates styling - clickable (current, past, future months)
-                    "text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": !disabled && !occupied && !inRange,
+                    "text-gray-900 !text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer": !disabled && !occupied && !inRange,
                     // Other month dates that are outside valid range - lighter but still clickable
-                    "text-gray-500": !isCurrentMonth && !disabled && !occupied,
+                    "text-gray-500 !text-gray-500": !isCurrentMonth && !disabled && !occupied,
                     // Disabled styling
-                    "text-gray-200 cursor-not-allowed": disabled,
+                    "text-gray-200 cursor-not-allowed !text-gray-200": disabled,
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied,
-                    // Remove today auto-highlighting - no special styling for today
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60 !text-gray-600": occupied,
                     // Range start and end styling - clear black circles
-                    "bg-black text-white rounded-full font-semibold": (rangeStart || rangeEnd) && !occupied,
+                    "bg-black text-white rounded-full font-semibold !text-white": (rangeStart || rangeEnd) && !occupied,
                     // Range middle styling - light background
-                    "bg-gray-100 text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied
-                })
+                    "bg-gray-100 text-gray-900 !text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied
+                }),
+                style: {
+                    color: (rangeStart || rangeEnd) && !occupied ? 'white' : occupied ? '#4b5563' : disabled ? '#e5e7eb' : !isCurrentMonth ? '#6b7280' : '#111827'
+                }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: occupied ? "line-through" : ""
             }, date.getDate()));
@@ -27911,7 +27947,7 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
     }), /*#__PURE__*/ React.createElement("div", {
         className: "text-center px-6 mb-6"
     }, /*#__PURE__*/ React.createElement("h2", {
-        className: "text-lg font-semibold"
+        className: "text-lg font-semibold text-black"
     }, "Select dates")), /*#__PURE__*/ React.createElement("div", {
         className: "flex-1 overflow-hidden"
     }, selectedRange.startDate && !selectedRange.endDate && /*#__PURE__*/ React.createElement("div", {
@@ -27920,10 +27956,11 @@ function MobileCalendarDrawer({ isOpen, onClose, onDateRangeSelect, initialRange
         className: "text-gray-600 font-medium text-sm"
     }, "Select your end date")), /*#__PURE__*/ React.createElement("div", {
         ref: scrollContainerRef,
-        className: "h-full overflow-y-auto overscroll-y-contain",
+        className: "h-full overflow-y-auto overscroll-y-contain scroll-smooth",
         style: {
             WebkitOverflowScrolling: 'touch',
-            scrollBehavior: 'smooth'
+            scrollBehavior: 'smooth',
+            touchAction: 'pan-y'
         },
         "data-testid": "scrollable-months"
     }, /*#__PURE__*/ React.createElement("div", {
@@ -27999,8 +28036,12 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
     ]);
     // Handle date click
     const handleDateClick = (date)=>{
+        console.log('🖱️ Desktop calendar: Date clicked:', dateFns.format(date, 'yyyy-MM-dd'));
         // Check if date is disabled
-        if (isDateDisabled(date)) return;
+        if (isDateDisabled(date)) {
+            console.log('🚫 Date is disabled:', dateFns.format(date, 'yyyy-MM-dd'));
+            return;
+        }
         // Handle occupied date click - show helpful message
         if (isDateOccupied(date)) {
             const occupiedInfo = getOccupiedDateInfo(date);
@@ -28010,6 +28051,7 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
             }
             return;
         }
+        console.log('✅ Date click allowed, processing selection...');
         if (!selectedRange.startDate || selectingEnd) {
             // Select start date or reset and select new start date
             if (selectingEnd && selectedRange.startDate && date < selectedRange.startDate) {
@@ -28093,8 +28135,14 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
         onClose();
     };
     // Navigation functions
-    const goToPrevMonth = ()=>setCurrentMonth((prev)=>dateFns.subMonths(prev, 1));
-    const goToNextMonth = ()=>setCurrentMonth((prev)=>dateFns.addMonths(prev, 1));
+    const goToPrevMonth = ()=>{
+        console.log('🖱️ Desktop calendar: Previous month clicked');
+        setCurrentMonth((prev)=>dateFns.subMonths(prev, 1));
+    };
+    const goToNextMonth = ()=>{
+        console.log('🖱️ Desktop calendar: Next month clicked');
+        setCurrentMonth((prev)=>dateFns.addMonths(prev, 1));
+    };
     // Render calendar month
     const renderMonth = (monthDate)=>{
         const monthStart = dateFns.startOfMonth(monthDate);
@@ -28128,7 +28176,7 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
         return /*#__PURE__*/ React.createElement("div", {
             className: "flex-1"
         }, /*#__PURE__*/ React.createElement("div", {
-            className: "text-center font-semibold text-lg mb-4"
+            className: "text-center font-bold text-xl mb-4 text-black py-2"
         }, dateFns.format(monthDate, 'MMMM yyyy')), /*#__PURE__*/ React.createElement("div", {
             className: "grid grid-cols-7 gap-1 mb-2"
         }, [
@@ -28141,7 +28189,7 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
             'Sa'
         ].map((day)=>/*#__PURE__*/ React.createElement("div", {
                 key: day,
-                className: "text-center text-sm font-medium text-gray-500 p-2"
+                className: "text-center text-sm font-semibold text-black p-2 bg-gray-100 rounded"
             }, day))), /*#__PURE__*/ React.createElement("div", {
             className: "grid grid-cols-7 gap-1"
         }, allDays.map((date, index)=>{
@@ -28158,23 +28206,26 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
                 onClick: ()=>handleDateClick(date),
                 disabled: disabled || !isCurrentMonth || occupied,
                 title: occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined,
-                className: cn("h-10 w-10 text-sm font-medium rounded-lg transition-colors relative", "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50", {
-                    // Current month styling
-                    "text-gray-900": isCurrentMonth && !disabled && !occupied,
-                    "text-gray-400": !isCurrentMonth,
+                className: cn("h-10 w-10 text-sm font-medium rounded-lg transition-colors relative border border-transparent", "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50", {
+                    // Current month styling - force readable text
+                    "text-gray-900 !text-gray-900": isCurrentMonth && !disabled && !occupied,
+                    "text-gray-400 !text-gray-400": !isCurrentMonth,
                     // Disabled styling
-                    "text-gray-300 cursor-not-allowed": disabled,
+                    "text-gray-300 cursor-not-allowed !text-gray-300": disabled,
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
-                    // Today styling
-                    "bg-blue-100 text-blue-900": today && !inRange && !occupied && isCurrentMonth,
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60 !text-gray-600": occupied && isCurrentMonth,
+                    // Today styling - force readable contrast
+                    "bg-blue-100 text-blue-900 !text-blue-900": today && !inRange && !occupied && isCurrentMonth,
                     // Range styling
-                    "bg-primary/20": inRange && !rangeStart && !rangeEnd && !occupied,
-                    "bg-primary text-white": (rangeStart || rangeEnd) && !occupied,
+                    "bg-primary/20 text-gray-900 !text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-primary text-white !text-white": (rangeStart || rangeEnd) && !occupied,
                     // Hover effects
                     "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
                     "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied
-                })
+                }),
+                style: {
+                    color: (rangeStart || rangeEnd) && !occupied ? 'white' : today && !inRange && !occupied && isCurrentMonth ? '#1e3a8a' : occupied && isCurrentMonth ? '#4b5563' : disabled ? '#d1d5db' : !isCurrentMonth ? '#9ca3af' : '#111827'
+                }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: occupied ? "line-through" : ""
             }, date.getDate()));
@@ -28192,23 +28243,9 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
         className: cn("relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto", "animate-in fade-in-0 zoom-in-95 duration-200", className)
     }, /*#__PURE__*/ React.createElement("div", {
         className: "flex items-center justify-between p-6 border-b border-gray-200"
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "flex items-center gap-4"
-    }, /*#__PURE__*/ React.createElement("button", {
-        onClick: goToPrevMonth,
-        className: "p-2 hover:bg-gray-100 rounded-lg transition-colors",
-        "aria-label": "Previous month"
-    }, /*#__PURE__*/ React.createElement(ChevronLeft, {
-        className: "h-5 w-5"
-    })), /*#__PURE__*/ React.createElement("h2", {
-        className: "text-xl font-semibold"
+    }, /*#__PURE__*/ React.createElement("h2", {
+        className: "text-xl font-semibold text-center text-black"
     }, "Select dates"), /*#__PURE__*/ React.createElement("button", {
-        onClick: goToNextMonth,
-        className: "p-2 hover:bg-gray-100 rounded-lg transition-colors",
-        "aria-label": "Next month"
-    }, /*#__PURE__*/ React.createElement(ChevronRight, {
-        className: "h-5 w-5"
-    }))), /*#__PURE__*/ React.createElement("button", {
         onClick: onClose,
         className: "p-2 hover:bg-gray-100 rounded-lg transition-colors",
         "aria-label": "Close"
@@ -28221,9 +28258,27 @@ function DesktopCalendarModal({ isOpen, onClose, onDateRangeSelect, initialRange
     }, /*#__PURE__*/ React.createElement("p", {
         className: "text-blue-600 font-medium"
     }, "Select your travel dates")), /*#__PURE__*/ React.createElement("div", {
-        className: "flex gap-8 justify-center",
+        className: "mb-4 text-center"
+    }, /*#__PURE__*/ React.createElement("p", {
+        className: "text-sm text-gray-500"
+    }, "Showing: ", dateFns.format(currentMonth, 'MMMM yyyy'), " - ", dateFns.format(dateFns.addMonths(currentMonth, 1), 'MMMM yyyy'))), /*#__PURE__*/ React.createElement("div", {
+        className: "flex items-center justify-center gap-4",
         "data-testid": "dual-month-view"
-    }, renderMonth(currentMonth), renderMonth(dateFns.addMonths(currentMonth, 1)))), /*#__PURE__*/ React.createElement("div", {
+    }, /*#__PURE__*/ React.createElement("button", {
+        onClick: goToPrevMonth,
+        className: "flex-shrink-0 p-3 hover:bg-gray-100 rounded-full transition-colors group",
+        "aria-label": "Previous month"
+    }, /*#__PURE__*/ React.createElement(ChevronLeft, {
+        className: "h-6 w-6 text-gray-600 group-hover:text-gray-900"
+    })), /*#__PURE__*/ React.createElement("div", {
+        className: "flex gap-8"
+    }, renderMonth(currentMonth), renderMonth(dateFns.addMonths(currentMonth, 1))), /*#__PURE__*/ React.createElement("button", {
+        onClick: goToNextMonth,
+        className: "flex-shrink-0 p-3 hover:bg-gray-100 rounded-full transition-colors group",
+        "aria-label": "Next month"
+    }, /*#__PURE__*/ React.createElement(ChevronRight, {
+        className: "h-6 w-6 text-gray-600 group-hover:text-gray-900"
+    })))), /*#__PURE__*/ React.createElement("div", {
         className: "flex items-center justify-between p-6 border-t border-gray-200"
     }, /*#__PURE__*/ React.createElement(Button$1, {
         variant: "outline",
@@ -28248,16 +28303,16 @@ function Footer({ className = '', onPremiumClick }) {
         className: "md:col-span-1"
     }, /*#__PURE__*/ React.createElement("h3", {
         className: "text-xl font-bold text-white mb-4"
-    }, "ETIAS Calculator"), /*#__PURE__*/ React.createElement("p", {
+    }, "EU Border Authority"), /*#__PURE__*/ React.createElement("p", {
         className: "text-gray-400 text-sm mb-4"
-    }, "Professional ETIAS and Schengen visa calculator trusted by 50,000+ travelers worldwide. Stay compliant with EU regulations."), /*#__PURE__*/ React.createElement("div", {
+    }, "The definitive EU border compliance authority for EES preparation and comprehensive Schengen travel tracking with 100% accurate calculations."), /*#__PURE__*/ React.createElement("div", {
         className: "flex items-center space-x-2 text-sm text-gray-400 mb-2"
     }, /*#__PURE__*/ React.createElement(Mail, {
         className: "w-4 h-4"
     }), /*#__PURE__*/ React.createElement("a", {
-        href: "mailto:info@etiascalculator.com",
+        href: "mailto:info@euborder.com",
         className: "hover:text-gray-200 transition-colors"
-    }, "info@etiascalculator.com")), /*#__PURE__*/ React.createElement("div", {
+    }, "info@euborder.com")), /*#__PURE__*/ React.createElement("div", {
         className: "flex items-center space-x-2 text-sm text-gray-400"
     }, /*#__PURE__*/ React.createElement(MapPin, {
         className: "w-4 h-4"
@@ -28284,13 +28339,16 @@ function Footer({ className = '', onPremiumClick }) {
     }, /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement(Link, {
         href: "/",
         className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
-    }, "ETIAS Calculator")), /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement(Link, {
+    }, "EU Border Calculator")), /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement(Link, {
         href: "/save-progress",
         className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
     }, "Save Progress")), /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement(Link, {
         href: "/dashboard",
         className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
-    }, "Travel Dashboard")), onPremiumClick && /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement("button", {
+    }, "Travel Dashboard")), /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement(Link, {
+        href: "/ees-preparation",
+        className: "text-gray-400 hover:text-gray-200 transition-colors text-sm"
+    }, "Entry/Exit System")), onPremiumClick && /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement("button", {
         onClick: onPremiumClick,
         className: "flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
     }, /*#__PURE__*/ React.createElement(Star, {
@@ -28301,7 +28359,7 @@ function Footer({ className = '', onPremiumClick }) {
         className: "mb-6"
     }, /*#__PURE__*/ React.createElement("p", {
         className: "text-gray-400 text-sm mb-3"
-    }, "Follow us for daily ETIAS updates:"), /*#__PURE__*/ React.createElement(FooterSocialLinks, null)), /*#__PURE__*/ React.createElement("ul", {
+    }, "Follow us for daily EU border updates:"), /*#__PURE__*/ React.createElement(FooterSocialLinks, null)), /*#__PURE__*/ React.createElement("ul", {
         className: "space-y-3"
     }, onPremiumClick && /*#__PURE__*/ React.createElement("li", null, /*#__PURE__*/ React.createElement("button", {
         onClick: onPremiumClick,
@@ -28324,7 +28382,7 @@ function Footer({ className = '', onPremiumClick }) {
         className: "flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
     }, /*#__PURE__*/ React.createElement("div", {
         className: "text-sm text-gray-400"
-    }, "© ", currentYear, " ETIAS Calculator. All rights reserved."), /*#__PURE__*/ React.createElement("div", {
+    }, "© ", currentYear, " EU Border Authority. All rights reserved."), /*#__PURE__*/ React.createElement("div", {
         className: "flex items-center space-x-4 text-xs text-gray-500"
     }, /*#__PURE__*/ React.createElement("span", null, "🇪🇺 EU Regulation Compliant"), /*#__PURE__*/ React.createElement("span", null, "•"), /*#__PURE__*/ React.createElement("span", null, "✅ 100% Accurate Calculations"), /*#__PURE__*/ React.createElement("span", null, "•"), /*#__PURE__*/ React.createElement("span", null, "🔒 Secure & Private"))))), /*#__PURE__*/ React.createElement("script", {
         type: "application/ld+json",
@@ -28332,17 +28390,17 @@ function Footer({ className = '', onPremiumClick }) {
             __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "ETIAS Calculator",
-                "url": "https://etiascalculator.com",
-                "logo": "https://etiascalculator.com/logo.png",
+                "name": "EU Border Authority",
+                "url": "https://euborder.com",
+                "logo": "https://euborder.com/logo.png",
                 "sameAs": [
-                    "https://instagram.com/etiascalculator",
-                    "https://tiktok.com/@etiascalculator"
+                    "https://instagram.com/euborder",
+                    "https://tiktok.com/@euborder"
                 ],
                 "contactPoint": {
                     "@type": "ContactPoint",
                     "contactType": "customer service",
-                    "email": "info@etiascalculator.com",
+                    "email": "info@euborder.com",
                     "areaServed": "Worldwide",
                     "availableLanguage": "English"
                 },

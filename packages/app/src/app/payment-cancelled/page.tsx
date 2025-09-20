@@ -24,7 +24,7 @@ export default function PaymentCancelledPage() {
       icon: Mail,
       title: 'Email Support',
       description: 'Get help with billing questions',
-      action: () => window.location.href = 'mailto:support@schengenvisacalculator.com'
+      action: () => window.location.href = 'mailto:support@euborder.com'
     },
     {
       icon: MessageCircle,

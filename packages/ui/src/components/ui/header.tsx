@@ -15,18 +15,20 @@ export interface HeaderProps {
   onPremiumClick?: () => void
   user?: any
   loading?: boolean
+  signupLoading?: boolean
   className?: string
 }
 
-export function Header({ 
-  onLoginClick, 
-  onSignupClick, 
+export function Header({
+  onLoginClick,
+  onSignupClick,
   onLogoutClick,
   onDashboardClick,
   onPremiumClick,
-  user, 
-  loading, 
-  className = "" 
+  user,
+  loading,
+  signupLoading = false,
+  className = ""
 }: HeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
@@ -64,7 +66,7 @@ export function Header({
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-blue-600 leading-none">
-                  ETIAS Calculator
+                  EU Border Authority
                 </span>
               </div>
             </Link>
@@ -194,9 +196,16 @@ export function Header({
                   
                   <button
                     onClick={onSignupClick}
-                    className="bg-green-700 hover:bg-green-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm"
+                    disabled={signupLoading}
+                    className="bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors shadow-sm flex items-center space-x-2"
                   >
-                    Start Now
+                    {signupLoading && (
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    <span>{signupLoading ? 'Starting...' : 'Start Now'}</span>
                   </button>
                 </>
               )}
@@ -214,9 +223,16 @@ export function Header({
                   </button>
                   <button
                     onClick={onSignupClick}
-                    className="bg-green-700 hover:bg-green-800 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"
+                    disabled={signupLoading}
+                    className="bg-green-700 hover:bg-green-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-xs font-medium px-3 py-1.5 rounded transition-colors flex items-center space-x-1"
                   >
-                    Start
+                    {signupLoading && (
+                      <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    <span>{signupLoading ? '...' : 'Start'}</span>
                   </button>
                 </>
               )}

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   if (!post) {
     return {
-      title: 'Post Not Found | ETIAS Calculator',
+      title: 'Post Not Found | EU Border Authority',
       description: 'The blog post you are looking for could not be found.'
     }
   }

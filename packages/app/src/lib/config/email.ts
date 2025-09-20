@@ -5,10 +5,10 @@
 
 export const EMAIL_CONFIG = {
   // Primary email addresses
-  FROM_EMAIL: process.env.FROM_EMAIL || 'info@etiascalculator.com',
-  CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'info@etiascalculator.com', 
-  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'info@etiascalculator.com',
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'info@etiascalculator.com',
+  FROM_EMAIL: process.env.FROM_EMAIL || 'info@euborder.com',
+  CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'info@euborder.com',
+  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'support@euborder.com',
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@euborder.com',
   
   // Email service configuration
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
@@ -24,11 +24,11 @@ export const EMAIL_CONFIG = {
 
   // Email subjects
   SUBJECTS: {
-    WELCOME: 'Welcome to ETIAS Calculator',
-    PASSWORD_RESET: 'Reset Your ETIAS Calculator Password',
-    SUBSCRIPTION_CONFIRMATION: 'Your ETIAS Calculator Subscription is Confirmed',
-    COMPLIANCE_ALERT: 'Schengen Visa Compliance Alert',
-    SUPPORT_REQUEST: 'ETIAS Calculator Support Request'
+    WELCOME: 'Welcome to EU Border Authority',
+    PASSWORD_RESET: 'Reset Your EU Border Authority Password',
+    SUBSCRIPTION_CONFIRMATION: 'Your EU Border Authority Subscription is Confirmed',
+    COMPLIANCE_ALERT: 'EU Border Compliance Alert',
+    SUPPORT_REQUEST: 'EU Border Authority Support Request'
   }
 } as const
 
@@ -42,7 +42,7 @@ export function getSenderEmail(type: 'contact' | 'support' | 'system' | 'noreply
     case 'support': 
       return EMAIL_CONFIG.SUPPORT_EMAIL
     case 'noreply':
-      return `noreply@etiascalculator.com`
+      return `noreply@euborder.com`
     case 'system':
     default:
       return EMAIL_CONFIG.FROM_EMAIL
@@ -52,6 +52,6 @@ export function getSenderEmail(type: 'contact' | 'support' | 'system' | 'noreply
 /**
  * Format email address with display name
  */
-export function formatEmailAddress(email: string, name: string = 'ETIAS Calculator'): string {
+export function formatEmailAddress(email: string, name: string = 'EU Border Authority'): string {
   return `${name} <${email}>`
 }

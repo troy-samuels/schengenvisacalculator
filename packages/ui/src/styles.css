@@ -2,6 +2,9 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* Import React Day Picker CSS - Required for calendar functionality */
+@import 'react-day-picker/style.css';
+
 /* Import Onest font (brand font) */
 @import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
 
@@ -112,6 +115,83 @@
 
   .schengen-focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+  }
+
+  /* React Day Picker custom styling - Enhanced for readability */
+  .rdp {
+    --rdp-cell-size: 40px;
+    --rdp-caption-font-size: 18px;
+    --rdp-accent-color: theme('colors.primary.DEFAULT');
+    --rdp-background-color: theme('colors.primary.DEFAULT');
+    --rdp-accent-color-dark: theme('colors.primary.DEFAULT');
+    --rdp-background-color-dark: theme('colors.primary.DEFAULT');
+    /* Force readable text colors */
+    color: theme('colors.gray.900') !important;
+  }
+
+  .rdp-caption_label {
+    @apply text-lg font-semibold text-gray-900 !important;
+  }
+
+  .rdp-head_cell {
+    @apply text-gray-600 font-medium !important;
+  }
+
+  .rdp-day {
+    @apply hover:bg-gray-100 rounded-md text-gray-900 !important;
+    color: theme('colors.gray.900') !important;
+  }
+
+  .rdp-day_selected {
+    @apply bg-primary text-white !important;
+    color: white !important;
+  }
+
+  .rdp-day_today {
+    @apply bg-blue-100 text-blue-900 font-semibold !important;
+    color: theme('colors.blue.900') !important;
+  }
+
+  /* Force readable text for all calendar days */
+  .rdp-day button,
+  .rdp-day_button {
+    @apply text-gray-900 !important;
+    color: theme('colors.gray.900') !important;
+  }
+
+  .rdp-day_selected button,
+  .rdp-day_selected .rdp-day_button {
+    @apply text-white !important;
+    color: white !important;
+  }
+
+  .rdp-day_today button,
+  .rdp-day_today .rdp-day_button {
+    @apply text-blue-900 !important;
+    color: theme('colors.blue.900') !important;
+  }
+
+  /* Custom calendar modal text readability fixes */
+  [data-testid="desktop-calendar-modal"] button {
+    @apply text-gray-900 !important;
+    color: theme('colors.gray.900') !important;
+  }
+
+  [data-testid="desktop-calendar-modal"] .text-gray-900 {
+    color: theme('colors.gray.900') !important;
+  }
+
+  [data-testid="desktop-calendar-modal"] .text-white {
+    color: white !important;
+  }
+
+  [data-testid="mobile-drawer"] button {
+    @apply text-gray-900 !important;
+    color: theme('colors.gray.900') !important;
+  }
+
+  [data-testid="mobile-drawer"] .text-gray-900 {
+    color: theme('colors.gray.900') !important;
   }
 
   /* Date picker specific styles */

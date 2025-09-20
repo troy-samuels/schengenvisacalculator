@@ -1,16 +1,19 @@
-# CLAUDE.md - Schengen Compliance Tool Guide
+# CLAUDE.md - EU Border Authority Platform Guide
 
-This file provides comprehensive guidance for building a focused Schengen 90/180 compliance calculator with unique family tracking features. The platform prioritizes calculation accuracy and family coordination over complex features.
+This file provides comprehensive guidance for building the definitive EU Border Authority platform at euborder.com. The platform combines Schengen 90/180 compliance, EES preparation, and ETIAS guidance into one authoritative resource. **Domain Strategy**: euborder.com with strategic redirects from schengenvisacalculator.com and eessystem.com.
 
-## 🎯 Primary Vision: Compliance Excellence with Family Focus
-Build a reliable Schengen compliance tool where accurate calculations and family coordination justify premium pricing through genuine compliance value. The core philosophy: **Accuracy first, family coordination, sustainable growth**.
+## 🎯 Primary Vision: Complete EU Border Authority
+Build the definitive EU Border Authority platform where comprehensive compliance tools, EES preparation, and ETIAS guidance justify premium pricing through genuine regulatory value. The core philosophy: **Authority first, compliance excellence, market leadership**.
 
 ### Core Design Principles
+- **Authority Leadership**: Become THE definitive EU border information source
 - **Calculation Accuracy**: 100% EU compliance, zero tolerance for errors
+- **EES Preparation Excellence**: First-mover advantage in biometric system guidance
+- **ETIAS Authority**: Comprehensive travel authorization expertise
 - **Family-First Design**: Multi-person tracking with visual coordination
 - **Mobile Excellence**: Touch-friendly with 44px minimum targets
 - **Professional Polish**: Enterprise-grade reliability and security
-- **Sustainable Monetization**: Value-justified pricing without feature bloat
+- **Market Domination**: Capture entire EU border compliance market
 
 ## 💰 Focused Monetization Strategy
 
@@ -248,13 +251,15 @@ STRIPE_PRICE_LIFETIME=price_lifetime_4_99
 STRIPE_PRICE_ANNUAL=price_annual_2_99
 
 # Email & SMS Alerts
-FROM_EMAIL=info@schengentracker.com
-SUPPORT_EMAIL=support@schengentracker.com
+FROM_EMAIL=info@euborder.com
+SUPPORT_EMAIL=support@euborder.com
+CONTACT_EMAIL=info@euborder.com
+ADMIN_EMAIL=info@euborder.com
 SENDGRID_API_KEY=your_sendgrid_key
 SMS_API_KEY=your_sms_provider_key
 
 # App Configuration
-NEXT_PUBLIC_APP_URL=https://schengentracker.com
+NEXT_PUBLIC_APP_URL=https://euborder.com
 
 # Analytics (Simple)
 POSTHOG_API_KEY=your_posthog_key
@@ -312,4 +317,30 @@ JWT_SECRET=your_jwt_secret
 
 ---
 
-**This is a focused Schengen compliance tool that prioritizes calculation accuracy and family coordination over feature complexity. Every development decision must maintain compliance excellence while building sustainable competitive advantages.**
+**This is the definitive EU Border Authority platform that combines Schengen compliance, EES preparation, and ETIAS guidance. Every development decision must maintain regulatory excellence while building unassailable market leadership across all EU border topics.**
+
+## 🚀 EU Border Authority Strategy
+
+### Domain Portfolio Management
+- **Primary Domain**: euborder.com (Authority Hub)
+- **Strategic Redirects**:
+  - schengenvisacalculator.com → euborder.com/schengen-calculator
+  - eessystem.com → euborder.com/ees
+- **Email Identity**: info@euborder.com
+
+### Market Opportunity Analysis
+- **Schengen Calculator**: 3K monthly searches (current)
+- **EES System**: 50K+ monthly searches (launching October 2025)
+- **ETIAS Information**: 40K+ monthly searches
+- **EU Border Topics**: 100K+ combined monthly opportunity
+
+### Content Authority Framework
+```
+euborder.com (Authority Hub)
+├── /schengen-calculator (Current proven tool)
+├── /ees (EES biometric system center)
+├── /etias (Travel authorization hub)
+├── /countries/* (27 EU country guides)
+├── /business (Corporate compliance)
+└── /updates (Border news & regulations)
+```

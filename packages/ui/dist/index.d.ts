@@ -221,9 +221,10 @@ interface HeaderProps {
     onPremiumClick?: () => void;
     user?: any;
     loading?: boolean;
+    signupLoading?: boolean;
     className?: string;
 }
-declare function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
+declare function Header({ onLoginClick, onSignupClick, onLogoutClick, onDashboardClick, onPremiumClick, user, loading, signupLoading, className }: HeaderProps): react_jsx_runtime.JSX.Element;
 
 interface LoginModalProps {
     isOpen: boolean;

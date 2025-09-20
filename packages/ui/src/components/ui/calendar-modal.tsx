@@ -117,8 +117,13 @@ function DesktopCalendarModal({
 
   // Handle date click
   const handleDateClick = (date: Date) => {
+    console.log('🖱️ Desktop calendar: Date clicked:', format(date, 'yyyy-MM-dd'))
+
     // Check if date is disabled
-    if (isDateDisabled(date)) return
+    if (isDateDisabled(date)) {
+      console.log('🚫 Date is disabled:', format(date, 'yyyy-MM-dd'))
+      return
+    }
 
     // Handle occupied date click - show helpful message
     if (isDateOccupied(date)) {
@@ -129,6 +134,8 @@ function DesktopCalendarModal({
       }
       return
     }
+
+    console.log('✅ Date click allowed, processing selection...')
 
     if (!selectedRange.startDate || selectingEnd) {
       // Select start date or reset and select new start date
@@ -205,8 +212,15 @@ function DesktopCalendarModal({
   }
 
   // Navigation functions
-  const goToPrevMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
-  const goToNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
+  const goToPrevMonth = () => {
+    console.log('🖱️ Desktop calendar: Previous month clicked')
+    setCurrentMonth(prev => subMonths(prev, 1))
+  }
+
+  const goToNextMonth = () => {
+    console.log('🖱️ Desktop calendar: Next month clicked')
+    setCurrentMonth(prev => addMonths(prev, 1))
+  }
 
   // Render calendar month
   const renderMonth = (monthDate: Date) => {
@@ -239,14 +253,14 @@ function DesktopCalendarModal({
     return (
       <div className="flex-1">
         {/* Month header */}
-        <div className="text-center font-semibold text-lg mb-4">
+        <div className="text-center font-bold text-xl mb-4 text-black py-2">
           {format(monthDate, 'MMMM yyyy')}
         </div>
 
         {/* Days of week header */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+            <div key={day} className="text-center text-sm font-semibold text-black p-2 bg-gray-100 rounded">
               {day}
             </div>
           ))}
@@ -271,31 +285,38 @@ function DesktopCalendarModal({
                 disabled={disabled || !isCurrentMonth || occupied}
                 title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
                 className={cn(
-                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors relative",
-                  "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors relative border border-transparent",
+                  "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50",
                   {
-                    // Current month styling
-                    "text-gray-900": isCurrentMonth && !disabled && !occupied,
-                    "text-gray-400": !isCurrentMonth,
-                    
+                    // Current month styling - force readable text
+                    "text-gray-900 !text-gray-900": isCurrentMonth && !disabled && !occupied,
+                    "text-gray-400 !text-gray-400": !isCurrentMonth,
+
                     // Disabled styling
-                    "text-gray-300 cursor-not-allowed": disabled,
-                    
+                    "text-gray-300 cursor-not-allowed !text-gray-300": disabled,
+
                     // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
-                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60": occupied && isCurrentMonth,
-                    
-                    // Today styling
-                    "bg-blue-100 text-blue-900": today && !inRange && !occupied && isCurrentMonth,
-                    
+                    "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60 !text-gray-600": occupied && isCurrentMonth,
+
+                    // Today styling - force readable contrast
+                    "bg-blue-100 text-blue-900 !text-blue-900": today && !inRange && !occupied && isCurrentMonth,
+
                     // Range styling
-                    "bg-primary/20": inRange && !rangeStart && !rangeEnd && !occupied,
-                    "bg-primary text-white": (rangeStart || rangeEnd) && !occupied,
-                    
+                    "bg-primary/20 text-gray-900 !text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied,
+                    "bg-primary text-white !text-white": (rangeStart || rangeEnd) && !occupied,
+
                     // Hover effects
                     "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
                     "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied,
                   }
                 )}
+                style={{
+                  color: (rangeStart || rangeEnd) && !occupied ? 'white' :
+                         today && !inRange && !occupied && isCurrentMonth ? '#1e3a8a' :
+                         occupied && isCurrentMonth ? '#4b5563' :
+                         disabled ? '#d1d5db' :
+                         !isCurrentMonth ? '#9ca3af' : '#111827'
+                }}
               >
                 <span className={occupied ? "line-through" : ""}>
                   {date.getDate()}
@@ -327,24 +348,8 @@ function DesktopCalendarModal({
       )}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={goToPrevMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <h2 className="text-xl font-semibold">Select dates</h2>
-            <button
-              onClick={goToNextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-          
+          <h2 className="text-xl font-semibold text-center text-black">Select dates</h2>
+
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -364,10 +369,38 @@ function DesktopCalendarModal({
             </div>
           )}
 
-          {/* Dual month view */}
-          <div className="flex gap-8 justify-center" data-testid="dual-month-view">
-            {renderMonth(currentMonth)}
-            {renderMonth(addMonths(currentMonth, 1))}
+          {/* Month range indicator */}
+          <div className="mb-4 text-center">
+            <p className="text-sm text-gray-500">
+              Showing: {format(currentMonth, 'MMMM yyyy')} - {format(addMonths(currentMonth, 1), 'MMMM yyyy')}
+            </p>
+          </div>
+
+          {/* Dual month view with side navigation */}
+          <div className="flex items-center justify-center gap-4" data-testid="dual-month-view">
+            {/* Left navigation arrow */}
+            <button
+              onClick={goToPrevMonth}
+              className="flex-shrink-0 p-3 hover:bg-gray-100 rounded-full transition-colors group"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-600 group-hover:text-gray-900" />
+            </button>
+
+            {/* Calendar months */}
+            <div className="flex gap-8">
+              {renderMonth(currentMonth)}
+              {renderMonth(addMonths(currentMonth, 1))}
+            </div>
+
+            {/* Right navigation arrow */}
+            <button
+              onClick={goToNextMonth}
+              className="flex-shrink-0 p-3 hover:bg-gray-100 rounded-full transition-colors group"
+              aria-label="Next month"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-600 group-hover:text-gray-900" />
+            </button>
           </div>
         </div>
 
