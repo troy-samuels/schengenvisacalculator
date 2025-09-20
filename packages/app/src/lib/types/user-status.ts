@@ -16,37 +16,56 @@ export enum UserStatus {
 // User profile from database
 export type UserProfile = Database['public']['Tables']['profiles']['Row']
 
-// Extended user context with B2C status
+// Trip Data interface for type consistency
+export interface TripData {
+  id: string
+  country: string
+  startDate: Date | null
+  endDate: Date | null
+  entry_type?: 'schengen' | 'non_schengen'
+  notes?: string
+}
+
+// Extended user context with B2C status and trip management
 export interface UserContext {
   // Authentication state
   user: User | null
   userProfile: UserProfile | null
   loading: boolean
-  
+
   // B2C user status
   userStatus: UserStatus
-  
+
   // Feature access
   canAddTrips: boolean
   hasUnlimitedTrips: boolean
   showDisplayAds: boolean
   hasAffiliateAccess: boolean
   hasPremiumFeatures: boolean
-  
+
   // Trip limitations
   tripCount: number
   tripLimit: number | null
-  
+
   // Authentication methods
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signUp: (email: string, password: string, fullName?: string) => Promise<void>
   signOut: () => Promise<void>
-  
+
   // Conversion methods
   upgradeToFreeAccount: () => Promise<void>
   upgradeToPremium: () => Promise<void>
-  
+
+  // Trip management (database persistence)
+  userTrips: TripData[]
+  tripsLoading: boolean
+  tripsError: string | null
+  loadUserTrips: () => Promise<void>
+  saveTrip: (trip: TripData) => Promise<TripData | null>
+  deleteTrip: (tripId: string) => Promise<boolean>
+  migrateMigrationFromLocalStorage: () => Promise<boolean>
+
   // Optional helper method (only available for anonymous users)
   incrementAnonymousTripCount?: () => void
 }

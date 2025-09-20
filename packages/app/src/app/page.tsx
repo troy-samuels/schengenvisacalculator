@@ -21,9 +21,7 @@ import {
   useFeatureAccess,
   SubscriptionTier,
   Footer,
-  AccuracyVerificationBadge,
-  RollingCalendarView,
-  FutureTripValidator
+  AccuracyVerificationBadge
 } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
@@ -34,9 +32,10 @@ import { Database } from '../lib/types/database'
 import { useRouter } from 'next/navigation'
 import { useUserStatus } from '../lib/hooks/useUserStatus'
 import { UserStatus } from '../lib/types/user-status'
+import { TripData } from '../lib/services/trip-data'
+import { TripEntry, convertLocalStorageTrip } from '../lib/types/schengen-trip'
 import { StrategicAdPlacement, AdFreeBadge } from '../lib/components/DisplayAdvertising'
 import { AffiliateWidgets, ContextualAffiliateWidget } from '../lib/components/AffiliateWidgets'
-import { PDFExportButton } from '../lib/components/PDFExportButton'
 import { SmartAlertsPanel } from '../lib/components/SmartAlertsPanel'
 import { AITravelAssistant } from '../lib/components/AITravelAssistant'
 import { useIntelligentBackground } from '../lib/hooks/useIntelligentBackground'
@@ -320,6 +319,28 @@ function SocialProofBadge({ className = "" }: { className?: string }) {
   )
 }
 
+// Authority Statement Component
+function AuthorityStatement({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center justify-center space-x-3 bg-green-50 border border-green-200 rounded-lg px-6 py-3 ${className}`}>
+      <div className="flex items-center space-x-2">
+        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <span className="text-sm font-dm-sans font-semibold text-green-800">
+          EU Regulation Compliant
+        </span>
+      </div>
+      <div className="text-gray-400">•</div>
+      <span className="text-sm font-dm-sans font-medium text-gray-700">
+        Official Schengen & EES Rules
+      </span>
+    </div>
+  )
+}
+
 // Hero Section Component
 function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => void }) {
   const router = useRouter()
@@ -349,9 +370,9 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             transition={{ duration: 0.6 }}
             className="text-4xl md:text-5xl lg:text-6xl font-poppins font-bold tracking-tight leading-none text-gray-900 mb-6"
           >
-            Travel Hassle-Free Across{' '}
+            Master EU Border Compliance{' '}
             <motion.span
-              animate={prefersReducedMotion ? {} : { 
+              animate={prefersReducedMotion ? {} : {
                 rotateZ: [-1.5, 1.5, -1.5],
                 scale: [1, 1.02, 1]
               }}
@@ -365,39 +386,48 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
             >
               🇪🇺
             </motion.span>
-            <span className="block text-blue-600">Never worry about visa limits again</span>
+            <span className="block text-blue-600">with Complete Authority & Confidence</span>
           </motion.h1>
           
-          <motion.p 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl font-dm-sans font-normal text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
+            className="text-xl font-dm-sans font-semibold text-blue-600 mb-4 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            Stop worrying about accidentally overstaying your European visa. 
-            Trusted by travelers worldwide, our calculator gives you complete confidence in your travel dates and compliance status.
+            100% accurate calculations based on official rules
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="text-lg font-dm-sans font-normal text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed text-balance"
+          >
+            The only platform combining EES preparation and comprehensive Schengen compliance tracking for complete EU border authority confidence.
           </motion.p>
           
           {/* Test DM Sans ExtraLight 200 weight */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-6"
           >
             <p className="text-lg font-dm-sans font-extralight text-gray-500 max-w-2xl mx-auto">
-              Professional • Accurate • Legally Compliant
+              EES Ready • Schengen Authority • EU Border Compliance
             </p>
           </motion.div>
           
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex justify-center mb-12"
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="flex justify-center mb-8"
           >
-            <SocialProofBadge />
+            <AuthorityStatement />
           </motion.div>
+
         </div>
       </div>
       
@@ -408,21 +438,15 @@ function HeroSection({ onScrollToCalculator }: { onScrollToCalculator: () => voi
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": ["WebApplication", "TravelApplication"],
-            "name": "ETIAS Calculator",
-            "description": "Professional 90/180 day rule calculator for ETIAS and Schengen visa compliance",
-            "url": "https://etiascalculator.com",
+            "name": "EU Border Authority",
+            "description": "The definitive EU border compliance platform combining EES preparation, ETIAS guidance, and Schengen tracking",
+            "url": "https://euborder.com",
             "applicationCategory": "TravelApplication",
             "operatingSystem": "All",
             "browserRequirements": "Modern browsers",
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.9",
-              "ratingCount": "50000",
-              "bestRating": "5"
-            },
             "publisher": {
               "@type": "Organization",
-              "name": "ETIAS Calculator"
+              "name": "EU Border Authority"
             },
             "featureList": [
               "90/180 day rule tracking",
@@ -531,6 +555,14 @@ export default function HomePage() {
     signInWithGoogle,
     signUp,
     signOut,
+    // Trip management (database persistence)
+    userTrips,
+    tripsLoading,
+    tripsError,
+    saveTrip,
+    deleteTrip,
+    loadUserTrips,
+    migrateMigrationFromLocalStorage,
     upgradeToFreeAccount,
     upgradeToPremium,
     incrementAnonymousTripCount
@@ -561,11 +593,90 @@ export default function HomePage() {
   const [showAccountCreationModal, setShowAccountCreationModal] = useState(false)
   const [showPremiumUpgradeModal, setShowPremiumUpgradeModal] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [signupLoading, setSignupLoading] = useState(false)
   const [accountCreationTrigger, setAccountCreationTrigger] = useState<string>()
   const [premiumUpgradeTrigger, setPremiumUpgradeTrigger] = useState<string>()
   const calculatorRef = useRef<HTMLDivElement>(null)
 
   // User status is now managed by useUserStatus hook
+
+  // Load user trips when user logs in or trips change
+  useEffect(() => {
+    // Migrate localStorage data for new users
+    if (user && userTrips.length === 0 && migrateMigrationFromLocalStorage) {
+      console.log('🔄 New user detected, attempting localStorage migration...')
+      migrateMigrationFromLocalStorage()
+    }
+
+    if (user && userTrips.length > 0) {
+      console.log('📥 Loading user trips into calculator:', userTrips.length)
+
+      // Convert TripData to VisaEntry format
+      const convertedEntries: VisaEntry[] = userTrips.map((trip, index) => ({
+        id: trip.id,
+        country: trip.country,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        days: trip.startDate && trip.endDate ?
+          Math.ceil((trip.endDate.getTime() - trip.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0,
+        daysInLast180: 0, // Will be recalculated
+        daysRemaining: 90, // Will be recalculated
+        activeColumn: trip.country ? (trip.startDate ? "complete" : "dates") : "country"
+      }))
+
+      // Add empty entry for new trip if user can add more trips
+      if (canAddTrips) {
+        convertedEntries.push({
+          id: `new-${Date.now()}`,
+          country: "",
+          startDate: null,
+          endDate: null,
+          days: 0,
+          daysInLast180: 0,
+          daysRemaining: 90,
+          activeColumn: "country"
+        })
+      }
+
+      setEntries(recalculateEntries(convertedEntries))
+    } else if (!user && entries.length === 1 && entries[0].country === "") {
+      // User logged out - reset to single empty entry
+      setEntries([{
+        id: "1",
+        country: "",
+        startDate: null,
+        endDate: null,
+        days: 0,
+        daysInLast180: 0,
+        daysRemaining: 90,
+        activeColumn: "country"
+      }])
+    }
+  }, [user, userTrips, canAddTrips])
+
+  // Auto-save completed trips to database
+  const autoSaveTrip = useCallback(async (entry: VisaEntry) => {
+    if (!user || !saveTrip) return
+
+    // Only save if trip is complete and valid
+    if (entry.country && entry.startDate && entry.endDate) {
+      const tripData: TripData = {
+        id: entry.id.startsWith('new-') ? 'new' : entry.id,
+        country: entry.country,
+        startDate: entry.startDate,
+        endDate: entry.endDate,
+        entry_type: 'schengen',
+        notes: undefined
+      }
+
+      try {
+        console.log('💾 Auto-saving trip:', tripData)
+        await saveTrip(tripData)
+      } catch (error) {
+        console.error('❌ Failed to auto-save trip:', error)
+      }
+    }
+  }, [user, saveTrip])
 
   // Save user progress to database
   const saveUserProgress = async () => {
@@ -734,14 +845,9 @@ export default function HomePage() {
     }
   }
 
-  const handleSignupClick = async () => {
-    try {
-      setAuthError(null)
-      await signInWithGoogle() // Using Google signup for simplicity
-    } catch (error: any) {
-      console.error('Signup error:', error)
-      setAuthError(error.message || 'Signup failed. Please try again.')
-    }
+  const handleSignupClick = () => {
+    console.log('🚀 Start Now button clicked - navigating to signup page')
+    router.push('/save-progress')
   }
 
   const handleLogoutClick = async () => {
@@ -1177,7 +1283,14 @@ export default function HomePage() {
       return entry
     })
 
-    setEntries(recalculateEntries(updatedEntries))
+    const recalculatedEntries = recalculateEntries(updatedEntries)
+    setEntries(recalculatedEntries)
+
+    // Auto-save completed trip to database
+    const updatedEntry = recalculatedEntries.find(e => e.id === id)
+    if (updatedEntry && updatedEntry.country && updatedEntry.startDate && updatedEntry.endDate) {
+      autoSaveTrip(updatedEntry)
+    }
   }
 
   const updateDateRange = (id: string, dateRange: AppDateRange) => {
@@ -1201,7 +1314,14 @@ export default function HomePage() {
       return entry
     })
 
-    setEntries(recalculateEntries(updatedEntries))
+    const recalculatedEntries = recalculateEntries(updatedEntries)
+    setEntries(recalculatedEntries)
+
+    // Auto-save completed trip to database
+    const updatedEntry = recalculatedEntries.find(e => e.id === id)
+    if (updatedEntry && updatedEntry.country && updatedEntry.startDate && updatedEntry.endDate) {
+      autoSaveTrip(updatedEntry)
+    }
   }
 
   const getColumnBorderStyles = (entry: VisaEntry, columnType: "country" | "dates" | "results") => {
@@ -1337,11 +1457,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen font-dm-sans bg-gray-50">
       {/* Header Navigation */}
-      <Header 
+      <Header
         onLoginClick={handleLoginClick}
         onSignupClick={handleSignupClick}
         onLogoutClick={handleLogoutClick}
         onDashboardClick={handleDashboardClick}
+        signupLoading={false}
         onPremiumClick={() => {
           if (userStatus === UserStatus.FREE) {
             setShowConversionModal(true)
@@ -1402,7 +1523,7 @@ export default function HomePage() {
             
             {/* Mobile Header */}
             <div className="md:hidden p-4 bg-gray-50 border-b">
-              <h3 className="font-semibold text-gray-900 text-center">ETIAS Calculator</h3>
+              <h3 className="font-semibold text-gray-900 text-center">EU Border Authority</h3>
               <p className="text-xs text-gray-500 text-center mt-1">Track your 90/180 day rule compliance</p>
             </div>
 
@@ -1663,13 +1784,13 @@ export default function HomePage() {
                           setPremiumUpgradeTrigger('unlimited_trips')
                         }
                       }}
-                      className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] ${
+                      leftIcon={<Save className="h-4 w-4" />}
+                      className={`text-white px-8 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] min-w-fit ${
                         showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                       }`}
                       style={{ backgroundColor: "#FA9937" }}
                     >
-                      <Save className="h-4 w-4 flex-shrink-0" />
-                      <span className="font-dm-sans font-medium">
+                      <span className="font-dm-sans font-medium whitespace-nowrap">
                         {userStatus === UserStatus.FREE ? 'Create Free Account' : 'Upgrade to Premium'}
                       </span>
                       
@@ -1740,13 +1861,13 @@ export default function HomePage() {
                       >
                         <Button
                           onClick={user ? saveUserProgress : handleSaveClick}
-                          className={`flex flex-row items-center justify-center gap-2 text-white px-6 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] ${
+                          leftIcon={<Save className="h-4 w-4" />}
+                          className={`text-white px-8 py-2 rounded-full hover:opacity-90 font-medium transition-all duration-200 motion-reduce:transition-none min-h-[44px] min-w-fit ${
                             showFloatingSave ? 'ring-2 ring-orange-300 ring-opacity-50 motion-reduce:ring-0' : ''
                           }`}
                           style={{ backgroundColor: "#FA9937" }}
                         >
-                          <Save className="h-4 w-4 flex-shrink-0" />
-                          <span className="font-dm-sans font-medium">
+                          <span className="font-dm-sans font-medium whitespace-nowrap">
                             {user ? 'Save Progress' : 'Login to Save'}
                           </span>
                           
@@ -1783,141 +1904,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Compliance Summary & PDF Export - Shows when user has trips */}
-      {totalDays > 0 && (
-        <section className="py-8 px-4 bg-gray-50">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white rounded-xl shadow-lg border p-6"
-            >
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-poppins font-bold text-gray-900 mb-2">
-                  Travel Compliance Summary
-                </h3>
-                <p className="text-gray-600 font-dm-sans mb-3">
-                  Your current status under the Schengen 90/180-day rule
-                </p>
-                {/* Real-Time Accuracy Verification Badge */}
-                {compliance.verification && (
-                  <div className="flex justify-center mb-2">
-                    <AccuracyVerificationBadge
-                      verification={compliance.verification}
-                      className="shadow-sm"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Compliance Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="text-center">
-                  <div className="bg-blue-50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-blue-600">{compliance.totalDaysUsed}</span>
-                  </div>
-                  <div className="text-sm font-medium text-gray-900">Days Used</div>
-                  <div className="text-xs text-gray-500">out of 90 allowed</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-green-50 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-green-600">{compliance.daysRemaining}</span>
-                  </div>
-                  <div className="text-sm font-medium text-gray-900">Days Remaining</div>
-                  <div className="text-xs text-gray-500">in current period</div>
-                </div>
-
-                <div className="text-center">
-                  <div className={`${compliance.isCompliant ? 'bg-green-50' : 'bg-red-50'} rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center`}>
-                    <span className={`text-2xl ${compliance.isCompliant ? 'text-green-600' : 'text-red-600'}`}>
-                      {compliance.isCompliant ? '✓' : '⚠'}
-                    </span>
-                  </div>
-                  <div className="text-sm font-medium text-gray-900">Status</div>
-                  <div className={`text-xs ${compliance.isCompliant ? 'text-green-600' : 'text-red-600'}`}>
-                    {compliance.isCompliant ? 'Compliant' : 'Over Limit'}
-                  </div>
-                </div>
-              </div>
-
-              {/* PDF Export Button */}
-              <div className="flex justify-center">
-                <PDFExportButton
-                  userStatus={userStatus}
-                  trips={tripsForCalculation.map(trip => ({
-                    ...trip,
-                    startDate: trip.startDate,
-                    endDate: trip.endDate,
-                    purpose: 'Tourism' // Default purpose
-                  }))}
-                  complianceData={{
-                    totalDaysUsed: compliance.totalDaysUsed,
-                    remainingDays: compliance.daysRemaining,
-                    isCompliant: compliance.isCompliant,
-                    nextResetDate: new Date(Date.now() + (180 - compliance.totalDaysUsed) * 24 * 60 * 60 * 1000)
-                  }}
-                  userProfile={{
-                    full_name: user?.user_metadata?.full_name || user?.email || undefined
-                  }}
-                  className="w-full max-w-xs"
-                />
-              </div>
-
-              {/* TODO: Premium Feature Highlight - Temporarily Hidden Until Feature Redesign */}
-              {/*
-              {userStatus === UserStatus.FREE && (
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="text-center text-sm text-gray-600">
-                    <span className="inline-flex items-center gap-1">
-                      💡 Premium users get detailed PDF reports with personalized recommendations
-                    </span>
-                  </div>
-                </div>
-              )}
-              */}
-            </motion.div>
-
-            {/* Visual Rolling Calendar with Confidence Score */}
-            {tripsForCalculation.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mt-8"
-              >
-                <RollingCalendarView
-                  trips={tripsForCalculation}
-                  compliance={compliance}
-                  showConfidenceScore={true}
-                  onDateClick={(date) => {
-                    // Optional: Handle date clicks for future features
-                    console.log('Date clicked:', date)
-                  }}
-                />
-              </motion.div>
-            )}
-
-            {/* Future Trip Validation Engine */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-8"
-            >
-              <FutureTripValidator
-                existingTrips={tripsForCalculation}
-                autoValidate={true}
-                onTripValidated={(validation) => {
-                  // Optional: Handle trip validation results for analytics
-                  console.log('Trip validated:', validation)
-                }}
-              />
-            </motion.div>
-          </div>
-        </section>
-      )}
 
       {/* TODO: Smart Alerts Panel - Temporarily Hidden Until Feature Redesign */}
       {/*

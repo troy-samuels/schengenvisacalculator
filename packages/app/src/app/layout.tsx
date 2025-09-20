@@ -45,29 +45,34 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Schengen Visa Calculator | 90/180 Rule Compliance Tool',
-    template: '%s | Schengen Calculator',
+    default: 'EU Border Authority | EES, ETIAS & Schengen Compliance',
+    template: '%s | EU Border Authority',
   },
-  description: 'Professional EU Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan travel with our enterprise-grade platform.',
+  description: 'Complete EU border compliance authority with secure user accounts for EES preparation, ETIAS applications, and persistent Schengen 90/180-day rule tracking. Save your travel history securely and access from anywhere.',
   keywords: [
-    'schengen visa calculator',
+    'EES system',
+    'Entry Exit System',
+    'ETIAS application',
+    'schengen calculator',
     '90 180 day rule',
-    'eu travel',
-    'visa compliance',
-    'travel planning',
-    'europe visa',
-    'schengen area',
-    'trip tracker'
+    'EU border control',
+    'eu travel compliance',
+    'biometric registration',
+    'EU travel authority',
+    'secure travel history',
+    'travel data persistence',
+    'user account travel tracking',
+    'cross-device schengen tracking'
   ],
-  authors: [{ name: 'Schengen Calculator Team' }],
-  creator: 'Schengen Calculator',
-  publisher: 'Schengen Calculator',
+  authors: [{ name: 'EU Border Authority Team' }],
+  creator: 'EU Border Authority',
+  publisher: 'EU Border Authority',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://etiascalculator.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://euborder.com'),
   alternates: {
     canonical: '/',
   },
@@ -75,24 +80,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'ETIAS Calculator | EU Schengen 90/180 Rule Compliance Tool',
-    description: 'Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel.',
-    siteName: 'ETIAS Calculator',
+    title: 'EU Border Authority | Complete EES, ETIAS & Schengen Guide',
+    description: 'The definitive EU border compliance authority with secure user accounts. EES preparation, ETIAS applications, persistent Schengen tracking - save your travel data and access from anywhere.',
+    siteName: 'EU Border Authority',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'ETIAS Calculator',
+        alt: 'EU Border Authority',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ETIAS Calculator',
-    description: 'Professional ETIAS and Schengen visa calculator for the 90/180-day rule.',
+    title: 'EU Border Authority',
+    description: 'Complete EU border compliance authority with secure user accounts for EES, ETIAS, and persistent Schengen travel tracking.',
     images: ['/og-image.png'],
-    creator: '@etias_calc',
+    creator: '@euborder',
   },
   robots: {
     index: true,
@@ -156,10 +161,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
               "@graph": [
                 {
                   "@type": "WebApplication",
-                  "@id": "https://etiascalculator.com/#webapp",
-                  "name": "ETIAS Calculator",
-                  "description": "Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel with our enterprise-grade platform.",
-                  "url": "https://etiascalculator.com",
+                  "@id": "https://euborder.com/#webapp",
+                  "name": "EU Border Authority",
+                  "description": "Complete EU border compliance authority for EES preparation, ETIAS applications, and Schengen 90/180-day rule tracking. Master EU travel with confidence and authority.",
+                  "url": "https://euborder.com",
                   "applicationCategory": "Travel",
                   "operatingSystem": "Web Browser",
                   "offers": {
@@ -168,55 +173,49 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     "priceCurrency": "USD",
                     "availability": "https://schema.org/InStock"
                   },
-                  "aggregateRating": {
-                    "@type": "AggregateRating",
-                    "ratingValue": "4.9",
-                    "ratingCount": "1247",
-                    "bestRating": "5"
-                  },
                   "author": {
                     "@type": "Organization",
-                    "@id": "https://etiascalculator.com/#organization"
+                    "@id": "https://euborder.com/#organization"
                   },
                   "mainEntityOfPage": {
                     "@type": "WebPage",
-                    "@id": "https://etiascalculator.com/#webpage"
+                    "@id": "https://euborder.com/#webpage"
                   }
                 },
                 {
                   "@type": "Organization",
-                  "@id": "https://etiascalculator.com/#organization",
-                  "name": "ETIAS Calculator",
-                  "url": "https://etiascalculator.com",
+                  "@id": "https://euborder.com/#organization",
+                  "name": "EU Border Authority",
+                  "url": "https://euborder.com",
                   "logo": {
                     "@type": "ImageObject",
-                    "url": "https://etiascalculator.com/logo.png"
+                    "url": "https://euborder.com/logo.png"
                   },
                   "contactPoint": {
                     "@type": "ContactPoint",
                     "contactType": "customer service",
-                    "email": "info@etiascalculator.com",
+                    "email": "info@euborder.com",
                     "areaServed": "Worldwide",
                     "availableLanguage": "English"
                   },
                   "sameAs": [
-                    "https://twitter.com/etias_calc"
+                    "https://twitter.com/euborder"
                   ]
                 },
                 {
                   "@type": "WebPage",
-                  "@id": "https://etiascalculator.com/#webpage",
-                  "url": "https://etiascalculator.com",
-                  "name": "ETIAS Calculator | EU Schengen 90/180 Rule Compliance Tool",
-                  "description": "Professional ETIAS and Schengen visa calculator for the 90/180-day rule. Track your trips, ensure compliance, and plan European travel with our enterprise-grade platform.",
+                  "@id": "https://euborder.com/#webpage",
+                  "url": "https://euborder.com",
+                  "name": "EU Border Authority | Complete EES, ETIAS & Schengen Guide",
+                  "description": "Complete EU border compliance authority for EES preparation, ETIAS applications, and Schengen 90/180-day rule tracking. Master EU travel with confidence and authority.",
                   "inLanguage": "en-US",
                   "isPartOf": {
                     "@type": "WebSite",
-                    "@id": "https://etiascalculator.com/#website"
+                    "@id": "https://euborder.com/#website"
                   },
                   "primaryImageOfPage": {
                     "@type": "ImageObject",
-                    "url": "https://etiascalculator.com/og-image.png"
+                    "url": "https://euborder.com/og-image.png"
                   },
                   "breadcrumb": {
                     "@type": "BreadcrumbList",
@@ -225,26 +224,26 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         "@type": "ListItem",
                         "position": 1,
                         "name": "Home",
-                        "item": "https://etiascalculator.com"
+                        "item": "https://euborder.com"
                       }
                     ]
                   }
                 },
                 {
                   "@type": "WebSite",
-                  "@id": "https://etiascalculator.com/#website",
-                  "url": "https://etiascalculator.com",
-                  "name": "ETIAS Calculator",
-                  "description": "Professional ETIAS and Schengen visa calculator platform",
+                  "@id": "https://euborder.com/#website",
+                  "url": "https://euborder.com",
+                  "name": "EU Border Authority",
+                  "description": "Complete EU border compliance authority platform",
                   "publisher": {
-                    "@id": "https://etiascalculator.com/#organization"
+                    "@id": "https://euborder.com/#organization"
                   },
                   "potentialAction": [
                     {
                       "@type": "SearchAction",
                       "target": {
                         "@type": "EntryPoint",
-                        "urlTemplate": "https://etiascalculator.com/?q={search_term_string}"
+                        "urlTemplate": "https://euborder.com/?q={search_term_string}"
                       },
                       "query-input": "required name=search_term_string"
                     }

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { useUserStatus } from '../../lib/hooks/useUserStatus'
 import { Button } from '@schengen/ui'
 import { Input } from '@schengen/ui'
 import { Label } from '@schengen/ui'
@@ -73,6 +75,9 @@ const sampleRiskData: RiskAssessment = {
 }
 
 export default function SaveProgressPage() {
+  const router = useRouter()
+  const { signUp, signIn } = useUserStatus()
+
   const [formData, setFormData] = useState({
     email: '',
     name: '',
@@ -81,6 +86,8 @@ export default function SaveProgressPage() {
     additionalCitizenships: [] as string[]
   })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoginMode, setIsLoginMode] = useState(false)
   const [showAdditionalCitizenships, setShowAdditionalCitizenships] = useState(false)
 
   // Get countries list for dropdown
@@ -122,27 +129,49 @@ export default function SaveProgressPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
+    setError(null)
+
     try {
-      // TODO: Implement actual signup logic with Supabase
-      console.log('Signup data:', {
-        ...formData,
-        ruleApplicability
-      })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Redirect to dashboard
-      window.location.href = '/dashboard'
-    } catch (error) {
-      console.error('Signup failed:', error)
+      if (isLoginMode) {
+        console.log('🔐 Logging in with Supabase...', {
+          email: formData.email
+        })
+
+        // Login existing user
+        await signIn(formData.email, formData.password)
+
+        console.log('✅ Login successful!')
+      } else {
+        console.log('🚀 Creating account with Supabase...', {
+          email: formData.email,
+          name: formData.name,
+          primaryCitizenship: formData.primaryCitizenship
+        })
+
+        // Create account with Supabase
+        await signUp(formData.email, formData.password, formData.name)
+
+        console.log('✅ Account created successfully!')
+
+        // TODO: Save user profile data (citizenship, etc.) to database
+      }
+
+      // Redirect to main page - user is now logged in
+      router.push('/')
+    } catch (error: any) {
+      console.error('❌ Authentication failed:', error)
+      const errorMessage = isLoginMode
+        ? 'Login failed. Please check your email and password.'
+        : 'Failed to create account. Please try again.'
+      setError(error.message || errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
-  const isFormValid = formData.email && formData.name && formData.password.length >= 8 && formData.primaryCitizenship
+  const isFormValid = isLoginMode
+    ? formData.email && formData.password.length >= 1
+    : formData.email && formData.name && formData.password.length >= 8 && formData.primaryCitizenship
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -207,7 +236,7 @@ export default function SaveProgressPage() {
               <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
                 <div className="flex items-center">
                   <Users className="h-4 w-4 mr-1" />
-                  50,000+ travelers
+                  EU Regulation Compliant
                 </div>
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 mr-1" />
@@ -482,13 +511,27 @@ export default function SaveProgressPage() {
           >
             <Card className="shadow-2xl border-0 bg-white">
               <CardHeader className="text-center pb-6">
-                <CardTitle className="text-2xl">Unlock My Travel Insights</CardTitle>
+                <CardTitle className="text-2xl">
+                  {isLoginMode ? 'Welcome Back!' : 'Unlock My Travel Insights'}
+                </CardTitle>
                 <CardDescription>
-                  Join thousands of travelers who optimize their Europe trips with data
+                  {isLoginMode
+                    ? 'Sign in to access your saved travel data and insights'
+                    : 'Join thousands of travelers who optimize their Europe trips with data'
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center">
+                        <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                        <p className="text-sm text-red-700">{error}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                       Email address
@@ -506,126 +549,133 @@ export default function SaveProgressPage() {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                      Full name
-                    </Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="Track progress under your name"
-                      required
-                      className="mt-1"
-                      data-testid="name-input"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="primaryCitizenship" className="text-sm font-medium text-gray-700">
-                      Country of Citizenship
-                    </Label>
-                    <select
-                      id="primaryCitizenship"
-                      name="primaryCitizenship"
-                      value={formData.primaryCitizenship}
-                      onChange={(e) => handleCountrySelect(e.target.value)}
-                      required
-                      className="mt-1 w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      data-testid="citizenship-select"
-                    >
-                      <option value="" disabled>Select your country of citizenship</option>
-                      {countriesForSelect.map(({ value, label, category, region }) => (
-                        <option key={value} value={value} className="py-2">
-                          {label} {category === 'affected_by_90_180' ? '(90/180 rule applies)' : 
-                           category === 'eu_eea_swiss' ? '(EU/EEA/Swiss citizen)' : '(Visa required)'}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      This helps us determine which travel rules apply to you
-                    </p>
-                  </div>
-
-                  {/* Rule Applicability Display */}
-                  {ruleApplicability && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`p-4 rounded-lg border ${
-                        ruleApplicability.isSubjectToRule 
-                          ? 'bg-blue-50 border-blue-200' 
-                          : ruleApplicability.exemptionReason === 'eu_citizen'
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-yellow-50 border-yellow-200'
-                      }`}
-                    >
-                      <div className="flex items-start space-x-3">
-                        {ruleApplicability.isSubjectToRule ? (
-                          <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                        ) : ruleApplicability.exemptionReason === 'eu_citizen' ? (
-                          <Shield className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                        )}
-                        <div>
-                          <p className={`text-sm font-medium ${
-                            ruleApplicability.isSubjectToRule 
-                              ? 'text-blue-800' 
-                              : ruleApplicability.exemptionReason === 'eu_citizen'
-                                ? 'text-green-800'
-                                : 'text-yellow-800'
-                          }`}>
-                            {ruleApplicability.message}
-                          </p>
-                          {!ruleApplicability.isSubjectToRule && (
-                            <p className="text-xs text-gray-600 mt-1">
-                              You can still use our travel planning tools to track your European travels.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
+                  {!isLoginMode && (
+                    <div>
+                      <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                        Full name
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Track progress under your name"
+                        required
+                        className="mt-1"
+                        data-testid="name-input"
+                      />
+                    </div>
                   )}
 
-                  {/* Additional Citizenships */}
-                  {formData.primaryCitizenship && (
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => setShowAdditionalCitizenships(!showAdditionalCitizenships)}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        {showAdditionalCitizenships ? 'Hide' : 'Add'} additional citizenships (optional)
-                      </button>
-                      
-                      {showAdditionalCitizenships && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="mt-3 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3"
+                  {/* Citizenship fields - only show for signup */}
+                  {!isLoginMode && (
+                    <>
+                      <div>
+                        <Label htmlFor="primaryCitizenship" className="text-sm font-medium text-gray-700">
+                          Country of Citizenship
+                        </Label>
+                        <select
+                          id="primaryCitizenship"
+                          name="primaryCitizenship"
+                          value={formData.primaryCitizenship}
+                          onChange={(e) => handleCountrySelect(e.target.value)}
+                          required
+                          className="mt-1 w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          data-testid="citizenship-select"
                         >
-                          <p className="text-xs text-gray-600 mb-2">
-                            Select any additional citizenships or passports you hold:
-                          </p>
-                          {countriesForSelect
-                            .filter(country => country.value !== formData.primaryCitizenship)
-                            .map(({ value, label }) => (
-                            <label key={value} className="flex items-center space-x-2 text-sm">
-                              <input
-                                type="checkbox"
-                                checked={formData.additionalCitizenships.includes(value)}
-                                onChange={() => handleAdditionalCitizenshipToggle(value)}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <span>{label}</span>
-                            </label>
+                          <option value="" disabled>Select your country of citizenship</option>
+                          {countriesForSelect.map(({ value, label, category, region }) => (
+                            <option key={value} value={value} className="py-2">
+                              {label} {category === 'affected_by_90_180' ? '(90/180 rule applies)' :
+                               category === 'eu_eea_swiss' ? '(EU/EEA/Swiss citizen)' : '(Visa required)'}
+                            </option>
                           ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          This helps us determine which travel rules apply to you
+                        </p>
+                      </div>
+
+                      {/* Rule Applicability Display */}
+                      {ruleApplicability && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={`p-4 rounded-lg border ${
+                            ruleApplicability.isSubjectToRule
+                              ? 'bg-blue-50 border-blue-200'
+                              : ruleApplicability.exemptionReason === 'eu_citizen'
+                                ? 'bg-green-50 border-green-200'
+                                : 'bg-yellow-50 border-yellow-200'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-3">
+                            {ruleApplicability.isSubjectToRule ? (
+                              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            ) : ruleApplicability.exemptionReason === 'eu_citizen' ? (
+                              <Shield className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                            ) : (
+                              <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            )}
+                            <div>
+                              <p className={`text-sm font-medium ${
+                                ruleApplicability.isSubjectToRule
+                                  ? 'text-blue-800'
+                                  : ruleApplicability.exemptionReason === 'eu_citizen'
+                                    ? 'text-green-800'
+                                    : 'text-yellow-800'
+                              }`}>
+                                {ruleApplicability.message}
+                              </p>
+                              {!ruleApplicability.isSubjectToRule && (
+                                <p className="text-xs text-gray-600 mt-1">
+                                  You can still use our travel planning tools to track your European travels.
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </motion.div>
                       )}
-                    </div>
+
+                      {/* Additional Citizenships */}
+                      {formData.primaryCitizenship && (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => setShowAdditionalCitizenships(!showAdditionalCitizenships)}
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            {showAdditionalCitizenships ? 'Hide' : 'Add'} additional citizenships (optional)
+                          </button>
+
+                          {showAdditionalCitizenships && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              className="mt-3 space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3"
+                            >
+                              <p className="text-xs text-gray-600 mb-2">
+                                Select any additional citizenships or passports you hold:
+                              </p>
+                              {countriesForSelect
+                                .filter(country => country.value !== formData.primaryCitizenship)
+                                .map(({ value, label }) => (
+                                <label key={value} className="flex items-center space-x-2 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.additionalCitizenships.includes(value)}
+                                    onChange={() => handleAdditionalCitizenshipToggle(value)}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span>{label}</span>
+                                </label>
+                              ))}
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   <div>
@@ -653,18 +703,37 @@ export default function SaveProgressPage() {
                     type="submit"
                     disabled={!isFormValid || loading}
                     loading={loading}
-                    loadingText="Creating Account..."
+                    loadingText={isLoginMode ? "Signing In..." : "Creating Account..."}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200"
                     data-testid="unlock-insights-button"
                   >
                     <div className="flex items-center justify-center space-x-2">
                       {!loading && <CheckCircle className="h-5 w-5" />}
-                      <span>Unlock My Travel Insights</span>
+                      <span>{isLoginMode ? 'Sign In' : 'Unlock My Travel Insights'}</span>
                     </div>
                   </Button>
 
+                  {/* Login/Signup Mode Toggle */}
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsLoginMode(!isLoginMode)
+                        setError(null)
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    >
+                      {isLoginMode
+                        ? "Don't have an account? Sign up here"
+                        : "Already have an account? Sign in here"
+                      }
+                    </button>
+                  </div>
+
                   <div className="text-center text-xs text-gray-500 space-y-2">
-                    <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
+                    {!isLoginMode && (
+                      <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
+                    )}
                     <div className="flex items-center justify-center space-x-4 pt-2">
                       <div className="flex items-center">
                         <CheckCircle className="h-3 w-3 text-green-500 mr-1" />
@@ -694,7 +763,7 @@ export default function SaveProgressPage() {
               </div>
               
               <div className="text-xs text-gray-500">
-                Trusted by travelers from 🇺🇸 🇬🇧 🇦🇺 🇨🇦 🇯🇵 and 66+ countries subject to the 90/180 rule
+                100% accurate calculations based on official EU border authority rules for all 66+ countries subject to the 90/180 rule
               </div>
             </div>
           </motion.div>
@@ -708,7 +777,7 @@ export default function SaveProgressPage() {
           className="mt-20 text-center"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Why 50,000+ Travelers Save Their Schengen Data
+            Why Smart Travelers Save Their Schengen Data
           </h2>
           <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-4xl mx-auto">
             <div className="text-center">
