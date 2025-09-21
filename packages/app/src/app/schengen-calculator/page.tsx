@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Calculator, Users, AlertTriangle, CheckCircle2, ArrowRight, Star } from 'lucide-react'
+import { EnhancedSchema } from '@/components/enhanced-schema'
 
 export const metadata: Metadata = {
   title: 'Free Schengen Calculator - 90/180 Day Rule Compliance Tracker',
@@ -211,34 +212,30 @@ export default function SchengenCalculatorPage() {
         </div>
       </section>
 
-      {/* Structured Data for this specific page */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Free Schengen Calculator - 90/180 Day Rule Compliance Tracker",
-            "description": "The most accurate free Schengen calculator for tracking 90/180-day rule compliance.",
-            "url": "https://euborder.com/schengen-calculator",
-            "mainEntity": {
-              "@type": "SoftwareApplication",
-              "name": "Schengen Calculator",
-              "applicationCategory": "TravelApplication",
-              "operatingSystem": "Web Browser",
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "GBP"
-              },
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.8",
-                "reviewCount": "1247"
-              }
-            }
-          })
-        }}
+      {/* Enhanced Schema Markup */}
+      <EnhancedSchema
+        page="calculator"
+        title="Free Schengen Calculator - 90/180 Day Rule Compliance Tracker"
+        description="The most accurate free Schengen calculator for tracking 90/180-day rule compliance. Calculate remaining days, prevent overstays, and plan perfect European trips."
+        url="https://schengentracker.com/schengen-calculator"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://schengentracker.com' },
+          { name: 'Schengen Calculator', url: 'https://schengentracker.com/schengen-calculator' }
+        ]}
+        faqItems={[
+          {
+            question: 'How accurate is this Schengen calculator?',
+            answer: 'Our calculator follows the official EU 90/180-day rule regulations and is used by thousands of travelers. It provides precise calculations based on your entry and exit dates.'
+          },
+          {
+            question: 'Is the Schengen calculator free to use?',
+            answer: 'Yes, our basic Schengen calculator is completely free with no hidden costs. Premium features are available for advanced tracking and family coordination.'
+          },
+          {
+            question: 'Can I use this for multiple Schengen countries?',
+            answer: 'Yes, the 90/180-day rule applies to the entire Schengen area, not individual countries. Our calculator tracks your total time across all Schengen countries.'
+          }
+        ]}
       />
     </div>
   )
