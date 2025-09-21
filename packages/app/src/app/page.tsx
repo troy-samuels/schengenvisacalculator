@@ -29,7 +29,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
 import { Database } from '../lib/types/database'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useUserStatus } from '../lib/hooks/useUserStatus'
 import { UserStatus } from '../lib/types/user-status'
 import { TripData } from '../lib/services/trip-data'
@@ -502,12 +502,42 @@ export default function HomePage() {
   const [entries, setEntries] = useState<VisaEntry[]>([
     {
       id: "1",
+      country: "France",
+      startDate: new Date("2024-06-15"),
+      endDate: new Date("2024-06-25"),
+      days: 11,
+      daysInLast180: 11,
+      daysRemaining: 79,
+      activeColumn: null,
+    },
+    {
+      id: "2",
+      country: "Germany",
+      startDate: new Date("2024-08-10"),
+      endDate: new Date("2024-08-20"),
+      days: 11,
+      daysInLast180: 22,
+      daysRemaining: 68,
+      activeColumn: null,
+    },
+    {
+      id: "3",
+      country: "Spain",
+      startDate: new Date("2024-09-05"),
+      endDate: new Date("2024-09-18"),
+      days: 14,
+      daysInLast180: 36,
+      daysRemaining: 54,
+      activeColumn: null,
+    },
+    {
+      id: "4",
       country: "",
       startDate: null,
       endDate: null,
       days: 0,
-      daysInLast180: 0,
-      daysRemaining: 90,
+      daysInLast180: 36,
+      daysRemaining: 54,
       activeColumn: "country",
     },
   ])
@@ -517,6 +547,10 @@ export default function HomePage() {
   
   // Router for navigation
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // State for post-login restoration
+  const [showRestorationMessage, setShowRestorationMessage] = useState(false)
   
   // Smart Floating Save Animation State
   const [showFloatingSave, setShowFloatingSave] = useState(false)
@@ -786,6 +820,53 @@ export default function HomePage() {
     }
   }, [user])
 
+  // Data restoration after successful login/signup
+  useEffect(() => {
+    const isRestored = searchParams.get('restored')
+
+    if (isRestored === 'true' && user && typeof window !== 'undefined') {
+      console.log('🔄 Post-login data restoration triggered')
+
+      try {
+        const savedData = sessionStorage.getItem('pre_signup_calculator_data')
+
+        if (savedData) {
+          const { entries: restoredEntries, timestamp } = JSON.parse(savedData)
+
+          // Check if data is recent (within 1 hour)
+          const isRecent = (Date.now() - timestamp) < 3600000
+
+          if (isRecent && restoredEntries && Array.isArray(restoredEntries)) {
+            console.log('✅ Restoring calculator data:', restoredEntries.length, 'entries')
+
+            // Restore the calculator entries
+            setEntries(restoredEntries)
+
+            // Show success message
+            setShowRestorationMessage(true)
+
+            // Clear the stored data
+            sessionStorage.removeItem('pre_signup_calculator_data')
+
+            // Hide the message after 5 seconds
+            setTimeout(() => {
+              setShowRestorationMessage(false)
+            }, 5000)
+
+            console.log('🎉 Data restoration completed successfully')
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error during data restoration:', error)
+      }
+
+      // Clean up URL parameters
+      const url = new URL(window.location.href)
+      url.searchParams.delete('restored')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [user, searchParams, setEntries])
+
   // Smart Floating Save: Detect future dates and trigger animation
   useEffect(() => {
     const hasFutureDates = entries.some(entry => {
@@ -946,8 +1027,20 @@ export default function HomePage() {
     }
   }
 
-  // Save button handler - redirect to sign-up landing page when not authenticated
+  // Save button handler - store calculator data and redirect to sign-up page when not authenticated
   const handleSaveClick = () => {
+    console.log('💾 Saving calculator data before signup...')
+
+    // Store current calculator state for restoration after login
+    if (typeof window !== 'undefined') {
+      const calculatorData = {
+        entries: entries,
+        timestamp: Date.now()
+      }
+      sessionStorage.setItem('pre_signup_calculator_data', JSON.stringify(calculatorData))
+      console.log('✅ Calculator data stored in sessionStorage')
+    }
+
     // AI Enhancement: Enhance save functionality for premium users
     if (intelligentBackground.enhanceSaveProgressHandler) {
       intelligentBackground.enhanceSaveProgressHandler(() => {
@@ -1474,7 +1567,29 @@ export default function HomePage() {
         user={user}
         loading={loading}
       />
-      
+
+      {/* Data Restoration Success Message */}
+      {showRestorationMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50"
+        >
+          <div className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium">Welcome back! Your travel data has been restored.</p>
+              <p className="text-sm text-green-100">You can now save your progress and track your trips.</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Hero Section with Social Proof */}
       <HeroSection onScrollToCalculator={scrollToCalculator} />
 
