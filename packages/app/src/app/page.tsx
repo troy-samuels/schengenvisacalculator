@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { type Trip, getCountriesForSelect, SCHENGEN_COUNTRIES, RobustSchengenCalculator } from '@schengen/calculator'
 import {
@@ -498,6 +498,67 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   )
 }
 
+// Component to handle search params with Suspense boundary
+function DataRestorationHandler({
+  user,
+  setEntries,
+  setShowRestorationMessage
+}: {
+  user: any
+  setEntries: (entries: any) => void
+  setShowRestorationMessage: (show: boolean) => void
+}) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const isRestored = searchParams.get('restored')
+
+    if (isRestored === 'true' && user && typeof window !== 'undefined') {
+      console.log('🔄 Post-login data restoration triggered')
+
+      try {
+        const savedData = sessionStorage.getItem('pre_signup_calculator_data')
+
+        if (savedData) {
+          const { entries: restoredEntries, timestamp } = JSON.parse(savedData)
+
+          // Check if data is recent (within 1 hour)
+          const isRecent = (Date.now() - timestamp) < 3600000
+
+          if (isRecent && restoredEntries && Array.isArray(restoredEntries)) {
+            console.log('✅ Restoring calculator data:', restoredEntries.length, 'entries')
+
+            // Restore the calculator entries
+            setEntries(restoredEntries)
+
+            // Show success message
+            setShowRestorationMessage(true)
+
+            // Clear the stored data
+            sessionStorage.removeItem('pre_signup_calculator_data')
+
+            // Hide the message after 5 seconds
+            setTimeout(() => {
+              setShowRestorationMessage(false)
+            }, 5000)
+
+            console.log('🎉 Data restoration completed successfully')
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error during data restoration:', error)
+      }
+
+      // Clean up URL parameters
+      const url = new URL(window.location.href)
+      url.searchParams.delete('restored')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [user, searchParams, setEntries, setShowRestorationMessage])
+
+  return null // This component doesn't render anything
+}
+
 export default function HomePage() {
   const [entries, setEntries] = useState<VisaEntry[]>([
     {
@@ -547,7 +608,6 @@ export default function HomePage() {
   
   // Router for navigation
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   // State for post-login restoration
   const [showRestorationMessage, setShowRestorationMessage] = useState(false)
@@ -819,53 +879,6 @@ export default function HomePage() {
       loadUserProgress()
     }
   }, [user])
-
-  // Data restoration after successful login/signup
-  useEffect(() => {
-    const isRestored = searchParams.get('restored')
-
-    if (isRestored === 'true' && user && typeof window !== 'undefined') {
-      console.log('🔄 Post-login data restoration triggered')
-
-      try {
-        const savedData = sessionStorage.getItem('pre_signup_calculator_data')
-
-        if (savedData) {
-          const { entries: restoredEntries, timestamp } = JSON.parse(savedData)
-
-          // Check if data is recent (within 1 hour)
-          const isRecent = (Date.now() - timestamp) < 3600000
-
-          if (isRecent && restoredEntries && Array.isArray(restoredEntries)) {
-            console.log('✅ Restoring calculator data:', restoredEntries.length, 'entries')
-
-            // Restore the calculator entries
-            setEntries(restoredEntries)
-
-            // Show success message
-            setShowRestorationMessage(true)
-
-            // Clear the stored data
-            sessionStorage.removeItem('pre_signup_calculator_data')
-
-            // Hide the message after 5 seconds
-            setTimeout(() => {
-              setShowRestorationMessage(false)
-            }, 5000)
-
-            console.log('🎉 Data restoration completed successfully')
-          }
-        }
-      } catch (error) {
-        console.error('❌ Error during data restoration:', error)
-      }
-
-      // Clean up URL parameters
-      const url = new URL(window.location.href)
-      url.searchParams.delete('restored')
-      window.history.replaceState({}, '', url.toString())
-    }
-  }, [user, searchParams, setEntries])
 
   // Smart Floating Save: Detect future dates and trigger animation
   useEffect(() => {
@@ -1567,6 +1580,15 @@ export default function HomePage() {
         user={user}
         loading={loading}
       />
+
+      {/* Data Restoration Handler with Suspense */}
+      <Suspense fallback={null}>
+        <DataRestorationHandler
+          user={user}
+          setEntries={setEntries}
+          setShowRestorationMessage={setShowRestorationMessage}
+        />
+      </Suspense>
 
       {/* Data Restoration Success Message */}
       {showRestorationMessage && (
