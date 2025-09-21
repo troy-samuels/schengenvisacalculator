@@ -7,7 +7,7 @@ interface BlogPostSEOProps {
 }
 
 export default function BlogPostSEO({ post }: BlogPostSEOProps) {
-  const structuredData = {
+  const structuredData: { "@context": string; "@graph": any[] } = {
     "@context": "https://schema.org",
     "@graph": [
       {
@@ -37,7 +37,7 @@ export default function BlogPostSEO({ post }: BlogPostSEOProps) {
           }
         },
         "datePublished": post.publishDate,
-        "dateModified": post.updatedAt || post.publishDate,
+        "dateModified": post.lastUpdated || post.publishDate,
         "articleSection": post.category,
         "keywords": post.tags.join(", "),
         "wordCount": post.readTime ? parseInt(post.readTime.replace(/\D/g, '')) * 200 : 1000,
@@ -182,7 +182,7 @@ export function BlogPostMetadata({ post }: { post: BlogPost }) {
       <meta itemProp="headline" content={post.title} />
       <meta itemProp="description" content={post.description} />
       <meta itemProp="datePublished" content={post.publishDate} />
-      <meta itemProp="dateModified" content={post.updatedAt || post.publishDate} />
+      <meta itemProp="dateModified" content={post.lastUpdated || post.publishDate} />
       <meta itemProp="articleSection" content={post.category} />
       <meta itemProp="keywords" content={post.tags.join(", ")} />
       <div itemProp="author" itemScope itemType="https://schema.org/Organization">

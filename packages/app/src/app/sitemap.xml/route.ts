@@ -104,7 +104,7 @@ export async function GET() {
     url: `/blog/${post.slug}`,
     priority: post.featured ? '0.8' : '0.7',
     changefreq: 'monthly',
-    lastmod: post.updatedAt || post.publishDate
+    lastmod: post.lastUpdated || post.publishDate
   }))
 
   // Combine all pages

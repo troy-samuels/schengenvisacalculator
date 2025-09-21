@@ -8,6 +8,9 @@ declare global {
   interface Window {
     gtag: (...args: any[]) => void
     dataLayer: any[]
+    trackCalculatorEvent: (eventName: string, parameters?: any) => void
+    trackSubscriptionEvent: (eventName: string, subscriptionData?: any) => void
+    trackComplianceEvent: (eventName: string, complianceData?: any) => void
   }
 }
 
