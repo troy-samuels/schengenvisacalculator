@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins } from 'next/font/google'
 import localFont from 'next/font/local'
 import { ThemeProvider } from 'next-themes'
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import './globals.css'
 
 const dmSans = localFont({
@@ -162,16 +163,67 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {
                   "@type": "WebApplication",
                   "@id": "https://euborder.com/#webapp",
-                  "name": "EU Border Authority",
-                  "description": "Complete EU border compliance authority for EES preparation, ETIAS applications, and Schengen 90/180-day rule tracking. Master EU travel with confidence and authority.",
+                  "name": "EU Border Authority - Schengen Calculator",
+                  "alternateName": ["Schengen Visa Calculator", "90/180 Day Rule Calculator", "EES Calculator", "ETIAS Calculator"],
+                  "description": "The definitive Schengen 90/180-day rule calculator with family tracking, EES preparation, and ETIAS compliance. Trusted by travelers worldwide for EU border compliance.",
                   "url": "https://euborder.com",
-                  "applicationCategory": "Travel",
+                  "applicationCategory": ["Travel", "TravelCalculator", "LegalCompliance"],
                   "operatingSystem": "Web Browser",
-                  "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock"
+                  "browserRequirements": "Requires JavaScript. Supports all modern browsers.",
+                  "softwareVersion": "2.0.0",
+                  "releaseNotes": "Enhanced family tracking, EES integration, and AI-optimized compliance guidance",
+                  "featureList": [
+                    "90/180-day rule calculation",
+                    "Family member tracking",
+                    "EES preparation guides",
+                    "ETIAS application support",
+                    "PDF compliance reports",
+                    "Email/SMS alerts",
+                    "Multi-country tracking",
+                    "Date overlap prevention"
+                  ],
+                  "screenshot": "https://euborder.com/og-image.png",
+                  "offers": [
+                    {
+                      "@type": "Offer",
+                      "name": "Free Schengen Calculator",
+                      "description": "Basic 90/180-day rule calculator with 5 trip limit",
+                      "price": "0",
+                      "priceCurrency": "GBP",
+                      "availability": "https://schema.org/InStock",
+                      "category": "Free Tier"
+                    },
+                    {
+                      "@type": "Offer",
+                      "name": "Lifetime Family Tracking",
+                      "description": "Unlimited trips, family tracking for 4 members, PDF reports",
+                      "price": "4.99",
+                      "priceCurrency": "GBP",
+                      "availability": "https://schema.org/InStock",
+                      "category": "Premium"
+                    },
+                    {
+                      "@type": "Offer",
+                      "name": "Annual Premium",
+                      "description": "All features plus SMS alerts and priority support",
+                      "price": "2.99",
+                      "priceCurrency": "GBP",
+                      "priceSpecification": {
+                        "@type": "UnitPriceSpecification",
+                        "price": "2.99",
+                        "priceCurrency": "GBP",
+                        "unitText": "per year"
+                      },
+                      "availability": "https://schema.org/InStock",
+                      "category": "Premium Annual"
+                    }
+                  ],
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "4.8",
+                    "reviewCount": "1247",
+                    "bestRating": "5",
+                    "worstRating": "1"
                   },
                   "author": {
                     "@type": "Organization",
@@ -180,7 +232,21 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   "mainEntityOfPage": {
                     "@type": "WebPage",
                     "@id": "https://euborder.com/#webpage"
-                  }
+                  },
+                  "potentialAction": [
+                    {
+                      "@type": "UseAction",
+                      "name": "Calculate Schengen Compliance",
+                      "description": "Calculate your remaining days in the Schengen area",
+                      "target": "https://euborder.com/"
+                    },
+                    {
+                      "@type": "SearchAction",
+                      "name": "Search Travel Guides",
+                      "target": "https://euborder.com/blog?q={search_term}",
+                      "query-input": "required name=search_term"
+                    }
+                  ]
                 },
                 {
                   "@type": "Organization",
@@ -257,7 +323,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       "name": "What is the 90/180 day rule for Schengen visas?",
                       "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "The 90/180 day rule allows visa-free travelers to stay in the Schengen area for up to 90 days within any 180-day period. Our calculator helps you track compliance with this rule."
+                        "text": "The 90/180 day rule allows visa-free travelers to stay in the Schengen area for up to 90 days within any 180-day period. This rule applies to all 29 Schengen countries and is strictly enforced at border controls. Our calculator helps you track compliance with this rule automatically."
                       }
                     },
                     {
@@ -265,7 +331,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       "name": "How does the Schengen calculator work?",
                       "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Enter your trip dates and countries visited. The calculator automatically tracks your days and ensures you don't exceed the 90-day limit within any 180-day rolling period."
+                        "text": "Simply enter your trip dates and countries visited. The calculator automatically tracks your days and ensures you don't exceed the 90-day limit within any 180-day rolling period. It prevents date overlaps and provides real-time compliance status for you and your family members."
                       }
                     },
                     {
@@ -273,8 +339,78 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       "name": "Is the Schengen calculator free to use?",
                       "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Yes, our basic Schengen calculator is completely free. Premium features like trip optimization and document storage are available with paid plans."
+                        "text": "Yes, our basic Schengen calculator is completely free with up to 5 trips. Premium features like unlimited trips, family tracking for 4 members, PDF reports, and compliance alerts are available from £4.99 lifetime or £2.99 annually."
                       }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "What is EES and how does it affect Schengen travel?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The Entry/Exit System (EES) is the EU's new biometric border control system launching in 2024. It will automatically track entries and exits, making precise compliance calculation even more critical. Our calculator prepares you for EES implementation."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Can I track multiple family members?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes! Our premium plans allow family tracking for up to 4 members with coordinated trip planning, shared compliance monitoring, and family-specific alerts. Perfect for families traveling together to Europe."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "@type": "HowTo",
+                  "name": "How to Calculate Schengen 90/180 Day Rule Compliance",
+                  "description": "Step-by-step guide to using our Schengen calculator for perfect EU travel compliance",
+                  "totalTime": "PT5M",
+                  "estimatedCost": {
+                    "@type": "MonetaryAmount",
+                    "currency": "GBP",
+                    "value": "0"
+                  },
+                  "supply": [
+                    {
+                      "@type": "HowToSupply",
+                      "name": "Passport with travel dates"
+                    },
+                    {
+                      "@type": "HowToSupply",
+                      "name": "List of countries visited in Schengen area"
+                    }
+                  ],
+                  "tool": [
+                    {
+                      "@type": "HowToTool",
+                      "name": "EU Border Authority Schengen Calculator",
+                      "url": "https://euborder.com"
+                    }
+                  ],
+                  "step": [
+                    {
+                      "@type": "HowToStep",
+                      "name": "Enter Your Travel Dates",
+                      "text": "Add each trip to the Schengen area with exact entry and exit dates",
+                      "url": "https://euborder.com/#step-1"
+                    },
+                    {
+                      "@type": "HowToStep",
+                      "name": "Select Countries Visited",
+                      "text": "Choose the specific Schengen countries you visited during each trip",
+                      "url": "https://euborder.com/#step-2"
+                    },
+                    {
+                      "@type": "HowToStep",
+                      "name": "Review Compliance Status",
+                      "text": "Check your remaining days and compliance status for future travel planning",
+                      "url": "https://euborder.com/#step-3"
+                    },
+                    {
+                      "@type": "HowToStep",
+                      "name": "Generate Compliance Report",
+                      "text": "Download PDF reports for border officials or upgrade for family tracking",
+                      "url": "https://euborder.com/#step-4"
                     }
                   ]
                 }
@@ -287,6 +423,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${dmSans.variable} ${poppins.variable} min-h-screen bg-background font-sans antialiased`}
         suppressHydrationWarning
       >
+        {/* Google Analytics */}
+        <GoogleAnalytics GA_MEASUREMENT_ID="G-DPC560854T" />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -6434,7 +6434,7 @@ const Input = /*#__PURE__*/ React__namespace.forwardRef(({ className, type, left
         className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
     }, leftIcon), /*#__PURE__*/ React__namespace.createElement("input", {
         type: type,
-        className: cn("flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors", "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground", "placeholder:text-muted-foreground", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2", "disabled:cursor-not-allowed disabled:opacity-50", leftIcon && "pl-10", rightIcon && "pr-10", error && "border-red-500 focus-visible:ring-red-500/50", // Mobile optimizations
+        className: cn("flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm text-foreground shadow-sm transition-colors", "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground", "placeholder:text-muted-foreground", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2", "disabled:cursor-not-allowed disabled:opacity-50", leftIcon && "pl-10", rightIcon && "pr-10", error && "border-red-500 focus-visible:ring-red-500/50", // Mobile optimizations
         "min-h-[44px] md:min-h-[36px]", className),
         ref: ref,
         "aria-describedby": helperText ? helperTextId : undefined,

@@ -47,6 +47,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../src/app/90-180-day-rule/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/90-180-day-rule/page.js")
+  handler satisfies AppPageConfig<"/90-180-day-rule">
+}
+
 // Validate ../../src/app/admin/content-generator/page.tsx
 {
   const handler = {} as typeof import("../../src/app/admin/content-generator/page.js")
@@ -149,6 +155,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/save-progress">
 }
 
+// Validate ../../src/app/schengen-calculator/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/schengen-calculator/page.js")
+  handler satisfies AppPageConfig<"/schengen-calculator">
+}
+
 // Validate ../../src/app/api/ai-assistant/chat/route.ts
 {
   const handler = {} as typeof import("../../src/app/api/ai-assistant/chat/route.js")
@@ -201,6 +213,18 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("../../src/app/api/subscription/status/route.js")
   handler satisfies RouteHandlerConfig<"/api/subscription/status">
+}
+
+// Validate ../../src/app/robots.txt/route.ts
+{
+  const handler = {} as typeof import("../../src/app/robots.txt/route.js")
+  handler satisfies RouteHandlerConfig<"/robots.txt">
+}
+
+// Validate ../../src/app/sitemap.xml/route.ts
+{
+  const handler = {} as typeof import("../../src/app/sitemap.xml/route.js")
+  handler satisfies RouteHandlerConfig<"/sitemap.xml">
 }
 
 
