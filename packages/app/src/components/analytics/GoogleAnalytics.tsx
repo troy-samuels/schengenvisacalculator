@@ -43,48 +43,28 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: GoogleAnalyticsPr
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', {
-              page_path: window.location.pathname,
-              // Enhanced ecommerce for subscription tracking
-              send_page_view: true,
-              // Privacy settings for GDPR compliance
-              anonymize_ip: true,
-              allow_google_signals: false,
-              allow_ad_personalization_signals: false,
-              // Custom parameters for Schengen calculator
-              custom_map: {
-                'custom_parameter_1': 'calculator_usage',
-                'custom_parameter_2': 'compliance_status',
-                'custom_parameter_3': 'subscription_tier'
-              }
-            });
+            gtag('config', '${GA_MEASUREMENT_ID}');
 
-            // Track calculator usage events
+            // Optional: Custom tracking functions for enhanced analytics
             window.trackCalculatorEvent = function(eventName, parameters = {}) {
               gtag('event', eventName, {
                 event_category: 'Schengen Calculator',
                 event_label: parameters.label || '',
                 value: parameters.value || 0,
-                calculator_usage: parameters.usage_type || '',
-                compliance_status: parameters.compliance || '',
-                subscription_tier: parameters.tier || 'free',
                 ...parameters
               });
             };
 
-            // Track subscription events
             window.trackSubscriptionEvent = function(eventName, subscriptionData = {}) {
               gtag('event', eventName, {
                 event_category: 'Subscription',
                 currency: subscriptionData.currency || 'GBP',
                 value: subscriptionData.value || 0,
                 transaction_id: subscriptionData.transaction_id || '',
-                subscription_tier: subscriptionData.tier || '',
                 ...subscriptionData
               });
             };
 
-            // Track compliance events for LLM optimization
             window.trackComplianceEvent = function(eventName, complianceData = {}) {
               gtag('event', eventName, {
                 event_category: 'Compliance Tracking',

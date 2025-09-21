@@ -131,6 +131,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/ees/vs-etias">
 }
 
+// Validate ../../src/app/germany-schengen-calculator/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/germany-schengen-calculator/page.js")
+  handler satisfies AppPageConfig<"/germany-schengen-calculator">
+}
+
 // Validate ../../src/app/page.tsx
 {
   const handler = {} as typeof import("../../src/app/page.js")
@@ -159,6 +165,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("../../src/app/schengen-calculator/page.js")
   handler satisfies AppPageConfig<"/schengen-calculator">
+}
+
+// Validate ../../src/app/spain-schengen-calculator/page.tsx
+{
+  const handler = {} as typeof import("../../src/app/spain-schengen-calculator/page.js")
+  handler satisfies AppPageConfig<"/spain-schengen-calculator">
 }
 
 // Validate ../../src/app/api/ai-assistant/chat/route.ts
