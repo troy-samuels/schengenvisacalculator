@@ -104,7 +104,7 @@ const nextConfig = {
 
   // Environment Variables Configuration
   env: {
-    NEXT_PUBLIC_APP_NAME: 'ETIAS Calculator',
+    NEXT_PUBLIC_APP_NAME: 'EU Border Authority',
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '2.0.0',
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
   },
@@ -119,6 +119,17 @@ const nextConfig = {
         source: '/app/:path*',
         destination: '/:path*',
         permanent: true,
+      },
+      // Strategic domain redirects for EU Border Authority consolidation
+      {
+        source: '/schengen-calculator',
+        destination: '/calculator',
+        permanent: false,
+      },
+      {
+        source: '/etias-calculator',
+        destination: '/etias',
+        permanent: false,
       },
     ];
   },

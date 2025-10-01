@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google'
 import localFont from 'next/font/local'
 import { ThemeProvider } from 'next-themes'
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
+import { PhaseControlProvider } from '@/providers/PhaseControlProvider'
 import './globals.css'
 
 const dmSans = localFont({
@@ -425,18 +426,20 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         {/* Google Analytics */}
         <GoogleAnalytics GA_MEASUREMENT_ID="G-DPC560854T" />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="relative flex min-h-screen flex-col">
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-        </ThemeProvider>
+        <PhaseControlProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="relative flex min-h-screen flex-col">
+              <main className="flex-1">
+                {children}
+              </main>
+            </div>
+          </ThemeProvider>
+        </PhaseControlProvider>
       </body>
     </html>
   )

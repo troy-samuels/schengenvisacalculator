@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Feature gate: Premium users only
-    if (!profile || (profile as any).subscription_tier !== 'premium' || (profile as any).subscription_status !== 'active') {
+    if (!profile || !['lifetime', 'annual'].includes((profile as any).subscription_tier) || (profile as any).subscription_status !== 'active') {
       return NextResponse.json({
         recommendations: [{
           id: 'upgrade-required',

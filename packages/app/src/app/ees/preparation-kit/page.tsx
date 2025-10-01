@@ -1,478 +1,633 @@
-'use client'
-
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Download, Mail, CheckCircle, Users, Calendar, Shield, Zap, Gift, Star, Clock, Globe } from 'lucide-react'
-import { Button } from '@schengen/ui'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@schengen/ui'
-import { Badge } from '@schengen/ui'
+import {
+  CheckCircle,
+  AlertTriangle,
+  Fingerprint,
+  FileText,
+  Clock,
+  Shield,
+  Camera,
+  Smartphone,
+  Globe,
+  Users,
+  MapPin,
+  Calendar,
+  ArrowRight,
+  Download,
+  Star,
+  Zap,
+  AlertCircle,
+  Info
+} from 'lucide-react'
+import { EnhancedSchema } from '@/components/enhanced-schema'
+import { ABTestCTA } from '@/components/ab-test-cta'
 
-const metadata: Metadata = {
-  title: 'Free EES Preparation Kit 2025: Complete EU Border Guide & Newsletter | EU Border Authority',
-  description: 'Download our free comprehensive EES preparation kit. Includes checklists, country guides, compliance tracker, and exclusive newsletter updates for October 2025 launch.',
-  keywords: 'free EES preparation kit, EU border guide download, EES checklist PDF, EU entry exit system newsletter, free border compliance guide',
-  authors: [{ name: 'EU Border Authority' }],
+export const metadata: Metadata = {
+  title: 'EES Preparation Kit 2025: Complete Biometric Registration Toolkit | EU Border Authority',
+  description: 'Master EES biometric registration with our complete preparation kit. Step-by-step guides, document checklists, border procedures, and expert preparation strategies for October 2025 launch.',
+  keywords: [
+    'EES preparation kit',
+    'EES biometric registration',
+    'EU border preparation',
+    'EES requirements checklist',
+    'biometric border system prep',
+    'EES document requirements',
+    'EU entry exit preparation',
+    'EES registration guide',
+    'biometric travel preparation',
+    'EES implementation prep'
+  ],
   openGraph: {
-    title: 'Free EES Preparation Kit 2025: Complete EU Border Guide & Newsletter',
-    description: 'Free comprehensive EES preparation kit with checklists, country guides, and exclusive updates for October 2025 launch.',
-    type: 'website',
-    url: 'https://euborderauthority.com/ees/preparation-kit',
+    title: 'EES Preparation Kit 2025: Complete Biometric Registration Toolkit',
+    description: 'Master EES biometric registration with our complete preparation kit. Expert guides for smooth border crossing starting October 2025.',
+    url: 'https://euborder.com/ees/preparation-kit',
     siteName: 'EU Border Authority',
-    locale: 'en_US',
     images: [
       {
-        url: '/images/ees-preparation-kit.jpg',
+        url: '/images/ees-preparation-kit-og.jpg',
         width: 1200,
         height: 630,
-        alt: 'Free EES Preparation Kit 2025'
+        alt: 'EES Preparation Kit - Complete Biometric Registration Toolkit'
       }
-    ]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Free EES Preparation Kit 2025: Complete EU Border Guide',
-    description: 'Free comprehensive EES preparation kit with checklists, country guides, and exclusive newsletter updates.',
-    images: ['/images/ees-preparation-kit.jpg']
+    ],
+    type: 'website'
   },
   alternates: {
-    canonical: 'https://euborderauthority.com/ees/preparation-kit'
-  }
-}
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'WebPage',
-  headline: 'Free EES Preparation Kit 2025: Complete EU Border Guide & Newsletter',
-  description: 'Comprehensive free EES preparation resources including checklists, country guides, and newsletter updates.',
-  author: {
-    '@type': 'Organization',
-    name: 'EU Border Authority',
-    url: 'https://euborderauthority.com'
+    canonical: 'https://euborder.com/ees/preparation-kit'
   },
-  publisher: {
-    '@type': 'Organization',
-    name: 'EU Border Authority',
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://euborderauthority.com/logo.png'
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1
     }
-  },
-  datePublished: '2024-12-20',
-  dateModified: '2024-12-20',
-  mainEntityOfPage: {
-    '@type': 'WebPage',
-    '@id': 'https://euborderauthority.com/ees/preparation-kit'
-  },
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'GBP',
-    availability: 'https://schema.org/InStock',
-    description: 'Free EES preparation kit and newsletter'
   }
 }
-
-const kitContents = [
-  {
-    title: 'EES Complete Preparation Checklist',
-    description: '25-point comprehensive checklist for perfect EES readiness',
-    icon: CheckCircle,
-    pages: '3 pages',
-    value: '£15'
-  },
-  {
-    title: 'Country-Specific Implementation Guide',
-    description: 'Detailed guides for France, Germany, Spain, and 8 more countries',
-    icon: Globe,
-    pages: '45 pages',
-    value: '£35'
-  },
-  {
-    title: 'Digital Nomad EES Strategy',
-    description: 'Complete compliance strategies for nomads and frequent travelers',
-    icon: Users,
-    pages: '18 pages',
-    value: '£25'
-  },
-  {
-    title: 'EES Timeline & Deadlines Calendar',
-    description: 'Critical dates, rollout schedule, and preparation milestones',
-    icon: Calendar,
-    pages: '2 pages',
-    value: '£10'
-  },
-  {
-    title: 'Emergency Contacts & Support Guide',
-    description: 'Contact information for all 29 countries and troubleshooting',
-    icon: Shield,
-    pages: '8 pages',
-    value: '£20'
-  },
-  {
-    title: 'EES vs ETIAS Quick Reference',
-    description: 'Side-by-side comparison and implementation differences',
-    icon: Zap,
-    pages: '4 pages',
-    value: '£15'
-  }
-]
-
-const newsletterBenefits = [
-  'Weekly EES implementation updates from all 29 countries',
-  'Early access to new country guides and preparation materials',
-  'Exclusive compliance tips and strategies',
-  'First notification of border processing delays or issues',
-  'Digital nomad visa updates and opportunities',
-  'Personal stories and case studies from EES travelers',
-  'Expert interviews with immigration lawyers and border officials',
-  'Exclusive discounts on premium compliance tools and services'
-]
-
-const testimonials = [
-  {
-    name: 'Sarah Chen',
-    role: 'Digital Nomad',
-    location: 'Barcelona, Spain',
-    text: 'This preparation kit saved me hours of research. The country-specific guides are incredibly detailed and practical.',
-    rating: 5
-  },
-  {
-    name: 'Marcus Weber',
-    role: 'Business Traveler',
-    location: 'Frankfurt, Germany',
-    text: 'As someone who travels to the EU monthly, the EES preparation checklist was exactly what I needed. Comprehensive and actionable.',
-    rating: 5
-  },
-  {
-    name: 'Emma Rodriguez',
-    role: 'Travel Blogger',
-    location: 'London, UK',
-    text: 'The digital nomad strategy guide opened my eyes to visa options I never knew existed. Already applying for an Estonian nomad visa!',
-    rating: 5
-  }
-]
 
 export default function EESPreparationKitPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <Link
-                href="/ees"
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Back to EES Overview
-              </Link>
-
-              <div className="flex items-center space-x-4">
-                <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-                  🎁 Free Resource
-                </Badge>
-                <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                  💌 Newsletter
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-full p-6">
-                <Gift className="w-16 h-16 text-white" />
-              </div>
-            </div>
-
-            <Badge className="mb-6 bg-green-100 text-green-800 hover:bg-green-200">
-              🎁 FREE Download + Newsletter
-            </Badge>
-
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-              EES Preparation Kit
-              <span className="block text-green-600">Complete EU Border Guide</span>
-            </h1>
-
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Get our comprehensive EES preparation kit with exclusive checklists, country guides,
-              and insider strategies. Plus join 15,000+ travelers getting exclusive EES updates.
-            </p>
-
-            <div className="flex items-center justify-center space-x-8 mb-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">£120</div>
-                <div className="text-gray-500 text-sm line-through">Usual Value</div>
-              </div>
-              <div className="text-4xl font-bold text-gray-400">→</div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">FREE</div>
-                <div className="text-green-600 text-sm font-medium">Limited Time</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Value Alert */}
-          <Card className="mb-12 border-green-200 bg-green-50">
-            <CardContent className="pt-6">
-              <div className="flex items-start space-x-3">
-                <Gift className="h-5 w-5 text-green-600 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-green-800 mb-1">🎯 Why We're Giving This Away Free</h3>
-                  <p className="text-green-700">
-                    EES launches October 12, 2025 and affects 1.4 billion annual travelers. We believe everyone
-                    deserves access to accurate preparation information. Our mission is EU border compliance
-                    for all - starting with this comprehensive free resource.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Email Signup Form */}
-          <Card className="mb-16 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-green-50">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-gray-900 flex items-center justify-center">
-                <Download className="w-8 h-8 text-blue-600 mr-3" />
-                Get Your Free EES Preparation Kit
-              </CardTitle>
-              <CardDescription className="text-gray-600 text-lg">
-                Instant download + join our exclusive newsletter for ongoing updates
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="max-w-md mx-auto">
-                <div className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      className="w-full px-4 py-3 text-center text-lg h-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-lg h-12"
-                  >
-                    <Download className="w-5 h-5 mr-2" />
-                    Download Free Kit + Join Newsletter
-                  </Button>
-                  <p className="text-sm text-gray-500 text-center">
-                    No spam. Unsubscribe anytime. We respect your privacy.
-                  </p>
-                </div>
-              </form>
-
-              <div className="mt-8 flex items-center justify-center space-x-8 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 text-green-600 mr-2" />
-                  Instant Download
-                </div>
-                <div className="flex items-center">
-                  <Shield className="w-4 h-4 text-blue-600 mr-2" />
-                  Privacy Protected
-                </div>
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 text-purple-600 mr-2" />
-                  15,000+ Subscribers
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Kit Contents */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              What's Included in Your Free Kit
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {kitContents.map((item, index) => (
-                <Card key={index} className="border-l-4 border-l-green-500">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start">
-                        <item.icon className="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" />
-                        <div>
-                          <CardTitle className="text-lg text-gray-900">{item.title}</CardTitle>
-                          <CardDescription className="text-gray-600 mt-1">
-                            {item.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className="bg-green-100 text-green-800 mb-1">
-                          {item.value}
-                        </Badge>
-                        <div className="text-sm text-gray-500">{item.pages}</div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-
-            <div className="mt-8 text-center">
-              <div className="inline-flex items-center bg-yellow-100 rounded-full px-6 py-3">
-                <Star className="w-5 h-5 text-yellow-600 mr-2" />
-                <span className="font-semibold text-yellow-900">
-                  Total Value: £120 - Yours Free Today
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Hero Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <div className="flex flex-wrap justify-center gap-3 mb-6">
+                <span className="px-4 py-2 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                  🛡️ Authority Preparation Kit
+                </span>
+                <span className="px-4 py-2 text-sm font-medium bg-green-100 text-green-800 rounded-full">
+                  100% EES Compliant
+                </span>
+                <span className="px-4 py-2 text-sm font-medium bg-purple-100 text-purple-800 rounded-full">
+                  October 2025 Ready
                 </span>
               </div>
-            </div>
-          </section>
 
-          {/* Newsletter Benefits */}
-          <section className="mb-16">
-            <Card className="border-l-4 border-l-blue-500 bg-blue-50">
-              <CardHeader>
-                <CardTitle className="text-2xl text-blue-900 flex items-center">
-                  <Mail className="w-8 h-8 text-blue-600 mr-3" />
-                  Exclusive Newsletter Benefits
-                </CardTitle>
-                <CardDescription className="text-blue-700">
-                  Join 15,000+ travelers staying ahead of EU border changes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold text-blue-900 mb-4">📧 What You'll Receive</h4>
-                    <ul className="space-y-3">
-                      {newsletterBenefits.slice(0, 4).map((benefit, index) => (
-                        <li key={index} className="flex items-start text-blue-800">
-                          <CheckCircle className="w-4 h-4 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                EES Preparation Kit
+                <span className="block text-blue-600 mt-2">Complete Biometric Toolkit</span>
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto">
+                Master EU biometric border registration with the definitive preparation toolkit.
+                Expert guides, document checklists, and step-by-step procedures for smooth EES compliance.
+              </p>
 
-                  <div>
-                    <h4 className="font-semibold text-blue-900 mb-4">🎯 Exclusive Content</h4>
-                    <ul className="space-y-3">
-                      {newsletterBenefits.slice(4).map((benefit, index) => (
-                        <li key={index} className="flex items-start text-blue-800">
-                          <CheckCircle className="w-4 h-4 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                  <span>Authority Expert Content</span>
                 </div>
-
-                <div className="mt-8 p-4 bg-white rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-2">📅 Publishing Schedule</h4>
-                  <div className="grid md:grid-cols-3 gap-4 text-sm text-blue-800">
-                    <div>
-                      <div className="font-medium">Weekly Newsletter</div>
-                      <div className="text-blue-600">Every Tuesday</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Breaking Updates</div>
-                      <div className="text-blue-600">As needed</div>
-                    </div>
-                    <div>
-                      <div className="font-medium">Monthly Deep Dive</div>
-                      <div className="text-blue-600">First Friday</div>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-green-500" />
+                  <span>Zero Border Delays</span>
                 </div>
-              </CardContent>
-            </Card>
-          </section>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-blue-500" />
+                  <span>100% Compliance Guaranteed</span>
+                </div>
+              </div>
 
-          {/* Social Proof / Testimonials */}
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              What Travelers Are Saying
-            </h2>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <Card key={index} className="border-l-4 border-l-yellow-500">
-                  <CardHeader>
-                    <div className="flex items-center mb-2">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
-                      ))}
-                    </div>
-                    <CardDescription className="text-gray-700 italic">
-                      "{testimonial.text}"
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm">
-                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-gray-600">{testimonial.role}</div>
-                      <div className="text-gray-500">{testimonial.location}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="#preparation-checklist"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center"
+                >
+                  <FileText className="w-5 h-5 mr-2" />
+                  Get Preparation Checklist
+                </Link>
+                <Link
+                  href="#biometric-guide"
+                  className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center"
+                >
+                  <Fingerprint className="w-5 h-5 mr-2" />
+                  Biometric Requirements
+                </Link>
+              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Final CTA */}
-          <section className="text-center">
-            <Card className="border-2 border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
-              <CardContent className="py-12">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  Ready to Master EES Compliance?
-                </h2>
-                <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                  Join thousands of smart travelers who are preparing now for the EES launch.
-                  Download your free kit and stay ahead of the curve.
+        {/* Critical Alert */}
+        <section className="py-8 px-4 bg-orange-100 border-l-4 border-orange-500">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-start">
+              <AlertTriangle className="h-6 w-6 text-orange-600 mt-1 mr-3 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-orange-800 mb-2">
+                  Critical: EES Launches October 2025
+                </h3>
+                <p className="text-orange-700 mb-4">
+                  Unprepared travelers will face significant delays at EU borders. Start your preparation now
+                  to ensure smooth biometric registration when the system launches.
                 </p>
+                <Link
+                  href="#quick-start"
+                  className="inline-flex items-center text-orange-800 hover:text-orange-900 font-semibold"
+                >
+                  Get Quick Start Guide <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                <form className="max-w-md mx-auto">
-                  <div className="space-y-4">
-                    <input
-                      type="email"
-                      placeholder="Enter your email address"
-                      className="w-full px-4 py-3 text-center text-lg h-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-lg h-12"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Get Free Kit + Newsletter Access
-                    </Button>
-                  </div>
-                </form>
+        {/* Preparation Checklist */}
+        <section id="preparation-checklist" className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Complete EES Preparation Checklist
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Authority-verified checklist ensuring 100% EES compliance and zero border delays
+              </p>
+            </div>
 
-                <div className="mt-8 grid grid-cols-3 gap-8 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">15,000+</div>
-                    <div className="text-gray-600 text-sm">Newsletter Subscribers</div>
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Before Travel */}
+              <div className="bg-blue-50 rounded-2xl p-8">
+                <div className="flex items-center mb-6">
+                  <Clock className="h-8 w-8 text-blue-600 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900">Before You Travel</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Valid Passport Check</h4>
+                      <p className="text-gray-600 text-sm">Ensure passport validity exceeds 6 months from travel date</p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">78 Pages</div>
-                    <div className="text-gray-600 text-sm">Of Expert Content</div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Digital Photos Ready</h4>
+                      <p className="text-gray-600 text-sm">Backup digital copies of passport and travel documents</p>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-purple-600">£120</div>
-                    <div className="text-gray-600 text-sm">Value - Free Today</div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Accommodation Proof</h4>
+                      <p className="text-gray-600 text-sm">Hotel bookings, rental agreements, or host invitations</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Return Flight Tickets</h4>
+                      <p className="text-gray-600 text-sm">Proof of onward travel from Schengen area</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Travel Insurance</h4>
+                      <p className="text-gray-600 text-sm">Minimum €30,000 coverage valid across Schengen area</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Financial Proof</h4>
+                      <p className="text-gray-600 text-sm">Bank statements showing sufficient funds for stay</p>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </section>
-        </div>
+              </div>
+
+              {/* At the Border */}
+              <div className="bg-green-50 rounded-2xl p-8">
+                <div className="flex items-center mb-6">
+                  <Fingerprint className="h-8 w-8 text-green-600 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900">At the Border</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Clean Fingerprints</h4>
+                      <p className="text-gray-600 text-sm">Remove hand cream, ensure clean, dry fingers for scanning</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Face Scan Ready</h4>
+                      <p className="text-gray-600 text-sm">Remove glasses, hat, and face coverings for facial recognition</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Follow Instructions</h4>
+                      <p className="text-gray-600 text-sm">Listen carefully to border official guidance during registration</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Allow Extra Time</h4>
+                      <p className="text-gray-600 text-sm">First-time registration may take 3-5 minutes longer</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Keep Documents Ready</h4>
+                      <p className="text-gray-600 text-sm">Have all supporting documents easily accessible</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Stay Patient</h4>
+                      <p className="text-gray-600 text-sm">EES registration is mandatory - cooperation ensures smooth process</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Biometric Requirements */}
+        <section id="biometric-guide" className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Biometric Requirements Guide
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Detailed guide to EES biometric data collection and registration process
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {/* Fingerprint Requirements */}
+              <div className="bg-white rounded-xl p-8 shadow-sm">
+                <div className="flex items-center mb-6">
+                  <Fingerprint className="h-10 w-10 text-blue-600 mr-4" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Fingerprint Collection</h3>
+                    <p className="text-gray-600">All 10 fingerprints required</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-blue-200 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Collection Process:</h4>
+                    <ul className="text-gray-600 text-sm space-y-1">
+                      <li>• Digital scanning of all 10 fingerprints</li>
+                      <li>• Flat fingerprint capture method</li>
+                      <li>• Quality verification by system</li>
+                      <li>• Retake if image quality insufficient</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-4 border-green-200 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Preparation Tips:</h4>
+                    <ul className="text-gray-600 text-sm space-y-1">
+                      <li>• Clean hands thoroughly before travel</li>
+                      <li>• Avoid hand cream 2 hours before</li>
+                      <li>• Inform officers of injuries/bandages</li>
+                      <li>• Remove rings that interfere with scanning</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Facial Recognition */}
+              <div className="bg-white rounded-xl p-8 shadow-sm">
+                <div className="flex items-center mb-6">
+                  <Camera className="h-10 w-10 text-green-600 mr-4" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Facial Recognition</h3>
+                    <p className="text-gray-600">High-quality facial image capture</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="border-l-4 border-green-200 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Capture Requirements:</h4>
+                    <ul className="text-gray-600 text-sm space-y-1">
+                      <li>• Direct face-on positioning</li>
+                      <li>• Remove glasses and headwear</li>
+                      <li>• Neutral facial expression</li>
+                      <li>• Eyes open, looking at camera</li>
+                    </ul>
+                  </div>
+                  <div className="border-l-4 border-blue-200 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">What to Avoid:</h4>
+                    <ul className="text-gray-600 text-sm space-y-1">
+                      <li>• Sunglasses or tinted glasses</li>
+                      <li>• Hair covering face or eyes</li>
+                      <li>• Heavy makeup or face paint</li>
+                      <li>• Smiling or facial expressions</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Data Storage Information */}
+            <div className="bg-white rounded-xl p-8 shadow-sm">
+              <div className="flex items-center mb-6">
+                <Shield className="h-8 w-8 text-purple-600 mr-3" />
+                <h3 className="text-2xl font-bold text-gray-900">Data Storage & Privacy</h3>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <Clock className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">3-Year Storage</h4>
+                  <p className="text-gray-600 text-sm">Biometric data stored for exactly 3 years, then automatically deleted</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <Shield className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Secure System</h4>
+                  <p className="text-gray-600 text-sm">EU-LISA managed database with highest security standards</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                    <Globe className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Cross-Border Access</h4>
+                  <p className="text-gray-600 text-sm">Data accessible at all EU external border crossing points</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Document Requirements */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Essential Document Requirements
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Complete documentation checklist for smooth EES registration and border crossing
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Primary Documents */}
+              <div className="bg-blue-50 rounded-xl p-6">
+                <div className="flex items-center mb-4">
+                  <FileText className="h-8 w-8 text-blue-600 mr-3" />
+                  <h3 className="text-xl font-bold text-gray-900">Primary Documents</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Valid passport (machine-readable)</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">National ID card (EU citizens)</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Valid visa (if required)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Supporting Documents */}
+              <div className="bg-green-50 rounded-xl p-6">
+                <div className="flex items-center mb-4">
+                  <FileText className="h-8 w-8 text-green-600 mr-3" />
+                  <h3 className="text-xl font-bold text-gray-900">Supporting Documents</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Accommodation proof</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Return/onward flight tickets</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Travel insurance certificate</span>
+                  </div>
+                  <div className="flex items-start">
+                    <CheckCircle className="w-4 h-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Financial means proof</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Cases */}
+              <div className="bg-purple-50 rounded-xl p-6">
+                <div className="flex items-center mb-4">
+                  <Users className="h-8 w-8 text-purple-600 mr-3" />
+                  <h3 className="text-xl font-bold text-gray-900">Special Cases</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <Info className="w-4 h-4 text-purple-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Business invitation letter</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Info className="w-4 h-4 text-purple-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Medical documentation (if applicable)</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Info className="w-4 h-4 text-purple-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Student enrollment certificates</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Info className="w-4 h-4 text-purple-600 mt-1 mr-2 flex-shrink-0" />
+                    <span className="text-gray-700 text-sm">Family relationship proof</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Timeline & Process */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                EES Registration Timeline
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Step-by-step process flow for your first EES border crossing
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              {/* Step 1 */}
+              <div className="flex items-start">
+                <div className="bg-blue-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold mr-6 flex-shrink-0">
+                  1
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Arrival at Border</h3>
+                  <p className="text-gray-600">Present your passport and supporting documents to border officials. Allow extra time for first-time EES registration.</p>
+                </div>
+                <div className="text-blue-600 font-semibold ml-4">~2-3 minutes</div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex items-start">
+                <div className="bg-green-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold mr-6 flex-shrink-0">
+                  2
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Biometric Data Collection</h3>
+                  <p className="text-gray-600">Fingerprint scanning of all 10 fingers and facial image capture. Follow officer instructions for optimal data quality.</p>
+                </div>
+                <div className="text-green-600 font-semibold ml-4">~3-5 minutes</div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex items-start">
+                <div className="bg-purple-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold mr-6 flex-shrink-0">
+                  3
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Data Processing & Verification</h3>
+                  <p className="text-gray-600">System processes biometric data, creates your EES profile, and links it to your passport for future automated crossings.</p>
+                </div>
+                <div className="text-purple-600 font-semibold ml-4">~1-2 minutes</div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="flex items-start">
+                <div className="bg-orange-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold mr-6 flex-shrink-0">
+                  4
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Entry Authorization</h3>
+                  <p className="text-gray-600">Entry granted with digital record created. Your biometric profile is now active for 3 years across all EU external borders.</p>
+                </div>
+                <div className="text-orange-600 font-semibold ml-4">~1 minute</div>
+              </div>
+            </div>
+
+            <div className="mt-12 bg-white rounded-xl p-8 shadow-sm">
+              <div className="flex items-center mb-4">
+                <Clock className="h-6 w-6 text-blue-600 mr-3" />
+                <h3 className="text-lg font-bold text-gray-900">Total Time: 7-11 minutes (first-time registration)</h3>
+              </div>
+              <p className="text-gray-600">
+                Subsequent crossings will be much faster (~1-2 minutes) as your biometric data is already in the system.
+                The investment in proper preparation ensures smooth processing from day one.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* A/B Testing CTA */}
+        <section className="py-16 px-4 bg-white">
+          <ABTestCTA country="EU" page="ees-preparation" />
+        </section>
+
+        {/* Download Resources */}
+        <section className="py-16 bg-blue-600">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+              Download Complete EES Toolkit
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Get our comprehensive preparation materials for offline reference and sharing with travel companions.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/ees/toolkit-download"
+                className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download PDF Toolkit
+              </Link>
+              <Link
+                href="/ees/countries"
+                className="border border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center justify-center"
+              >
+                <MapPin className="w-5 h-5 mr-2" />
+                View Country Guides
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced Schema Markup */}
+        <EnhancedSchema
+          page="guide"
+          title="EES Preparation Kit 2025: Complete Biometric Registration Toolkit"
+          description="Master EES biometric registration with our complete preparation kit. Step-by-step guides, document checklists, border procedures, and expert preparation strategies for October 2025 launch."
+          url="https://euborder.com/ees/preparation-kit"
+          breadcrumbs={[
+            { name: 'Home', url: 'https://euborder.com' },
+            { name: 'EES System', url: 'https://euborder.com/ees' },
+            { name: 'Preparation Kit', url: 'https://euborder.com/ees/preparation-kit' }
+          ]}
+          howToSteps={[
+            {
+              name: "Prepare Required Documents",
+              text: "Gather passport, accommodation proof, return tickets, travel insurance, and financial documentation"
+            },
+            {
+              name: "Prepare for Biometric Collection",
+              text: "Clean hands, remove glasses and headwear, follow facial recognition requirements"
+            },
+            {
+              name: "Arrive at Border Control",
+              text: "Allow extra time for first-time EES registration and present all documents"
+            },
+            {
+              name: "Complete Biometric Registration",
+              text: "Follow officer instructions for fingerprint scanning and facial image capture"
+            }
+          ]}
+          faqItems={[
+            {
+              question: "What documents do I need for EES registration?",
+              answer: "You need a valid passport, accommodation proof, return tickets, travel insurance, and proof of sufficient funds for your stay."
+            },
+            {
+              question: "How long does EES registration take?",
+              answer: "First-time registration takes 7-11 minutes total. Subsequent crossings are much faster at 1-2 minutes as your data is already registered."
+            },
+            {
+              question: "What biometric data does EES collect?",
+              answer: "EES collects all 10 fingerprints and a facial image. This data is stored securely for 3 years and used for automated border crossings."
+            }
+          ]}
+        />
       </div>
     </>
   )

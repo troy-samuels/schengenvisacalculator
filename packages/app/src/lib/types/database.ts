@@ -16,7 +16,7 @@ export interface Database {
           updated_at: string
           email: string
           full_name: string | null
-          subscription_tier: 'free' | 'premium' | 'pro' | 'business'
+          subscription_tier: 'free' | 'lifetime' | 'annual'
           subscription_status: 'active' | 'inactive' | 'trial' | 'cancelled'
           trial_ends_at: string | null
         }
@@ -26,7 +26,7 @@ export interface Database {
           updated_at?: string
           email: string
           full_name?: string | null
-          subscription_tier?: 'free' | 'premium' | 'pro' | 'business'
+          subscription_tier?: 'free' | 'lifetime' | 'annual'
           subscription_status?: 'active' | 'inactive' | 'trial' | 'cancelled'
           trial_ends_at?: string | null
         }
@@ -36,7 +36,7 @@ export interface Database {
           updated_at?: string
           email?: string
           full_name?: string | null
-          subscription_tier?: 'free' | 'premium' | 'pro' | 'business'
+          subscription_tier?: 'free' | 'lifetime' | 'annual'
           subscription_status?: 'active' | 'inactive' | 'trial' | 'cancelled'
           trial_ends_at?: string | null
         }
@@ -131,7 +131,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      subscription_tier: 'free' | 'premium' | 'pro' | 'business'
+      subscription_tier: 'free' | 'lifetime' | 'annual'
       subscription_status: 'active' | 'inactive' | 'trial' | 'cancelled'
       entry_type: 'schengen' | 'non_schengen'
     }

@@ -112,12 +112,12 @@ export function getUserStatus(user: User | null, userProfile: UserProfile | null
     return UserStatus.FREE
   }
 
-  if (userProfile?.subscription_tier === 'premium' && userProfile?.subscription_status === 'active') {
-    return UserStatus.LIFETIME // Map premium tier to lifetime status
+  if (userProfile?.subscription_tier === 'lifetime' && userProfile?.subscription_status === 'active') {
+    return UserStatus.LIFETIME
   }
 
-  if (userProfile?.subscription_tier === 'pro' && userProfile?.subscription_status === 'active') {
-    return UserStatus.ANNUAL // Map pro tier to annual status
+  if (userProfile?.subscription_tier === 'annual' && userProfile?.subscription_status === 'active') {
+    return UserStatus.ANNUAL
   }
 
   return UserStatus.FREE

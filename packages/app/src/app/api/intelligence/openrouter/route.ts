@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Feature gate: Premium users only
-    if ((profile as any).subscription_tier !== 'premium' || (profile as any).subscription_status !== 'active') {
+    if (!['lifetime', 'annual'].includes((profile as any).subscription_tier) || (profile as any).subscription_status !== 'active') {
       return NextResponse.json(
         { error: 'Premium subscription required for AI intelligence features' },
         { status: 403 }

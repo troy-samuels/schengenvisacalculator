@@ -5,9 +5,8 @@ export const PaymentProvider = {
 
 export enum SubscriptionTier {
   FREE = 'free',
-  PREMIUM = 'premium',
-  PRO = 'pro',
-  BUSINESS = 'business'
+  LIFETIME = 'lifetime',
+  ANNUAL = 'annual'
 }
 
 export interface SubscriptionTierData {
@@ -18,9 +17,24 @@ export interface SubscriptionTierData {
 }
 
 export const SUBSCRIPTION_TIERS: SubscriptionTierData[] = [
-  { id: 'free', name: 'Free', price: 0, features: ['basic_calculator'] },
-  { id: 'premium', name: 'Premium', price: 9.99, features: ['basic_calculator', 'unlimited_lists', 'pdf_export'] },
-  { id: 'pro', name: 'Pro', price: 19.99, features: ['basic_calculator', 'unlimited_lists', 'pdf_export', 'api_access'] },
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    features: ['basic_calculator', '5_trip_limit', 'date_overlap_prevention', 'screenshot_export']
+  },
+  {
+    id: 'lifetime',
+    name: 'Lifetime',
+    price: 4.99,
+    features: ['unlimited_trips', 'family_tracking_4_members', 'email_alerts', 'pdf_reports', 'ad_free']
+  },
+  {
+    id: 'annual',
+    name: 'Annual',
+    price: 2.99,
+    features: ['all_lifetime_features', 'sms_alerts', 'priority_support', 'regulatory_updates', 'advanced_pdf']
+  },
 ]
 
 export function checkFeatureAccess(userTier: string, feature: string): boolean {
@@ -56,8 +70,8 @@ export interface StripeSession {
 }
 
 export interface CreateCheckoutSessionRequest {
-  tier: 'premium' | 'pro' | 'business'
-  billingCycle?: 'monthly' | 'yearly'
+  tier: 'lifetime' | 'annual'
+  billingCycle?: 'one_time' | 'yearly'
   userId: string
   userEmail: string
   successUrl?: string
@@ -147,10 +161,9 @@ export function getTierFeatures(tierId: string): string[] {
 }
 
 export const TIER_PRICING = {
-  free: { monthly: 0, yearly: 0 },
-  premium: { monthly: 9.99, yearly: 99 },
-  pro: { monthly: 19.99, yearly: 199 },
-  business: { monthly: 49.99, yearly: 499 }
+  free: { one_time: 0, yearly: 0 },
+  lifetime: { one_time: 4.99, yearly: 0 },
+  annual: { one_time: 0, yearly: 2.99 }
 }
 
 // Additional subscription management functions
@@ -173,11 +186,16 @@ export function redirectToStripeCheckout(sessionUrl: string) {
 export function formatSubscriptionPrice(tier: string, billingCycle: BillingCycle): string {
   const pricing = TIER_PRICING[tier as keyof typeof TIER_PRICING]
   if (!pricing) return 'Free'
-  
-  const price = billingCycle === BillingCycle.YEARLY ? pricing.yearly : pricing.monthly
-  const period = billingCycle === BillingCycle.YEARLY ? 'year' : 'month'
-  
-  return price === 0 ? 'Free' : `$${price}/${period}`
+
+  if (tier === 'lifetime') {
+    return pricing.one_time === 0 ? 'Free' : `£${pricing.one_time} one-time`
+  }
+
+  if (tier === 'annual') {
+    return pricing.yearly === 0 ? 'Free' : `£${pricing.yearly}/year`
+  }
+
+  return 'Free'
 }
 
 export function getUpgradeDiscount(tier: string): number {

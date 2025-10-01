@@ -1010,9 +1010,9 @@ export default function HomePage() {
 
       console.log(`🚀 Creating Stripe checkout for ${tier} (${billingCycle})`)
 
-      // Map new tier format to payment package format
-      const paymentTier = tier === 'lifetime' ? 'premium' : 'premium' // Both map to premium for now
-      const paymentBillingCycle = billingCycle === 'lifetime' ? 'yearly' : 'yearly' // Map to yearly
+      // Map tier format to payment package format (updated for EU Border Authority strategy)
+      const paymentTier = tier === 'lifetime' ? 'lifetime' : 'annual'
+      const paymentBillingCycle = billingCycle === 'lifetime' ? 'one_time' : 'yearly'
 
       // Create Stripe checkout session using the payment package
       const { createCheckoutSession, redirectToStripeCheckout } = await import('@schengen/payments')

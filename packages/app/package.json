@@ -1,7 +1,7 @@
 {
   "name": "@schengen/app",
   "version": "2.0.0",
-  "description": "Schengen Visa Calculator - Enterprise Travel Compliance Platform",
+  "description": "EU Border Authority - Complete Schengen, EES, and ETIAS Compliance Platform",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -76,15 +76,19 @@
     "npm": ">=10.0.0"
   },
   "keywords": [
+    "eu-border",
     "schengen",
-    "visa",
-    "calculator",
-    "travel",
-    "compliance",
+    "ees",
+    "etias",
+    "travel-compliance",
+    "visa-calculator",
+    "border-authority",
+    "biometric-system",
+    "family-tracking",
     "nextjs",
     "stripe",
     "supabase"
   ],
-  "author": "Schengen Calculator Team",
+  "author": "EU Border Authority Platform Team",
   "license": "MIT"
 }

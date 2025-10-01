@@ -4,20 +4,24 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Users, CheckCircle, ArrowRight, Star, Crown, Heart, Shield } from 'lucide-react'
 import { useConversionTracking } from '@/hooks/use-conversion-tracking'
+import { PhaseGate } from '@schengen/ui'
+import { UserTier } from '@/lib/phase-control'
+import { usePhaseControl } from '@/providers/PhaseControlProvider'
 
 interface FamilyFeaturePromoProps {
   country?: string
   page?: string
   position?: 'sidebar' | 'inline' | 'modal' | 'banner'
   className?: string
+  userTier?: UserTier
 }
 
-export function FamilyFeaturePromo({
+function FamilyFeaturePromoCore({
   country,
   page = 'calculator',
   position = 'sidebar',
   className = ''
-}: FamilyFeaturePromoProps) {
+}: Omit<FamilyFeaturePromoProps, 'userTier'>) {
   const [isVisible, setIsVisible] = useState(false)
   const [hasInteracted, setHasInteracted] = useState(false)
   const { trackFamilyFeature, trackCTAClick } = useConversionTracking()
@@ -235,4 +239,32 @@ export function FamilyFeaturePromo({
   }
 
   return getLayout()
+}
+
+/**
+ * Phase-Controlled Family Feature Promo Export
+ * This wraps the core component with Trojan Horse phase control
+ */
+export function FamilyFeaturePromo({
+  country,
+  page = 'calculator',
+  position = 'sidebar',
+  className = '',
+  userTier = UserTier.FREE
+}: FamilyFeaturePromoProps) {
+  return (
+    <PhaseGate
+      feature="family_tracking_4_members"
+      userTier={userTier}
+      showComingSoon={false}
+      fallback={null} // Don't show anything in Phase 1 - this is strategic stealth
+    >
+      <FamilyFeaturePromoCore
+        country={country}
+        page={page}
+        position={position}
+        className={className}
+      />
+    </PhaseGate>
+  )
 }

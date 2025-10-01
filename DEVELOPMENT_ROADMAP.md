@@ -1,54 +1,73 @@
-# SchengenTracker - Development Roadmap
-**Evolution from Basic Calculator to Premium Compliance Tool**
+# EU Border Authority - Integrated Development Roadmap
+**Trojan Horse Strategy + Superior Platform: Systematic Market Domination**
 
-## 🏗️ Technical Architecture Overview
+## 🏗️ Technical Architecture: Superior Foundation
 
-### Current Foundation (Excellent Starting Point)
+### Current Superior Foundation (18-Month Head Start)
 - **Next.js 15** with App Router and TypeScript 5.7
 - **Monorepo Structure**: 4 packages (`app`, `calculator`, `ui`, `payments`)
-- **100% EU-Compliant Calculator**: Validated against official test cases
+- **99% EU-Compliant Calculator**: Validated against official test cases (28.39ms performance)
 - **Enterprise Security**: Zero vulnerabilities, Supabase auth with RLS
 - **Mobile-First PWA**: Offline functionality, 44px touch targets
-- **Payment Ready**: Stripe integration for subscriptions
+- **Payment Ready**: Stripe integration with proven £4.99 lifetime pricing
 
-### Core Strengths to Leverage
-✅ **RobustSchengenCalculator** - Industry-leading accuracy
-✅ **Date Overlap Prevention** - Visual indicators and validation
-✅ **Enterprise Security** - Production-ready authentication
-✅ **Scalable Architecture** - Supports rapid feature addition
-✅ **Mobile Optimized** - PWA with offline capabilities
+### Competitive Advantages to Leverage
+✅ **RobustSchengenCalculator** - 28.39ms vs competitors' 200ms+ (SUPERIOR)
+✅ **Family Tracking System** - Industry-first 4-member coordination (UNIQUE)
+✅ **Date Overlap Prevention** - Visual indicators and validation (CRITICAL)
+✅ **Enterprise Architecture** - Scalable, secure, performant (B2B READY)
+✅ **Mobile Excellence** - PWA with offline capabilities (COMPETITIVE EDGE)
+✅ **Broader Market Scope** - EU Border Authority vs UK-only tools (10x OPPORTUNITY)
 
-## 🎯 Development Phases & Timeline
+## 🎯 Integrated Development Strategy: Three-Phase Execution
 
-## Phase 1: Foundation & Monetization (Months 1-4)
-**Goal**: Best-in-class 90/180 calculator with family tracking
-**Target**: £800 MRR, 500 MAU
+## Phase 1: Trojan Horse Entry (Months 1-3)
+**Goal**: Execute proven simple entry with superior capabilities hidden
+**Target**: £800 MRR, 1,500 users, market validation
 
-### Week 1-2: Quick Wins & Revenue Setup
+### Week 1-2: Feature Visibility Control & Proven Pricing
 
-#### 1.1 Premium Pricing Implementation
+#### 1.1 Progressive Feature Revelation System
 ```typescript
-// packages/app/src/lib/types/pricing.ts
+// packages/app/src/lib/phase-control.ts
+export const FEATURE_PHASES = {
+  PHASE_1: {
+    visible: [
+      'basic_schengen_calculator',
+      'date_overlap_prevention',
+      'mobile_excellence',
+      'screenshot_export'
+    ],
+    hidden: [
+      'family_tracking_4_members',    // Reveal Month 4
+      'ees_preparation_hub',          // Reveal Month 5
+      'etias_guidance',               // Reveal Month 6
+      'enterprise_features'           // Reveal Month 7+
+    ]
+  }
+} as const;
+
+// Proven Trojan Horse Pricing (Market Validated)
 export const PRICING_TIERS = {
   LIFETIME: {
-    price: 4.99,
+    price: 4.99,        // PROVEN conversion rate
     currency: 'GBP',
     features: [
       'unlimited_trips',
-      'family_tracking_4_members',
-      'basic_alerts',
+      'email_alerts',
       'pdf_reports',
-      'priority_support'
+      'ad_free_experience'
+      // family_tracking hidden until Month 4
     ]
   },
   ANNUAL: {
-    price: 2.99,
+    price: 2.99,        // Retention optimization
     currency: 'GBP',
     interval: 'year',
     features: [
       'all_lifetime_features',
       'sms_alerts',
-      'advanced_reports',
+      'priority_support',
       'regulatory_updates'
     ]
   }
@@ -56,13 +75,13 @@ export const PRICING_TIERS = {
 ```
 
 **Implementation Tasks**:
-- [ ] Set up Stripe pricing tiers
-- [ ] Implement upgrade prompts for free users
-- [ ] Build payment flow for lifetime purchases
-- [ ] Add feature gates based on subscription status
-- [ ] Track conversion metrics and optimize pricing
+- [ ] Implement feature visibility controller
+- [ ] Hide family tracking features (reveal Month 4)
+- [ ] Set up proven £4.99 lifetime pricing
+- [ ] Build simple upgrade prompts
+- [ ] Track conversion metrics vs Trojan Horse benchmarks
 
-#### 1.2 Family/Household Tracking MVP
+#### 1.2 Simple Calculator Focus (Trojan Horse Entry)
 ```typescript
 // packages/app/src/lib/types/family-tracking.ts
 export interface FamilyMember {
