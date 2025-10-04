@@ -138,11 +138,16 @@ export default defineConfig({
   ],
 
   // Web server configuration for local testing
-  webServer: {
+  webServer: process.env.CI ? {
+    command: 'npm run build && npm run start',
+    port: 3000,
+    reuseExistingServer: false,
+    timeout: 180 * 1000,
+  } : {
     command: 'npm run dev',
     port: 3000,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes to start dev server
+    reuseExistingServer: true,
+    timeout: 120 * 1000,
   },
   
   // Global setup and teardown

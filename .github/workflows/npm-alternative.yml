@@ -35,25 +35,31 @@ jobs:
       run: npm ci
       
     - name: Run fast test suite
-      run: npm run test
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run test 2>&1 | tee fast-tests.log
       
     - name: Upload fast test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-fast-node-${{ matrix.node-version }}
-        path: "*.log"
+        path: fast-tests.log
         
     - name: Run full test suite
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: npm run test:full
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run test:full 2>&1 | tee full-tests.log
       
     - name: Upload full test results
       uses: actions/upload-artifact@v4
       if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         name: test-results-full-node-${{ matrix.node-version }}
-        path: "*.log"
+        path: full-tests.log
 
   eu-compliance-check:
     runs-on: ubuntu-latest
@@ -72,13 +78,15 @@ jobs:
       run: npm ci
       
     - name: Run EU compliance validation
+      shell: bash
       run: |
-        npm run test:eu-compliance > eu-compliance-report.txt
+        set -o pipefail
+        npm run test:eu-compliance 2>&1 | tee eu-compliance-report.txt
         cat eu-compliance-report.txt
         
     - name: Check EU compliance status
       run: |
-        if grep -q "❌" eu-compliance-report.txt; then
+        if grep -q "FAIL" eu-compliance-report.txt; then
           echo "EU compliance tests failed"
           exit 1
         else
@@ -109,13 +117,15 @@ jobs:
       run: npm ci
       
     - name: Run edge case tests
+      shell: bash
       run: |
-        npm run test:date-overlap > edge-case-report.txt
+        set -o pipefail
+        npm run test:date-overlap 2>&1 | tee edge-case-report.txt
         cat edge-case-report.txt
         
     - name: Check edge case status
       run: |
-        if grep -q "❌" edge-case-report.txt; then
+        if grep -q "FAIL" edge-case-report.txt; then
           echo "Edge case tests failed"
           exit 1
         else

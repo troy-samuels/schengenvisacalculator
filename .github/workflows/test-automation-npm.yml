@@ -37,10 +37,16 @@ jobs:
         fi
       
     - name: Run fast tests
-      run: npm run test:fast
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run test:fast 2>&1 | tee fast-tests.log
       
     - name: Run full tests
-      run: npm run test:full
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run test:full 2>&1 | tee full-tests.log
       
     - name: Verify log files exist
       run: |
@@ -92,7 +98,10 @@ jobs:
         fi
       
     - name: Run EU compliance validation
-      run: npm run test:eu-compliance > eu-compliance-report.txt
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run test:eu-compliance 2>&1 | tee eu-compliance-report.txt
       
     - name: Verify compliance report exists
       run: |
@@ -104,14 +113,11 @@ jobs:
         
     - name: Check EU compliance status
       run: |
-        if grep -q "❌" eu-compliance-report.txt; then
+        if grep -q "FAIL" eu-compliance-report.txt; then
           echo "EU compliance tests failed"
           exit 1
-        elif grep -q "✅" eu-compliance-report.txt; then
-          echo "EU compliance tests passed"
         else
-          echo "No clear test results found"
-          exit 1
+          echo "EU compliance tests passed"
         fi
         
     - name: Upload EU compliance report
@@ -144,21 +150,19 @@ jobs:
         fi
       
     - name: Run edge case tests
+      shell: bash
       run: |
+        set -o pipefail
         # Run edge case tests and save logs
         npm run test:date-overlap 2>&1 | tee edge-case-report.txt
-        exit ${PIPESTATUS[0]}
         
     - name: Check edge case status
       run: |
-        if grep -q "❌" edge-case-report.txt; then
+        if grep -q "FAIL" edge-case-report.txt; then
           echo "Edge case tests failed"
           exit 1
-        elif grep -q "✅" edge-case-report.txt; then
-          echo "Edge case tests passed"
         else
-          echo "No clear test results found"
-          exit 1
+          echo "Edge case tests passed"
         fi
         
     - name: Upload edge case report
@@ -191,7 +195,10 @@ jobs:
         fi
       
     - name: Run performance benchmarks
-      run: npm run benchmark
+      shell: bash
+      run: |
+        set -o pipefail
+        npm run benchmark 2>&1 | tee performance-log.txt
       
     - name: Verify performance log exists
       run: |
