@@ -23,7 +23,7 @@ import {
   Footer,
   AccuracyVerificationBadge
 } from '@schengen/ui'
-import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown } from 'lucide-react'
+import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown, Trash2 } from 'lucide-react'
 import { format, isFuture } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
@@ -1369,6 +1369,38 @@ export default function HomePage() {
     }
   }
 
+  const removeEntry = async (id: string) => {
+    try {
+      // Delete from database if user is logged in and entry persisted
+      if (user && deleteTrip) {
+        // Only attempt DB delete if id looks like a persisted ID (not new-*)
+        if (!id.startsWith('new-')) {
+          await deleteTrip(id)
+        }
+      }
+
+      // Remove locally and recalculate
+      const updatedEntries = entries.filter(e => e.id !== id)
+
+      // Always keep at least one empty row
+      const nextEntries = updatedEntries.length > 0 ? updatedEntries : [{
+        id: Date.now().toString(),
+        country: '',
+        startDate: null,
+        endDate: null,
+        days: 0,
+        daysInLast180: 0,
+        daysRemaining: 90,
+        activeColumn: 'country' as const
+      }]
+
+      setSelectedEntryId('')
+      setEntries(recalculateEntries(nextEntries))
+    } catch (error) {
+      console.error('Failed to remove entry', error)
+    }
+  }
+
   const updateDateRange = (id: string, dateRange: AppDateRange) => {
     const updatedEntries = entries.map((entry) => {
       if (entry.id === id) {
@@ -1670,7 +1702,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Desktop Layout */}
-                  <div className="hidden md:grid gap-6 items-center" style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr" }}>
+                  <div className="hidden md:grid gap-6 items-center" style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr 48px" }}>
                     {/* Country Selection */}
                     <div className={`rounded-lg p-4 ${getColumnBorderStyles(entry, "country")}`}>
                       <div className="relative">
@@ -1757,6 +1789,17 @@ export default function HomePage() {
                       <div className="flex items-center justify-center h-20">
                         <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                       </div>
+                    </div>
+
+                    {/* Delete button */}
+                    <div className="flex items-center justify-center">
+                      <button
+                        aria-label="Delete entry"
+                        onClick={() => removeEntry(entry.id)}
+                        className="p-2 rounded-md border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5 text-red-500" />
+                      </button>
                     </div>
                   </div>
 
@@ -1857,6 +1900,18 @@ export default function HomePage() {
                           <ProgressCircle daysRemaining={entry.daysRemaining} size={42} />
                         </div>
                       </div>
+                    </div>
+
+                    {/* Mobile delete button */}
+                    <div className="flex justify-end">
+                      <button
+                        aria-label="Delete entry"
+                        onClick={() => removeEntry(entry.id)}
+                        className="px-3 py-2 rounded-md border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors inline-flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                        <span className="text-sm text-red-600">Delete</span>
+                      </button>
                     </div>
                   </div>
                 </div>
