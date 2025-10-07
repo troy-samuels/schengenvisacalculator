@@ -8,6 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Price IDs from environment
 const PRICE_LIFETIME = process.env.STRIPE_PRICE_LIFETIME // one-time price id
 const PRICE_ANNUAL_YEARLY = process.env.STRIPE_PRICE_ANNUAL // yearly subscription price id
+const PRICE_EES_GUIDE = process.env.STRIPE_PRICE_EES_GUIDE // one-time EES Guide add-on
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +98,36 @@ export async function POST(request: NextRequest) {
         subscription_data: {
           metadata: { userId, tier, billingCycle },
         },
+      })
+    } else if (tier === 'ees_guide' && billingCycle === 'one_time') {
+      if (!PRICE_EES_GUIDE) {
+        return NextResponse.json(
+          { error: 'EES Guide price ID not configured (STRIPE_PRICE_EES_GUIDE)' },
+          { status: 400 }
+        )
+      }
+      priceId = PRICE_EES_GUIDE
+      const price = await stripe.prices.retrieve(priceId)
+      amount = typeof price.unit_amount === 'number' ? price.unit_amount : null
+
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [
+          { price: priceId, quantity: 1 },
+        ],
+        customer_email: userEmail,
+        metadata: {
+          userId,
+          tier,
+          billingCycle,
+          ...metadata,
+        },
+        success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/ees/guide/download`,
+        cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/ees/guide`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+        tax_id_collection: { enabled: true },
       })
     } else {
       return NextResponse.json(
