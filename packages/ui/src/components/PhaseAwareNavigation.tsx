@@ -227,7 +227,7 @@ function NavItem({ item, isActive, isAccessible, onNavigate }: NavItemProps) {
       <span className="flex-1">{item.label}</span>
       {!isAccessible && item.tier !== UserTier.FREE && (
         <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-          {item.tier === UserTier.LIFETIME ? '£4.99' : '£2.99/yr'}
+          {item.tier === UserTier.LIFETIME ? '£5.99' : '£2.99/yr'}
         </span>
       )}
     </a>

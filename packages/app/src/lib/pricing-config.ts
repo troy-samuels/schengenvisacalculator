@@ -1,6 +1,6 @@
 /**
  * Pricing Configuration - Trojan Horse Proven Model
- * Implements validated £4.99 lifetime + £2.99 annual pricing
+ * Implements validated £5.99 lifetime + £2.99 annual pricing
  */
 
 import { UserTier } from './phase-control';
@@ -43,11 +43,11 @@ export const PRICING_TIERS: PricingTier[] = [
     ]
   },
 
-  // Lifetime Tier - Proven £4.99 Conversion Champion
+  // Lifetime Tier - Proven £5.99 Conversion Champion
   {
     id: UserTier.LIFETIME,
     name: 'Lifetime',
-    price: 4.99,
+    price: 5.99,
     currency: 'GBP',
     interval: 'lifetime',
     stripePriceId: process.env.STRIPE_PRICE_LIFETIME,
@@ -132,7 +132,7 @@ export const PRICING_CONFIG = {
   // Conversion optimization
   urgency: {
     enabled: false, // Keep simple for Phase 1
-    message: 'Limited time: Lifetime access for £4.99'
+    message: 'Limited time: Lifetime access for £5.99'
   },
 
   // Feature comparison matrix
@@ -198,7 +198,7 @@ export const REVENUE_CONFIG = {
       mrr: 800,
       users: 1500,
       conversionRate: 0.03, // 3% free to lifetime
-      averageRevenue: 4.99
+      averageRevenue: 5.99
     },
     phase2: {
       mrr: 2500,

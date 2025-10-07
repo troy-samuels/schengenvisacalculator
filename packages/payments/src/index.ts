@@ -26,7 +26,7 @@ export const SUBSCRIPTION_TIERS: SubscriptionTierData[] = [
   {
     id: 'lifetime',
     name: 'Lifetime',
-    price: 4.99,
+    price: 5.99,
     features: ['unlimited_trips', 'family_tracking_4_members', 'email_alerts', 'pdf_reports', 'ad_free']
   },
   {
@@ -162,7 +162,7 @@ export function getTierFeatures(tierId: string): string[] {
 
 export const TIER_PRICING = {
   free: { one_time: 0, yearly: 0 },
-  lifetime: { one_time: 4.99, yearly: 0 },
+  lifetime: { one_time: 5.99, yearly: 0 },
   annual: { one_time: 0, yearly: 2.99 }
 }
 

@@ -39,7 +39,8 @@ export function Header({
   // Navigation links
   const navigationLinks = [
     { href: '/', label: 'Calculator', icon: Calculator },
-    { href: '/blog', label: 'Travel Guide', icon: BookOpen }
+    { href: '/blog', label: 'Travel Guide', icon: BookOpen },
+    { href: '/pricing', label: 'Pricing', icon: Star }
   ]
 
   // Close menus when clicking outside
@@ -66,7 +67,7 @@ export function Header({
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex flex-col">
                 <span className="text-lg font-bold text-blue-600 leading-none">
-                  EU Border Authority
+                  EU Border
                 </span>
               </div>
             </Link>

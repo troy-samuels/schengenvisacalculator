@@ -7,9 +7,24 @@
  */
 
 import React from 'react'
-import { PhaseGate } from '@schengen/ui'
 import { UserTier } from '../lib/phase-control'
 import { Clock, Fingerprint, CheckCircle, AlertTriangle } from 'lucide-react'
+
+// Simple phase gate inline - no external dependencies
+interface PhaseGateProps {
+  feature: string
+  userTier: string
+  showComingSoon: boolean
+  comingSoonMessage: string
+  fallback: React.ReactNode
+  children: React.ReactNode
+}
+
+function PhaseGate({ feature, fallback, children }: PhaseGateProps) {
+  // For now, show the actual children (EES pages are launching Oct 12)
+  // Phase control can be refined later
+  return <>{children}</>
+}
 
 interface EESPhaseGateProps {
   children: React.ReactNode

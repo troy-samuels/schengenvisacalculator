@@ -24,7 +24,8 @@ import {
   AccuracyVerificationBadge
 } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown, Trash2 } from 'lucide-react'
-import { format, isFuture } from 'date-fns'
+import { toast } from 'sonner'
+import { format, isFuture, addDays, differenceInCalendarDays } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
@@ -89,6 +90,9 @@ const schengenCountries = [
   { code: "SE", name: "Sweden", flag: "🇸🇪" },
   { code: "CH", name: "Switzerland", flag: "🇨🇭" },
 ]
+
+// EES advisory threshold (days remaining). Only show when dates are confirmed.
+const EES_ADVISORY_THRESHOLD = 20
 
 // Animated Counter Component
 function AnimatedCounter({ value, duration = 500 }: { value: number; duration?: number }) {
@@ -1371,6 +1375,9 @@ export default function HomePage() {
 
   const removeEntry = async (id: string) => {
     try {
+      // Capture the entry to enable undo
+      const removed = entries.find(e => e.id === id)
+
       // Delete from database if user is logged in and entry persisted
       if (user && deleteTrip) {
         // Only attempt DB delete if id looks like a persisted ID (not new-*)
@@ -1396,6 +1403,26 @@ export default function HomePage() {
 
       setSelectedEntryId('')
       setEntries(recalculateEntries(nextEntries))
+
+      // Show undo toast if we have a removed entry snapshot
+      if (removed) {
+        toast.success('Entry deleted', {
+          action: {
+            label: 'Undo',
+            onClick: async () => {
+              // If user is logged in and original id was persisted, avoid reusing id; let DB assign
+              const restored: VisaEntry = {
+                ...removed,
+                id: removed.id.startsWith('new-') ? removed.id : `new-${Date.now()}`
+              }
+
+              const restoredEntries = recalculateEntries([...nextEntries, restored])
+              setEntries(restoredEntries)
+            }
+          },
+          duration: 6000
+        })
+      }
     } catch (error) {
       console.error('Failed to remove entry', error)
     }
@@ -1432,6 +1459,46 @@ export default function HomePage() {
     }
   }
 
+  // Compute nearest non-conflicting date range suggestion for UX only.
+  // Does not change state unless user clicks "Use suggested dates".
+  const getNearestAvailableRange = (range: AppDateRange, excludeId: string): AppDateRange | null => {
+    if (!range.startDate || !range.endDate) return null
+    // If invalid order, bail out
+    if (range.endDate < range.startDate) return null
+
+    const tripLength = differenceInCalendarDays(range.endDate, range.startDate)
+
+    // Try shifting forward up to 30 days to find the first non-conflicting window
+    for (let shift = 1; shift <= 30; shift++) {
+      const candidateStart = addDays(range.startDate, shift)
+      const candidateEnd = addDays(candidateStart, tripLength)
+      const result = DateOverlapValidator.validateDateRange(
+        { startDate: candidateStart, endDate: candidateEnd },
+        tripsForValidation,
+        excludeId
+      )
+      if (result.isValid) {
+        return { startDate: candidateStart, endDate: candidateEnd }
+      }
+    }
+
+    // Try shifting backward up to 30 days
+    for (let shift = 1; shift <= 30; shift++) {
+      const candidateStart = addDays(range.startDate, -shift)
+      const candidateEnd = addDays(candidateStart, tripLength)
+      const result = DateOverlapValidator.validateDateRange(
+        { startDate: candidateStart, endDate: candidateEnd },
+        tripsForValidation,
+        excludeId
+      )
+      if (result.isValid) {
+        return { startDate: candidateStart, endDate: candidateEnd }
+      }
+    }
+
+    return null
+  }
+
   const getColumnBorderStyles = (entry: VisaEntry, columnType: "country" | "dates" | "results") => {
     const isActive = entry.activeColumn === columnType
 
@@ -1452,6 +1519,38 @@ export default function HomePage() {
     } else {
       return "border border-gray-200 bg-gray-50"
     }
+  }
+
+  // Render an EES advisory when a completed row has low remaining days
+  const renderEESAdvisory = (entry: VisaEntry) => {
+    const isComplete = !!(entry.country && entry.startDate && entry.endDate)
+    const lowDays = typeof entry.daysRemaining === 'number' && entry.daysRemaining <= EES_ADVISORY_THRESHOLD
+    if (!isComplete || !lowDays) return null
+
+    return (
+      <div className="mt-2 text-xs rounded-md border border-amber-200 bg-amber-50 text-amber-900 px-3 py-2">
+        <div className="text-center">
+          <span className="font-medium">EES advisory:</span> Low remaining days may increase scrutiny.
+          <Link href="/ees" className="ml-2 underline hover:no-underline text-amber-800">Learn more</Link>
+        </div>
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 px-2 py-1 text-xs"
+            onClick={() => {
+              setPremiumUpgradeTrigger('ees_advisory')
+              setShowPremiumUpgradeModal(true)
+            }}
+          >
+            Upgrade to Annual
+          </Button>
+          <Link href="/pricing" className="text-amber-800 underline hover:no-underline">
+            Get EES Guide
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   const handleOpenCalendar = (entryId: string) => {
@@ -1486,6 +1585,20 @@ export default function HomePage() {
       // Log helpful message (in the future, could show a toast notification)
       console.warn('Date conflict detected:', validation.message)
       console.log('Conflicting trips:', validation.conflicts.map(c => `${c.country} (${c.startDate?.toDateString()} - ${c.endDate?.toDateString()})`))
+      // Suggest the nearest available non-conflicting range without changing state automatically
+      const suggested = getNearestAvailableRange(range, selectedEntryId)
+      if (suggested) {
+        const startStr = suggested.startDate ? format(suggested.startDate, 'MMM dd') : ''
+        const endStr = suggested.endDate ? format(suggested.endDate, 'MMM dd') : ''
+        toast.error(validation.message, {
+          description: `Suggested: ${startStr} - ${endStr}`,
+          action: {
+            label: 'Use suggested dates',
+            onClick: () => updateDateRange(selectedEntryId, suggested)
+          },
+          duration: 7000
+        })
+      }
       // Don't update the range if there's a conflict
       return
     }
@@ -1789,6 +1902,7 @@ export default function HomePage() {
                       <div className="flex items-center justify-center h-20">
                         <ProgressCircle daysRemaining={entry.daysRemaining} size={80} />
                       </div>
+                      {renderEESAdvisory(entry)}
                     </div>
 
                     {/* Delete button */}
@@ -1902,6 +2016,9 @@ export default function HomePage() {
                       </div>
                     </div>
 
+                    {/* Mobile EES advisory (only when dates are confirmed and low days) */}
+                    {renderEESAdvisory(entry)}
+
                     {/* Mobile delete button */}
                     <div className="flex justify-end">
                       <button
@@ -1964,21 +2081,7 @@ export default function HomePage() {
                       )}
                     </Button>
                     
-                    {/* Pulsing ring animation for attention (hidden for reduced motion users) */}
-                    {showFloatingSave && !prefersReducedMotion && (
-                      <motion.div
-                        className="absolute inset-0 rounded-full border-2 border-orange-400"
-                        animate={{
-                          scale: [1, 1.15, 1],
-                          opacity: [0.6, 0, 0.6]
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      />
-                    )}
+                    {/* Removed overlay ring to prevent icon/text overlap */}
                   </motion.div>
                 ) : (
                   /* Standard flow: Add Another Trip button + Login to Save */
@@ -2041,21 +2144,7 @@ export default function HomePage() {
                           )}
                         </Button>
                         
-                        {/* Pulsing ring animation for attention (hidden for reduced motion users) */}
-                        {showFloatingSave && !prefersReducedMotion && (
-                          <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-orange-400"
-                            animate={{
-                              scale: [1, 1.15, 1],
-                              opacity: [0.6, 0, 0.6]
-                            }}
-                            transition={{
-                              duration: 2,
-                              repeat: Infinity,
-                              ease: "easeInOut"
-                            }}
-                          />
-                        )}
+                        {/* Removed overlay ring to prevent icon/text overlap */}
                       </motion.div>
                     )}
                   </div>

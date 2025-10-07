@@ -5,24 +5,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 })
 
-// Subscription tier pricing configuration
-const SUBSCRIPTION_PRICES = {
-  premium: {
-    monthly: 'price_premium_monthly', // Replace with actual Stripe price ID
-    yearly: 'price_premium_yearly',   // Replace with actual Stripe price ID
-    amount: 999, // $9.99 in cents
-  },
-  pro: {
-    monthly: 'price_pro_monthly',     // Replace with actual Stripe price ID
-    yearly: 'price_pro_yearly',       // Replace with actual Stripe price ID
-    amount: 1999, // $19.99 in cents
-  },
-  business: {
-    monthly: 'price_business_monthly', // Replace with actual Stripe price ID
-    yearly: 'price_business_yearly',   // Replace with actual Stripe price ID
-    amount: 4999, // $49.99 in cents
-  }
-}
+// Price IDs from environment
+const PRICE_LIFETIME = process.env.STRIPE_PRICE_LIFETIME // one-time price id
+const PRICE_ANNUAL_YEARLY = process.env.STRIPE_PRICE_ANNUAL // yearly subscription price id
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,50 +30,80 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate subscription tier
-    if (!SUBSCRIPTION_PRICES[tier as keyof typeof SUBSCRIPTION_PRICES]) {
-      return NextResponse.json(
-        { error: `Invalid subscription tier: ${tier}` },
-        { status: 400 }
-      )
-    }
+    let session: Stripe.Checkout.Session
+    let priceId: string | undefined
+    let amount: number | null = null
 
-    // Get the appropriate price ID
-    const priceConfig = SUBSCRIPTION_PRICES[tier as keyof typeof SUBSCRIPTION_PRICES]
-    const priceId = billingCycle === 'yearly' ? priceConfig.yearly : priceConfig.monthly
+    if (tier === 'lifetime' && billingCycle === 'one_time') {
+      if (!PRICE_LIFETIME) {
+        return NextResponse.json(
+          { error: 'Lifetime price ID not configured (STRIPE_PRICE_LIFETIME)' },
+          { status: 400 }
+        )
+      }
+      priceId = PRICE_LIFETIME
+      // Fetch amount for client display
+      const price = await stripe.prices.retrieve(priceId)
+      amount = typeof price.unit_amount === 'number' ? price.unit_amount : null
 
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      customer_email: userEmail,
-      metadata: {
-        userId,
-        tier,
-        billingCycle,
-        ...metadata,
-      },
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-cancelled`,
-      allow_promotion_codes: true,
-      billing_address_collection: 'auto',
-      tax_id_collection: {
-        enabled: true,
-      },
-      subscription_data: {
+      session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [
+          { price: priceId, quantity: 1 },
+        ],
+        customer_email: userEmail,
         metadata: {
           userId,
           tier,
           billingCycle,
+          ...metadata,
         },
-      },
-    })
+        success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-cancelled`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+        tax_id_collection: { enabled: true },
+      })
+    } else if (tier === 'annual' && billingCycle === 'yearly') {
+      if (!PRICE_ANNUAL_YEARLY) {
+        return NextResponse.json(
+          { error: 'Annual yearly price ID not configured (STRIPE_PRICE_ANNUAL)' },
+          { status: 400 }
+        )
+      }
+      priceId = PRICE_ANNUAL_YEARLY
+      const price = await stripe.prices.retrieve(priceId)
+      amount = typeof price.unit_amount === 'number' ? price.unit_amount : null
+
+      session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          { price: priceId, quantity: 1 },
+        ],
+        customer_email: userEmail,
+        metadata: {
+          userId,
+          tier,
+          billingCycle,
+          ...metadata,
+        },
+        success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/payment-cancelled`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+        tax_id_collection: { enabled: true },
+        subscription_data: {
+          metadata: { userId, tier, billingCycle },
+        },
+      })
+    } else {
+      return NextResponse.json(
+        { error: `Unsupported tier/billingCycle combination: ${tier}/${billingCycle}` },
+        { status: 400 }
+      )
+    }
 
     console.log(`✅ Stripe checkout session created: ${session.id} for user ${userId} (${tier} ${billingCycle})`)
 
@@ -97,7 +112,7 @@ export async function POST(request: NextRequest) {
       url: session.url,
       tier,
       billingCycle,
-      amount: priceConfig.amount,
+      amount,
     })
 
   } catch (error) {

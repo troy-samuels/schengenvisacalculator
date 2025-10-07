@@ -36,10 +36,15 @@ export type { CalendarDateRange } from "./components/ui/calendar-modal"
 
 // Date overlap prevention system
 export * from "./validators/date-overlap-validator"
-export type { 
-  ValidationResult, 
-  OccupiedDateInfo, 
+export type {
+  ValidationResult,
+  OccupiedDateInfo,
   TripEntry,
   UseDateOverlapPreventionProps,
-  UseDateOverlapPreventionReturn 
+  UseDateOverlapPreventionReturn
 } from "./validators/date-overlap-validator"
+
+// Phase control components
+export * from "./components/PhaseGate"
+export * from "./components/PhaseAwareNavigation"
+export * from "./hooks/useFeaturePhase"

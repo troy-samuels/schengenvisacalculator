@@ -95,7 +95,7 @@ export function UpgradePrompt({
   };
 
   const tierPricing = {
-    [UserTier.LIFETIME]: '£4.99 one-time',
+    [UserTier.LIFETIME]: '£5.99 one-time',
     [UserTier.ANNUAL]: '£2.99/year'
   };
 

@@ -99,7 +99,7 @@ export function PremiumUpgradeModal({
       setIsUpgrading(true)
       await onUpgrade(tier, billingCycle)
       // Track successful premium subscription
-      const amount = billingCycle === 'lifetime' ? 4.99 : 2.99
+      const amount = billingCycle === 'lifetime' ? 5.99 : 2.99
       analytics.trackPremiumSubscribed(feature || 'default', billingCycle, amount)
     } catch (error) {
       console.error('Upgrade error:', error)
@@ -234,7 +234,7 @@ export function PremiumUpgradeModal({
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-gray-900">
-                      £{billingCycle === 'lifetime' ? '4.99' : '2.99'}
+                      £{billingCycle === 'lifetime' ? '5.99' : '2.99'}
                     </div>
                     <div className="text-sm text-gray-600">
                       {billingCycle === 'lifetime' ? 'one-time payment' : 'per year'}
@@ -263,7 +263,7 @@ export function PremiumUpgradeModal({
                 <CreditCard className="h-5 w-5 mr-2" />
                 {isUpgrading
                   ? 'Redirecting to Payment...'
-                  : `${billingCycle === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Annual'} - £${billingCycle === 'lifetime' ? '4.99' : '2.99'}${billingCycle === 'yearly' ? '/year' : ''}`
+                  : `${billingCycle === 'lifetime' ? 'Get Lifetime Access' : 'Subscribe Annual'} - £${billingCycle === 'lifetime' ? '5.99' : '2.99'}${billingCycle === 'yearly' ? '/year' : ''}`
                 }
               </Button>
 

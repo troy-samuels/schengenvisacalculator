@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
@@ -94,16 +95,20 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   try {
-    // TODO: Update user subscription in database
-    // This would typically update your Supabase database with:
-    // - subscription status: 'active'
-    // - subscription tier: tier
-    // - stripe_customer_id: session.customer
-    // - stripe_subscription_id: session.subscription
-    // - billing_cycle: billingCycle
-    // - current_period_end: subscription.current_period_end
+    // Update user profile subscription fields
+    const { error } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_tier: tier as 'lifetime' | 'annual',
+        subscription_status: 'active',
+      })
+      .eq('id', userId)
 
-    console.log(`✅ User ${userId} subscription activated: ${tier} (${billingCycle})`)
+    if (error) {
+      console.error('❌ Supabase update failed:', error)
+    } else {
+      console.log(`✅ User ${userId} subscription activated: ${tier} (${billingCycle})`)
+    }
     
     // TODO: Send confirmation email
     // TODO: Update analytics/tracking
@@ -162,9 +167,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   try {
-    // TODO: Update database - set subscription status to 'cancelled'
-    // TODO: Downgrade user to free tier
-    console.log(`✅ Subscription ${subscription.id} cancelled for user ${userId}`)
+    const { error } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_tier: 'free',
+        subscription_status: 'cancelled',
+      })
+      .eq('id', userId)
+
+    if (error) {
+      console.error('❌ Supabase cancel update failed:', error)
+    } else {
+      console.log(`✅ Subscription ${subscription.id} cancelled for user ${userId}`)
+    }
     
   } catch (error) {
     console.error('❌ Failed to handle subscription cancellation:', error)

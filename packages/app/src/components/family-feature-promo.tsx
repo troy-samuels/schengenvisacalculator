@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Users, CheckCircle, ArrowRight, Star, Crown, Heart, Shield } from 'lucide-react'
 import { useConversionTracking } from '@/hooks/use-conversion-tracking'
-import { PhaseGate } from '@schengen/ui'
+// import { PhaseGate } from '@schengen/ui'  // Commented out - using direct rendering for EES launch
 import { UserTier } from '@/lib/phase-control'
 import { usePhaseControl } from '@/providers/PhaseControlProvider'
 
@@ -252,19 +252,13 @@ export function FamilyFeaturePromo({
   className = '',
   userTier = UserTier.FREE
 }: FamilyFeaturePromoProps) {
+  // Direct rendering for EES launch - phase control can be refined later
   return (
-    <PhaseGate
-      feature="family_tracking_4_members"
-      userTier={userTier}
-      showComingSoon={false}
-      fallback={null} // Don't show anything in Phase 1 - this is strategic stealth
-    >
-      <FamilyFeaturePromoCore
-        country={country}
-        page={page}
-        position={position}
-        className={className}
-      />
-    </PhaseGate>
+    <FamilyFeaturePromoCore
+      country={country}
+      page={page}
+      position={position}
+      className={className}
+    />
   )
 }

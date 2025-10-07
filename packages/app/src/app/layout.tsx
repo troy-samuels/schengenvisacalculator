@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Poppins } from 'next/font/google'
 import localFont from 'next/font/local'
-import { ThemeProvider } from 'next-themes'
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
-import { PhaseControlProvider } from '@/providers/PhaseControlProvider'
+import ClientProviders from '@/components/ClientProviders'
 import './globals.css'
 
 const dmSans = localFont({
@@ -198,7 +197,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       "@type": "Offer",
                       "name": "Lifetime Family Tracking",
                       "description": "Unlimited trips, family tracking for 4 members, PDF reports",
-                      "price": "4.99",
+                      "price": "5.99",
                       "priceCurrency": "GBP",
                       "availability": "https://schema.org/InStock",
                       "category": "Premium"
@@ -340,7 +339,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       "name": "Is the Schengen calculator free to use?",
                       "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Yes, our basic Schengen calculator is completely free with up to 5 trips. Premium features like unlimited trips, family tracking for 4 members, PDF reports, and compliance alerts are available from £4.99 lifetime or £2.99 annually."
+                        "text": "Yes, our basic Schengen calculator is completely free with up to 5 trips. Premium features like unlimited trips, family tracking for 4 members, PDF reports, and compliance alerts are available from £5.99 lifetime or £2.99 annually."
                       }
                     },
                     {
@@ -424,22 +423,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${dmSans.variable} ${poppins.variable} min-h-screen bg-background font-sans antialiased`}
         suppressHydrationWarning
       >
-        {/* Google Analytics */}
+        {/* Analytics */}
         <GoogleAnalytics GA_MEASUREMENT_ID="G-DPC560854T" />
-        <PhaseControlProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="relative flex min-h-screen flex-col">
-              <main className="flex-1">
-                {children}
-              </main>
-            </div>
-          </ThemeProvider>
-        </PhaseControlProvider>
+        <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
   )

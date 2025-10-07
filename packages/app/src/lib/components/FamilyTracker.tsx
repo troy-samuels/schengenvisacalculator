@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react'
 import { UserStatus } from '../types/user-status'
 import { Button } from '@schengen/ui'
-import { PhaseGate } from '@schengen/ui'
+// import { PhaseGate } from '@schengen/ui'  // Commented out for EES launch
 import { usePhaseControl } from '../../providers/PhaseControlProvider'
 import { UserTier } from '../phase-control'
 import { User, Plus, Calendar, AlertTriangle, CheckCircle, Settings, Trash2, Users } from 'lucide-react'
@@ -509,59 +509,13 @@ export function FamilyTracker({
   onUpgradeRequired,
   className = ''
 }: FamilyTrackerProps) {
-  const userTier = userStatusToTier(userStatus)
-
+  // Direct rendering for EES launch
   return (
-    <PhaseGate
-      feature="family_tracking_4_members"
-      userTier={userTier}
-      showComingSoon={true}
-      comingSoonMessage="Family coordination will be available in Month 4. Track up to 4 family members' compliance in one integrated system."
-      fallback={
-        // Show coming soon message for Phase 1
-        <div className={`family-tracker-coming-soon ${className}`}>
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 text-center">
-            <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-blue-900 mb-2">
-              🔮 Coming Soon: Family Coordination
-            </h3>
-            <p className="text-blue-800 mb-4">
-              Industry-first family tracking system coming in Month 4. Track up to 4 family members'
-              Schengen compliance in one coordinated dashboard.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left mb-6">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Coordinate 4 family members</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Shared trip planning</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Family compliance alerts</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-gray-700">Unified compliance dashboard</span>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-3 border border-blue-200">
-              <p className="text-sm text-blue-700">
-                <strong>Expected:</strong> April 2025 | <strong>Pricing:</strong> Lifetime £4.99 or Annual £2.99/year
-              </p>
-            </div>
-          </div>
-        </div>
-      }
-    >
-      <FamilyTrackerCore
-        userStatus={userStatus}
-        userId={userId}
-        onUpgradeRequired={onUpgradeRequired}
-        className={className}
-      />
-    </PhaseGate>
+    <FamilyTrackerCore
+      userStatus={userStatus}
+      userId={userId}
+      onUpgradeRequired={onUpgradeRequired}
+      className={className}
+    />
   )
 }
