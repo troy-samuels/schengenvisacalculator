@@ -36,7 +36,6 @@ import { UserStatus } from '../lib/types/user-status'
 import { TripData } from '../lib/services/trip-data'
 import { TripEntry } from '../lib/types/schengen-trip'
 import { StrategicAdPlacement, AdFreeBadge } from '../lib/components/DisplayAdvertising'
-import { AffiliateWidgets, ContextualAffiliateWidget } from '../lib/components/AffiliateWidgets'
 import { SmartAlertsPanel } from '../lib/components/SmartAlertsPanel'
 import { AITravelAssistant } from '../lib/components/AITravelAssistant'
 import { useIntelligentBackground } from '../lib/hooks/useIntelligentBackground'
@@ -2219,19 +2218,21 @@ export default function HomePage() {
       </section>
       */}
 
-      {/* Affiliate Widgets - Free Account Users Only */}
-      <section className="py-8 px-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <AffiliateWidgets 
-            userStatus={userStatus}
-            userCountries={entries
-              .filter(entry => entry.country)
-              .map(entry => entry.country)
-              .filter((country, index, array) => array.indexOf(country) === index) // unique countries
-            }
-          />
-        </div>
-      </section>
+      {/* Affiliate Widgets temporarily disabled until affiliate tracking is configured */}
+      {false && (
+        <section className="py-8 px-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <AffiliateWidgets 
+              userStatus={userStatus}
+              userCountries={entries
+                .filter(entry => entry.country)
+                .map(entry => entry.country)
+                .filter((country, index, array) => array.indexOf(country) === index) // unique countries
+              }
+            />
+          </div>
+        </section>
+      )}
 
       {/* TODO: Inline Advertising - Temporarily Hidden Until Feature Enabled */}
       {/* 

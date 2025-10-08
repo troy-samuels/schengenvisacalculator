@@ -65,6 +65,55 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.9, // Product page
     },
+    // NEW: Core EES Landing Pages (51K+ combined monthly searches)
+    {
+      url: `${baseUrl}/ees/what-is-ees`,
+      lastModified: currentDate,
+      changeFrequency: 'daily' as const,
+      priority: 0.95, // 15K+ monthly searches
+    },
+    {
+      url: `${baseUrl}/ees/how-it-works`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9, // 10K+ monthly searches
+    },
+    {
+      url: `${baseUrl}/ees/requirements`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9, // 10K+ monthly searches
+    },
+    {
+      url: `${baseUrl}/ees/biometrics`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.9, // 8K+ monthly searches
+    },
+    {
+      url: `${baseUrl}/ees/launch-date`,
+      lastModified: currentDate,
+      changeFrequency: 'daily' as const,
+      priority: 0.9, // 5K+ monthly searches, time-sensitive
+    },
+    {
+      url: `${baseUrl}/ees/for-uk-travelers`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85, // 3K+ monthly searches, UK-specific
+    },
+    {
+      url: `${baseUrl}/ees/airports`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85, // Airport-specific procedures
+    },
+    {
+      url: `${baseUrl}/ees/faq`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85, // 50+ comprehensive FAQs
+    },
     {
       url: `${baseUrl}/ees/preparation`,
       lastModified: currentDate,
