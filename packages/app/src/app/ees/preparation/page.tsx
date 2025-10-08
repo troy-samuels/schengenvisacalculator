@@ -1,7 +1,5 @@
-'use client'
-
 import React from 'react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Badge } from '@schengen/ui'
 import {
@@ -19,9 +17,9 @@ import {
   Shield
 } from 'lucide-react'
 
-const metadata: Metadata = {
-  title: 'EES Preparation Guide 2025: Complete Biometric Registration Checklist | EU Border Authority',
-  description: 'Complete step-by-step EES preparation guide for October 2025 launch. Biometric registration requirements, documents needed, border process, and expert tips for smooth EU entry.',
+export const metadata: Metadata = {
+  title: 'EES Preparation 2025: Biometric Registration Checklist | EU Border',
+  description: 'Master EES preparation for October 12, 2025 launch. Complete biometric registration guide, documents needed, border process, and expert tips for smooth EU entry.',
   keywords: [
     'EES preparation',
     'EU biometric registration',
@@ -34,10 +32,33 @@ const metadata: Metadata = {
     'EES implementation'
   ],
   openGraph: {
-    title: 'EES Preparation Guide 2025: Complete Biometric Registration Checklist',
-    description: 'Master EES preparation for October 2025 launch. Step-by-step biometric registration guide, requirements, and expert tips.',
+    title: 'EES Preparation 2025: Complete Biometric Registration Checklist',
+    description: 'Master EES preparation before October 12, 2025 launch. Step-by-step biometric registration guide, requirements, and expert tips.',
     type: 'article',
-    url: '/ees/preparation'
+    url: 'https://euborder.com/ees/preparation',
+    siteName: 'EU Border Authority',
+    images: [
+      {
+        url: '/images/ees-preparation-og.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'EES Preparation Guide 2025'
+      }
+    ]
+  },
+  alternates: {
+    canonical: 'https://euborder.com/ees/preparation'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1
+    }
   }
 }
 

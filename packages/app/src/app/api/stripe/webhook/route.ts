@@ -95,26 +95,48 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   try {
-    // Update user profile subscription fields
-    const { error } = await supabaseAdmin
-      .from('profiles')
-      .update({
-        subscription_tier: tier as 'lifetime' | 'annual',
-        subscription_status: 'active',
-      })
-      .eq('id', userId)
+    if (tier === 'lifetime' || tier === 'annual') {
+      const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          subscription_tier: tier as 'lifetime' | 'annual',
+          subscription_status: 'active',
+        })
+        .eq('id', userId)
 
-    if (error) {
-      console.error('❌ Supabase update failed:', error)
-    } else {
-      console.log(`✅ User ${userId} subscription activated: ${tier} (${billingCycle})`)
+      if (error) {
+        console.error('❌ Supabase subscription update failed:', error)
+      } else {
+        console.log(`✅ User ${userId} subscription activated: ${tier} (${billingCycle})`)
+      }
+    } else if (tier === 'ees_guide') {
+      const amount = (session.amount_total ?? null)
+      const currency = (session.currency ?? 'gbp')
+
+      const { error: purchaseError } = await supabaseAdmin
+        .from('purchases')
+        .insert({
+          user_id: userId,
+          product: 'ees_guide',
+          status: 'paid',
+          amount,
+          currency,
+          stripe_session_id: session.id,
+          created_at: new Date().toISOString()
+        })
+
+      if (purchaseError) {
+        console.error('❌ Failed to record EES Guide purchase:', purchaseError)
+      } else {
+        console.log(`✅ Recorded EES Guide purchase for user ${userId}`)
+      }
     }
-    
+
     // TODO: Send confirmation email
     // TODO: Update analytics/tracking
-    
+
   } catch (error) {
-    console.error('❌ Failed to update user subscription:', error)
+    console.error('❌ Failed to update user purchase/subscription:', error)
   }
 }
 

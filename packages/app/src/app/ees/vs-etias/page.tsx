@@ -1,7 +1,5 @@
-'use client'
-
 import React from 'react'
-import { Metadata } from 'next'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Badge } from '@schengen/ui'
 import {
@@ -20,9 +18,9 @@ import {
   Database
 } from 'lucide-react'
 
-const metadata: Metadata = {
-  title: 'EES vs ETIAS: Complete Differences Explained 2025 | EU Border Authority',
-  description: 'Complete comparison of EES vs ETIAS systems. Understand the key differences, implementation timelines, requirements, and how both EU border systems work together in 2025-2026.',
+export const metadata: Metadata = {
+  title: 'EES vs ETIAS 2025: Complete Differences Explained | EU Border',
+  description: 'Complete comparison of EES vs ETIAS systems launching in 2025-2026. Understand key differences, implementation timelines, requirements, and how both EU border systems work together.',
   keywords: [
     'EES vs ETIAS',
     'EES ETIAS difference',
@@ -35,10 +33,33 @@ const metadata: Metadata = {
     'EES ETIAS timeline'
   ],
   openGraph: {
-    title: 'EES vs ETIAS: Complete Differences Explained 2025',
-    description: 'Master the differences between EES and ETIAS. Complete comparison of requirements, timelines, and how both systems work together.',
+    title: 'EES vs ETIAS 2025: Complete Differences Explained',
+    description: 'Master the differences between EES (Oct 2025) and ETIAS (2026). Complete comparison of requirements, timelines, and how both systems work together.',
     type: 'article',
-    url: '/ees/vs-etias'
+    url: 'https://euborder.com/ees/vs-etias',
+    siteName: 'EU Border Authority',
+    images: [
+      {
+        url: '/images/ees-vs-etias-og.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'EES vs ETIAS Comparison 2025'
+      }
+    ]
+  },
+  alternates: {
+    canonical: 'https://euborder.com/ees/vs-etias'
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1
+    }
   }
 }
 

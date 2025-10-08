@@ -249,7 +249,8 @@ export function PremiumUpgradeModal({
                         💰 Includes all future updates
                       </div>
                     )}
-                    <div className="text-xs text-green-600 mt-1">✓ 30-day money-back guarantee</div>
+                    <div className="text-xs text-green-600 mt-1">✓ 30‑day money‑back guarantee</div>
+                    <div className="text-xs text-gray-600 mt-1">✓ Cancel annual anytime • Full refund within 30 days</div>
                   </div>
                 </div>
               </div>
@@ -270,9 +271,9 @@ export function PremiumUpgradeModal({
               {/* Money back guarantee */}
               <div className="text-center">
                 <p className="text-xs text-gray-500">
-                  <span className="text-green-600 font-medium">30-day money-back guarantee</span>
+                  <span className="text-green-600 font-medium">30‑day money‑back guarantee</span>
                   <br />
-                  No questions asked if you're not satisfied
+                  Full refund within 30 days if you’re not satisfied. Annual plan can be cancelled anytime.
                 </p>
               </div>
 

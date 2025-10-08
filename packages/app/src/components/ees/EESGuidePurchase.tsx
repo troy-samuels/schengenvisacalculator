@@ -5,12 +5,19 @@ import { Button } from '@schengen/ui'
 import { useRouter } from 'next/navigation'
 import { createCheckoutSession, redirectToStripeCheckout } from '@schengen/payments'
 import { useUserStatus } from '@/lib/hooks/useUserStatus'
+import { useConversionTracking } from '@/hooks/use-conversion-tracking'
 
 export function EESGuidePurchaseCard() {
   const router = useRouter()
   const { user, loading } = useUserStatus()
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { trackConversion, trackCTAClick } = useConversionTracking()
+
+  // Track view on mount
+  React.useEffect(() => {
+    trackConversion({ event: 'ees_guide_view', page: 'ees_guide' })
+  }, [trackConversion])
 
   const purchase = async () => {
     if (!user?.email) {
@@ -18,6 +25,7 @@ export function EESGuidePurchaseCard() {
       return
     }
     try {
+      trackCTAClick('ees_guide_buy', 'primary', 'ees_guide')
       setIsProcessing(true)
       setError(null)
       const session = await createCheckoutSession({
@@ -27,6 +35,7 @@ export function EESGuidePurchaseCard() {
         userEmail: user.email!,
         metadata: { feature: 'ees_page', product: 'ees_guide' }
       })
+      trackConversion({ event: 'ees_guide_checkout_started', page: 'ees_guide', value: 7.99, currency: 'GBP' })
       redirectToStripeCheckout(session.url)
     } catch (e: any) {
       setError(e?.message || 'Failed to start checkout (EES Guide)')

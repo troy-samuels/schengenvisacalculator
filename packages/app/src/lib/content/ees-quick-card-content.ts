@@ -206,7 +206,7 @@ export const EES_QUICK_CARD_CONTENT = {
       },
       {
         title: 'Your Embassy',
-        contact: 'Contact your country's EU embassy',
+        contact: 'Contact your country\'s EU embassy',
         hours: 'Emergency consular assistance',
       },
     ],

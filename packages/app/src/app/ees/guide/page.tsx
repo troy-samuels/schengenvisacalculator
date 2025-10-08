@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Check, FileText, Fingerprint, Shield, ArrowRight } from 'lucide-react'
 import { EnhancedSchema } from '@/components/enhanced-schema'
 import { EESGuidePurchaseCard } from '@/components/ees/EESGuidePurchase'
+import { EESGuideCTA } from '@/components/ees/EESGuideCTA'
 
 export const metadata: Metadata = {
   title: 'EES Readiness Guide 2025: Step-by-Step Biometrics Preparation | EU Border',
@@ -101,6 +102,13 @@ export default function EESGuidePage() {
               Looking for country nuances? See our <Link href="/ees/countries" className="text-blue-600 hover:underline">27 country implementation hub</Link>.
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* State-aware CTA: sign-in, purchase, or download */}
+      <section className="py-8">
+        <div className="max-w-3xl mx-auto px-4">
+          <EESGuideCTA />
         </div>
       </section>
 

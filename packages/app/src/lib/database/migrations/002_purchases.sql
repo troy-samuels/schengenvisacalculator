@@ -21,3 +21,4 @@ CREATE POLICY "Users can view own purchases" ON public.purchases
 CREATE INDEX idx_purchases_user_id ON public.purchases(user_id);
 CREATE INDEX idx_purchases_created_at ON public.purchases(created_at);
 
+

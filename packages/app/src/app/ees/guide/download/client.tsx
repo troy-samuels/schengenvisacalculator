@@ -6,12 +6,14 @@ import { usePurchases } from '@/lib/hooks/usePurchases'
 import { useUserStatus } from '@/lib/hooks/useUserStatus'
 import { EESGuideAccessCheck } from '@/components/ees/EESGuideAccessCheck'
 import Link from 'next/link'
+import { useConversionTracking } from '@/hooks/use-conversion-tracking'
 
 export function EESGuideDownloadClient() {
   const { user, loading: userLoading } = useUserStatus()
   const { purchases, hasPaidEESGuide, loading: purchasesLoading, latestEESGuide } = usePurchases()
   const [isDownloading, setIsDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState<string | null>(null)
+  const { trackConversion } = useConversionTracking()
 
   const handleDownload = async () => {
     setIsDownloading(true)
@@ -28,14 +30,17 @@ export function EESGuideDownloadClient() {
       const data = await response.json()
 
       if (data.downloadUrl) {
+        trackConversion({ event: 'ees_guide_download', page: 'ees_guide_download' })
         // Redirect to signed URL
         window.location.href = data.downloadUrl
       } else if (data.error) {
         setDownloadError(data.error)
+        trackConversion({ event: 'ees_guide_download_error', page: 'ees_guide_download', metadata: { error: data.error } })
       }
     } catch (error: any) {
       console.error('Download error:', error)
       setDownloadError(error.message || 'Failed to download guide. Please try again.')
+      trackConversion({ event: 'ees_guide_download_error', page: 'ees_guide_download', metadata: { error: error?.message } })
     } finally {
       setIsDownloading(false)
     }

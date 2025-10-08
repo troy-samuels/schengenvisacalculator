@@ -122,6 +122,47 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      },
+      purchases: {
+        Row: {
+          id: string
+          user_id: string
+          product: 'ees_guide'
+          status: 'paid' | 'refunded' | 'cancelled'
+          amount: number | null
+          currency: string | null
+          stripe_session_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product: 'ees_guide'
+          status: 'paid' | 'refunded' | 'cancelled'
+          amount?: number | null
+          currency?: string | null
+          stripe_session_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product?: 'ees_guide'
+          status?: 'paid' | 'refunded' | 'cancelled'
+          amount?: number | null
+          currency?: string | null
+          stripe_session_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

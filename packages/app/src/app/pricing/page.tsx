@@ -62,6 +62,27 @@ export default function PricingPage() {
     })
   }
 
+  const purchaseEESGuide = async () => {
+    await requireLoginOr(async () => {
+      try {
+        setIsProcessing(true)
+        setError(null)
+        const session = await createCheckoutSession({
+          tier: 'ees_guide' as any,
+          billingCycle: 'one_time',
+          userId: user!.id,
+          userEmail: user!.email!,
+          metadata: { feature: 'pricing_page', product: 'ees_guide' }
+        })
+        redirectToStripeCheckout(session.url)
+      } catch (e: any) {
+        setError(e?.message || 'Failed to start checkout (EES Guide)')
+      } finally {
+        setIsProcessing(false)
+      }
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <section className="py-12 px-4">
@@ -123,6 +144,29 @@ export default function PricingPage() {
               <Button className="w-full mt-6" onClick={purchaseAnnual} disabled={loading || isProcessing}>
                 {isProcessing ? 'Processing…' : 'Subscribe Annual'}
               </Button>
+            </div>
+          </div>
+
+          {/* EES Guide Add-on */}
+          <div className="mt-10 max-w-3xl mx-auto">
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900">EES Readiness Guide</h2>
+              <p className="text-2xl font-bold mt-2">£7.99</p>
+              <p className="text-sm text-gray-500">One-time add‑on</p>
+              <ul className="mt-4 space-y-2 text-sm text-gray-700">
+                <li>Complete first‑entry biometrics checklist</li>
+                <li>Country‑specific tips and wait‑time planning</li>
+                <li>Printable at‑border quick card</li>
+                <li>Offline access in the app (PWA)</li>
+              </ul>
+              <div className="mt-6 flex gap-3">
+                <Button className="flex-1" onClick={purchaseEESGuide} disabled={loading || isProcessing}>
+                  {isProcessing ? 'Processing…' : 'Get EES Guide'}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => router.push('/ees')}>
+                  Learn about EES
+                </Button>
+              </div>
             </div>
           </div>
         </div>

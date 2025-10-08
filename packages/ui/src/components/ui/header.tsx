@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation'
 import { Button } from './button'
 import { User, ChevronDown, LogOut, Settings, BarChart3, Menu, X, BookOpen, Calculator, Home, Star } from 'lucide-react'
 import { HeaderSocialLinks } from './social-media-links'
+import { PhaseGate } from '../PhaseGate'
+import { UserTier } from '../../../../app/src/lib/phase-control'
 
 export interface HeaderProps {
   onLoginClick?: () => void
@@ -91,6 +93,29 @@ export function Header({
                 </Link>
               )
             })}
+
+            {/* Phase-gated Business (Preview) */}
+            <PhaseGate
+              feature="enterprise_dashboard"
+              userTier={UserTier.FREE}
+              fallback={
+                <span className="flex items-center space-x-2 text-sm font-medium text-gray-400 cursor-not-allowed">
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Business</span>
+                  <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Preview</span>
+                </span>
+              }
+            >
+              <Link
+                href="/business"
+                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-blue-600 ${
+                  pathname === '/business' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Business</span>
+              </Link>
+            </PhaseGate>
             
             {/* Premium Button */}
             {onPremiumClick && (
@@ -277,6 +302,30 @@ export function Header({
                   </Link>
                 )
               })}
+
+              {/* Phase-gated Business (Preview) - Mobile */}
+              <PhaseGate
+                feature="enterprise_dashboard"
+                userTier={UserTier.FREE}
+                fallback={
+                  <div className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-base font-medium">Business</span>
+                    <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Preview</span>
+                  </div>
+                }
+              >
+                <Link
+                  href="/business"
+                  onClick={() => setShowMobileMenu(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors hover:bg-gray-50 ${
+                    pathname === '/business' ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                  }`}
+                >
+                  <BarChart3 className="h-5 w-5" />
+                  <span className="text-base font-medium">Business</span>
+                </Link>
+              </PhaseGate>
               
               {/* Mobile Social Links */}
               <div className="pt-4 border-t border-gray-100">

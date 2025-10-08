@@ -1,226 +1,183 @@
-# 🌍 EU Border Authority Platform
+# Supabase CLI
 
-The definitive EU border compliance platform combining Schengen 90/180 calculations, EES preparation, and ETIAS guidance. Built with technical excellence and industry-first family coordination features.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/troy-samuels/schengenvisacalculator)
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-## ✨ Core Features
+This repository contains all the functionality for Supabase CLI.
 
-### Superior Compliance Tools
-- **🧮 Ultra-Fast Calculations**: 28.39ms performance vs competitors' 200ms+ (99% EU accuracy)
-- **🚫 Date Overlap Prevention**: Visual indicators prevent scheduling conflicts across all trips
-- **📅 Unlimited Trip Tracking**: Plan and track multiple European trips with mathematical precision
-- **⚡ Real-time Compliance**: Instant feedback on your Schengen compliance status
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-### Industry-First Family Features (Premium)
-- **👨‍👩‍👧‍👦 Family Coordination**: Track up to 4 family members' compliance in one integrated account
-- **🔗 Shared Trip Planning**: Visual coordination preventing conflicts across family members
-- **📧 Smart Overstay Alerts**: Proactive email/SMS notifications before potential violations
-- **📄 Professional Reports**: PDF compliance documentation for border officials
+## Getting started
 
-### Technical Excellence
-- **📱 Mobile PWA**: Touch-friendly design with 44px targets, offline functionality
-- **🔒 Enterprise Security**: Zero vulnerabilities, bank-level encryption, SOC2 compliance
-- **💾 Offline Capability**: Progressive Web App with full offline calculation support
-- **🎯 Performance Optimized**: <50ms calculations, <200KB bundle, <3s load time
+### Install the CLI
 
-### EU Border Authority Features (Coming Soon)
-- **🔒 EES Preparation Hub**: Complete biometric system guidance (October 2025 launch)
-- **📋 ETIAS Integration**: Travel authorization support and tracking
-- **🌍 27 Country Guides**: Individual country-specific compliance information
-- **🏢 Enterprise Solutions**: B2B compliance management and reporting
-
-## 🎯 Live Platform
-
-🔗 **[Experience the Authority →](https://euborder.com)**
-
-## 💰 Transparent Pricing
-
-- **FREE**: Basic calculator, 5 trip limit, screenshot export
-- **LIFETIME** (£4.99 one-time): Unlimited trips, family tracking, PDF reports, email alerts
-- **ANNUAL** (£2.99/year): All lifetime features + SMS alerts, priority support, regulatory updates
-
-*Pricing designed for families and frequent travelers. No hidden fees, no subscription lock-in.*
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 15, React 18, TypeScript
-- **Styling**: Tailwind CSS, shadcn/ui components
-- **Backend**: Next.js API Routes, Supabase
-- **Database**: PostgreSQL (Supabase) with Row Level Security
-- **Authentication**: Supabase Auth with enterprise security
-- **Payments**: Stripe integration for lifetime and annual subscriptions
-- **Deployment**: Vercel with automatic GitHub deployments
-
-## 🏃‍♂️ Quick Start
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- Supabase account (free tier available)
-
-### Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/troy-samuels/schengenvisacalculator.git
-   cd schengenvisacalculator
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**:
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Add your credentials to `.env.local`:
-   ```env
-   # Supabase Database & Auth
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-   # Stripe Payment Processing
-   STRIPE_SECRET_KEY=sk_live_...
-   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
-   STRIPE_WEBHOOK_SECRET=whsec_...
-
-   # Pricing Tiers
-   STRIPE_PRICE_LIFETIME=price_lifetime_4_99
-   STRIPE_PRICE_ANNUAL=price_annual_2_99
-   ```
-
-4. **Set up the database**:
-   - Go to your Supabase project dashboard
-   - Navigate to SQL Editor
-   - Run the scripts from the `scripts/` folder in order:
-     ```sql
-     -- Run these in your Supabase SQL Editor:
-     scripts/setup-database-fixed.sql
-     scripts/update-profile-schema.sql
-     scripts/verify-user-profile-trigger.sql
-     ```
-
-5. **Start the development server**:
-   ```bash
-   npm run dev
-   ```
-
-6. **Open your browser**:
-   Visit `http://localhost:3000` to see the application.
-
-## 📊 Database Schema
-
-The application uses these main tables:
-
-| Table | Description |
-|-------|-------------|
-| `profiles` | User profiles with subscription tier and family settings |
-| `subscriptions` | Stripe subscription management for lifetime/annual tiers |
-| `countries` | Schengen area country data with flags |
-| `visa_entries` | Individual travel entries with date conflict prevention |
-| `family_members` | Family tracking with shared compliance coordination |
-| `alerts` | Smart notification system for overstay prevention |
-
-## 🧪 Testing
-
-We maintain 100% EU compliance through comprehensive testing:
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-npm test              # Run fast test suite
-npm run test:full     # Complete test suite with performance tests
-npm run test:eu       # EU compliance tests only (MANDATORY 100% pass)
-npm run validate      # Run all validation tests
-npm run benchmark     # Performance benchmarking
+npm i supabase --save-dev
 ```
 
-**Critical Requirements:**
-- EU compliance tests must always pass 100% (legal requirement)
-- Date overlap prevention must be 100% accurate (core feature)
-- Family coordination must work across all devices (competitive advantage)
+To install the beta release channel:
 
-## 🚀 Deployment
+```bash
+npm i supabase@beta --save-dev
+```
 
-### Deploy to Vercel (Recommended)
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/troy-samuels/schengenvisacalculator)
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
 
-1. **One-click deploy** using the button above, or:
-2. **Manual deployment**:
-   ```bash
-   npm run build
-   npx vercel --prod
-   ```
-3. **Set environment variables** in Vercel dashboard (including Stripe keys)
-4. **Connect GitHub** for automatic deployments
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
 
-### Other Platforms
+<details>
+  <summary><b>macOS</b></summary>
 
-The app can also be deployed to:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- Any Node.js hosting service
+  Available via [Homebrew](https://brew.sh). To install:
 
-## 🤝 Contributing
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
 
-### Development Guidelines
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
 
-- **Accuracy First**: 100% EU compliance is non-negotiable
-- **Family-Centric**: Multi-person tracking is primary competitive advantage
-- **Mobile-First**: Every feature must work flawlessly on mobile (44px touch targets)
-- **TypeScript**: Use strict typing for calculation accuracy
-- **Testing**: All changes must pass EU compliance tests
-- **Documentation**: Update docs for any feature changes
+<details>
+  <summary><b>Windows</b></summary>
 
-## 📈 Strategic Vision
+  Available via [Scoop](https://scoop.sh). To install:
 
-EU Border Authority Platform represents the future of European travel compliance:
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
 
-- **Market Position**: Complete EU border authority (Schengen + EES + ETIAS)
-- **Unique Advantages**: Industry-first family coordination + 28.39ms performance
-- **Revenue Model**: Proven £4.99 lifetime + B2B enterprise expansion + API licensing
-- **Growth Strategy**: SEO-first content marketing + EES first-mover advantage
+  To upgrade:
 
-## 📝 License
+  ```powershell
+  scoop update supabase
+  ```
+</details>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<details>
+  <summary><b>Linux</b></summary>
 
-## ⚠️ Important Disclaimer
+  Available via [Homebrew](https://brew.sh) and Linux packages.
 
-**This tool provides compliance estimates only.** Schengen visa rules can be complex and subject to change. Always:
+  #### via Homebrew
 
-- ✅ Consult official embassy websites
-- ✅ Verify with immigration lawyers for complex cases
-- ✅ Check current visa requirements before travel
-- ✅ Keep official documentation of your travels
-- ✅ Use our PDF compliance reports for border crossings
+  To install:
 
-## 🙏 Acknowledgments
+  ```sh
+  brew install supabase/tap/supabase
+  ```
 
-- **EU Schengen Agreement** for enabling visa-free European travel
-- **shadcn/ui** for beautiful, accessible components
-- **Supabase** for secure backend infrastructure and authentication
-- **Stripe** for seamless payment processing
-- **Vercel** for reliable deployment and hosting
-- **Travel families** for feedback on family coordination features
+  To upgrade:
 
-## 📞 Support
+  ```sh
+  brew upgrade supabase
+  ```
 
-- 🐛 **Bug reports**: [Create an issue](https://github.com/troy-samuels/schengenvisacalculator/issues)
-- 💡 **Feature requests**: [Start a discussion](https://github.com/troy-samuels/schengenvisacalculator/discussions)
-- 📧 **Business inquiries**: info@euborder.com
-- 🏢 **Enterprise solutions**: Looking for team features? Contact us about our B2B compliance platform.
+  #### via Linux packages
 
----
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
 
-**Built for the future of EU border compliance** 🌍✈️
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
 
-*Combining technical excellence with regulatory authority for families and businesses worldwide.* 👨‍👩‍👧‍👦🎒
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
+```bash
+supabase bootstrap
+```
+
+Or using npx:
+
+```bash
+npx supabase bootstrap
+```
+
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
+```
