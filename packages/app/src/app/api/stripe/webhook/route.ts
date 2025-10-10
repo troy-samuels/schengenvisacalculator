@@ -1,34 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { headers } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+
+// Ensure this route runs in the Node.js runtime and is never statically optimized
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20',
 })
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+// Support both live and test webhook secrets; attempt verification in this order
+const webhookSecretLive = process.env.STRIPE_WEBHOOK_SECRET
+const webhookSecretTest = process.env.STRIPE_WEBHOOK_SECRET_TEST
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text()
-    const headersList = await headers()
-    const signature = headersList.get('stripe-signature')!
+    const rawBody = await request.text()
+    const signature = request.headers.get('stripe-signature')
 
-    let event: Stripe.Event
-
-    try {
-      // Verify webhook signature
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-    } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err)
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      )
+    if (!signature) {
+      console.error('❌ Missing Stripe-Signature header')
+      return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
     }
 
-    console.log(`🔔 Stripe webhook received: ${event.type}`)
+    let event: Stripe.Event | null = null
+
+    // Try verification with live secret first, then test secret if provided
+    const verificationAttempts: Array<{ label: 'live' | 'test'; secret?: string | null }> = [
+      { label: 'live', secret: webhookSecretLive },
+      { label: 'test', secret: webhookSecretTest },
+    ]
+
+    let lastError: unknown = null
+    for (const attempt of verificationAttempts) {
+      if (!attempt.secret) continue
+      try {
+        event = stripe.webhooks.constructEvent(rawBody, signature, attempt.secret)
+        console.log(`🔐 Stripe webhook verified using ${attempt.label} secret`)
+        break
+      } catch (err) {
+        lastError = err
+      }
+    }
+
+    if (!event) {
+      console.error('❌ Webhook signature verification failed for all known secrets:', lastError)
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    }
+
+    console.log(`🔔 Stripe webhook received: ${event.type} (live=${event.livemode === true})`)
 
     // Handle the event
     switch (event.type) {
@@ -113,9 +134,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       const amount = (session.amount_total ?? null)
       const currency = (session.currency ?? 'gbp')
 
+      // Idempotent upsert by unique stripe_session_id to avoid duplicate inserts on retries
       const { error: purchaseError } = await supabaseAdmin
         .from('purchases')
-        .insert({
+        .upsert({
           user_id: userId,
           product: 'ees_guide',
           status: 'paid',
@@ -123,7 +145,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           currency,
           stripe_session_id: session.id,
           created_at: new Date().toISOString()
-        })
+        }, { onConflict: 'stripe_session_id' })
 
       if (purchaseError) {
         console.error('❌ Failed to record EES Guide purchase:', purchaseError)
