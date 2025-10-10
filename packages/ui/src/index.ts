@@ -28,6 +28,9 @@ export * from "./components/ui/circular-progress"
 export * from "./components/ui/calendar-modal"
 export * from "./components/ui/mobile-calendar-drawer"
 export * from "./components/ui/social-media-links"
+
+// Marketing Components
+export * from "./components/NewsletterSignup"
 export * from "./components/ui/footer"
 export * from "./components/ui/accuracy-verification-badge"
 export * from "./components/ui/rolling-calendar-view"

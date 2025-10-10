@@ -166,6 +166,35 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }))
 
+  // Blog pages (high priority for SEO)
+  const blogPages = [
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: currentDate,
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    },
+    // Individual blog posts - dynamically generated
+    {
+      url: `${baseUrl}/blog/schengen-90-180-rule-explained-2026`,
+      lastModified: new Date('2026-01-10'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9, // High priority - targets 4,400 monthly searches
+    },
+    {
+      url: `${baseUrl}/blog/digital-nomad-europe-visa-guide-2026`,
+      lastModified: new Date('2026-01-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85, // High priority - targets 1,800 monthly searches
+    },
+    {
+      url: `${baseUrl}/blog/etias-2025-complete-guide-europe-travel-authorization`,
+      lastModified: new Date('2025-01-15'),
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    },
+  ]
+
   // Authentication pages (lower priority, no index)
   const authPages = [
     {
@@ -182,5 +211,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  return [...corePages, ...eesPages, ...eesCountryPages, ...authPages]
+  return [...corePages, ...eesPages, ...eesCountryPages, ...blogPages, ...authPages]
 }
