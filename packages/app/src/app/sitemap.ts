@@ -212,6 +212,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.87, // High priority - targets 2,100 monthly searches
     },
+    // Batch 3: Additional High-Priority Posts
+    {
+      url: `${baseUrl}/blog/eu-travel-requirements-2025-complete-guide`,
+      lastModified: new Date('2026-01-20'),
+      changeFrequency: 'weekly' as const,
+      priority: 0.91, // Very high priority - targets 4,400 monthly searches + consolidates ETIAS/EES
+    },
   ]
 
   // Authentication pages (lower priority, no index)
