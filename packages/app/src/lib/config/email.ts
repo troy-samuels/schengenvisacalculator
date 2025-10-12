@@ -5,18 +5,19 @@
 
 export const EMAIL_CONFIG = {
   // Primary email addresses
+  // NOTE: Currently only info@euborder.com is configured. All emails route to this address.
   FROM_EMAIL: process.env.FROM_EMAIL || 'info@euborder.com',
   CONTACT_EMAIL: process.env.CONTACT_EMAIL || 'info@euborder.com',
-  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'support@euborder.com',
-  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'admin@euborder.com',
-  
+  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || 'info@euborder.com',
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'info@euborder.com',
+
   // Email service configuration
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
-  
+
   // Email templates
   TEMPLATES: {
     WELCOME: 'welcome',
-    PASSWORD_RESET: 'password-reset', 
+    PASSWORD_RESET: 'password-reset',
     SUBSCRIPTION_CONFIRMATION: 'subscription-confirmation',
     COMPLIANCE_ALERT: 'compliance-alert',
     SUPPORT_REQUEST: 'support-request'

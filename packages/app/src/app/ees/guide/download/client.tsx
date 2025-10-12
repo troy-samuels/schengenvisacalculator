@@ -191,8 +191,8 @@ export function EESGuideDownloadClient() {
           <div className="mt-8 text-center text-sm text-gray-600">
             <p>
               Need help?{' '}
-              <a href="mailto:support@euborder.com" className="text-blue-600 hover:underline">
-                support@euborder.com
+              <a href="mailto:info@euborder.com" className="text-blue-600 hover:underline">
+                info@euborder.com
               </a>
             </p>
           </div>
