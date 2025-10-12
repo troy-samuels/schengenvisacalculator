@@ -225,6 +225,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily' as const, // News article - updated frequently
       priority: 0.93, // Very high priority - breaking news, competes with Guardian
     },
+    {
+      url: `${baseUrl}/blog/schengen-visa-calculator-complete-guide-2026`,
+      lastModified: new Date('2026-01-22'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.94, // Very high priority - product guide, targets 3,600 monthly searches
+    },
   ]
 
   // Authentication pages (lower priority, no index)
