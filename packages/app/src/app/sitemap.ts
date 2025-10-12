@@ -219,6 +219,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.91, // Very high priority - targets 4,400 monthly searches + consolidates ETIAS/EES
     },
+    {
+      url: `${baseUrl}/blog/ees-delays-latest-updates-2025`,
+      lastModified: new Date('2025-10-12'),
+      changeFrequency: 'daily' as const, // News article - updated frequently
+      priority: 0.93, // Very high priority - breaking news, competes with Guardian
+    },
   ]
 
   // Authentication pages (lower priority, no index)
