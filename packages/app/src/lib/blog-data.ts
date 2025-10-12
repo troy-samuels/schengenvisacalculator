@@ -56,6 +56,7 @@ export interface InternalLink {
 
 // Import manually generated blog posts
 import { GENERATED_BLOG_POSTS } from './content/generated-blog-posts'
+import { ADDITIONAL_BLOG_POSTS } from './content/additional-blog-posts'
 
 export const blogPosts: BlogPost[] = [
   {
@@ -5381,7 +5382,10 @@ Your European adventure is waiting. The only question is: which city will you ch
   },
 
   // Add manually generated blog posts
-  ...GENERATED_BLOG_POSTS
+  ...GENERATED_BLOG_POSTS,
+
+  // Add additional high-priority SEO blog posts (Batch 2)
+  ...ADDITIONAL_BLOG_POSTS
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {

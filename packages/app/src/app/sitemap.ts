@@ -193,6 +193,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.85,
     },
+    // Batch 2: Additional High-Priority Posts (14,200+ combined monthly searches)
+    {
+      url: `${baseUrl}/blog/how-long-can-i-stay-in-europe-without-visa-2026`,
+      lastModified: new Date('2026-01-14'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.92, // Very high priority - targets 8,900 monthly searches
+    },
+    {
+      url: `${baseUrl}/blog/brexit-travel-rules-europe-2026`,
+      lastModified: new Date('2026-01-16'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.88, // High priority - targets 3,200 monthly searches
+    },
+    {
+      url: `${baseUrl}/blog/schengen-overstay-consequences-penalties-2026`,
+      lastModified: new Date('2026-01-18'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.87, // High priority - targets 2,100 monthly searches
+    },
   ]
 
   // Authentication pages (lower priority, no index)
