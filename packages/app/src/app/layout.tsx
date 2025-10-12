@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Poppins } from 'next/font/google'
 import localFont from 'next/font/local'
+import Script from 'next/script'
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics'
 import ClientProviders from '@/components/ClientProviders'
 import './globals.css'
@@ -423,6 +424,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${dmSans.variable} ${poppins.variable} min-h-screen bg-background font-sans antialiased`}
         suppressHydrationWarning
       >
+        {/* DataFast Analytics */}
+        <Script
+          id="datafast-tracker"
+          src="https://datafa.st/js/script.js"
+          strategy="afterInteractive"
+          data-website-id="dfid_KnXAe6sq3hmznrzlDf0Pe"
+          data-domain="euborder.com"
+        />
         {/* Analytics */}
         <GoogleAnalytics GA_MEASUREMENT_ID="G-DPC560854T" />
         <ClientProviders>{children}</ClientProviders>
