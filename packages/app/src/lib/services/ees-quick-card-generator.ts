@@ -31,6 +31,10 @@ interface jsPDFWithPlugin {
   setFont: (font: string, style?: string) => void
   text: (text: string | string[], x: number, y: number, options?: any) => void
   rect: (x: number, y: number, width: number, height: number, style?: string) => void
+  circle: (x: number, y: number, r: number, style?: string) => void
+  line: (x1: number, y1: number, x2: number, y2: number) => void
+  setLineWidth: (width: number) => void
+  splitTextToSize: (text: string, maxWidth: number) => string[]
   addPage: () => void
   setPage: (page: number) => void
   output: (type: string) => Blob
@@ -210,7 +214,8 @@ export class EESQuickCardGenerator {
       doc.setTextColor(this.COLORS.secondary)
 
       const tipsPerColumn = 2
-      country.tips.slice(0, 4).forEach((tip, tipIndex) => {
+      const tips = country.tips || (country.tip ? [country.tip] : [])
+      tips.slice(0, 4).forEach((tip, tipIndex) => {
         const xPos = tipIndex < tipsPerColumn ? 20 : 105
         const yOffset = (tipIndex % tipsPerColumn) * 5
         doc.text(`• ${tip}`, xPos, y + yOffset)

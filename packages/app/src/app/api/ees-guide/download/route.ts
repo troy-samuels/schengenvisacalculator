@@ -5,6 +5,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/lib/types/database'
+
+type Purchase = Database['public']['Tables']['purchases']['Row']
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +45,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const purchase = purchases[0]
+    const purchase: Purchase = purchases[0]
 
     // 3. Get signed URL from Supabase Storage
     // File path: ees_products/ees-quick-card-v1.pdf

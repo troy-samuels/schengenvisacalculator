@@ -120,46 +120,4 @@ export function usePurchases(): UsePurchasesReturn {
  * Server-side helper to check if user has purchased EES Guide
  * Use in API routes or server components
  */
-export async function checkEESGuidePurchase(userId: string): Promise<boolean> {
-  const { createClient } = await import('../supabase/server')
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('purchases')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('product', 'ees_guide')
-    .eq('status', 'paid')
-    .limit(1)
-    .single()
-
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 is "no rows returned", which is expected if no purchase
-    console.error('Error checking EES guide purchase:', error)
-    return false
-  }
-
-  return !!data
-}
-
-/**
- * Server-side helper to get all purchases for a user
- * Use in API routes or server components
- */
-export async function getUserPurchases(userId: string): Promise<Purchase[]> {
-  const { createClient } = await import('../supabase/server')
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('purchases')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching user purchases:', error)
-    return []
-  }
-
-  return data || []
-}
+// Server-side helpers removed from client module to avoid server-only imports in client bundles

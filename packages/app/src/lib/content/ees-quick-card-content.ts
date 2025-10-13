@@ -14,7 +14,8 @@ export interface CountryTip {
   country: string
   flag: string
   airport: string
-  tip: string
+  tip?: string
+  tips?: string[]
 }
 
 export const EES_QUICK_CARD_CONTENT = {

@@ -164,6 +164,39 @@ export interface Database {
           }
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          id: string
+          email: string
+          status: 'active' | 'unsubscribed' | 'bounced'
+          source: string | null
+          lead_magnet: string | null
+          subscribed_at: string
+          unsubscribed_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          status?: 'active' | 'unsubscribed' | 'bounced'
+          source?: string | null
+          lead_magnet?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          status?: 'active' | 'unsubscribed' | 'bounced'
+          source?: string | null
+          lead_magnet?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

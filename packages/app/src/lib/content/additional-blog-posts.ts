@@ -2346,7 +2346,7 @@ You can:
       }
     },
     aiGenerated: false,
-    contentSource: 'news_analysis',
+    contentSource: 'manual',
     publishStatus: 'published',
     relatedPosts: ["17", "1", "12"],
     internalLinks: [
@@ -2450,7 +2450,7 @@ This comprehensive analysis covers everything you need to know about the EES del
       }
     },
     aiGenerated: false,
-    contentSource: 'product_guide',
+    contentSource: 'manual',
     publishStatus: 'published',
     relatedPosts: ["12", "14", "16"],
     internalLinks: [
@@ -2547,7 +2547,7 @@ Before using a calculator, understand what it's calculating:
 - ✅ Use passport stamps for verification
 
 **Example Entry**:
-```
+
 Trip 1:
 Entry: March 15, 2025 (France)
 Exit: March 29, 2025 (France)
@@ -2559,7 +2559,6 @@ Exit: June 10, 2025 (Spain)
 Days: 22 days
 
 Total: 37 days used, 53 days remaining
-```
 
 ### Step 3: View Your Results
 

@@ -13,7 +13,7 @@ interface BreadcrumbItem {
 }
 
 interface EnhancedSchemaProps {
-  page: 'calculator' | 'country' | 'blog' | 'guide'
+  page: 'calculator' | 'country' | 'blog' | 'guide' | 'ees-airports' | string
   country?: string
   title?: string
   description?: string

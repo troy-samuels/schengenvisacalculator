@@ -38,6 +38,7 @@ import { TripEntry } from '../lib/types/schengen-trip'
 import { StrategicAdPlacement, AdFreeBadge } from '../lib/components/DisplayAdvertising'
 import { SmartAlertsPanel } from '../lib/components/SmartAlertsPanel'
 import { AITravelAssistant } from '../lib/components/AITravelAssistant'
+import { AffiliateWidgets } from '../lib/components/AffiliateWidgets'
 import { useIntelligentBackground } from '../lib/hooks/useIntelligentBackground'
 
 // Date range type for app state
@@ -667,34 +668,13 @@ export default function HomePage() {
 
   // User status is now managed by useUserStatus hook
 
-  // Load user trips when user logs in or trips change
+  // Always start with a blank entry; do not auto-load saved trips on first load
   useEffect(() => {
-    // Migrate localStorage data for new users
-    if (user && userTrips.length === 0 && migrateMigrationFromLocalStorage) {
-      console.log('🔄 New user detected, attempting localStorage migration...')
-      migrateMigrationFromLocalStorage()
-    }
-
-    if (user && userTrips.length > 0) {
-      console.log('📥 Loading user trips into calculator:', userTrips.length)
-
-      // Convert TripData to VisaEntry format
-      const convertedEntries: VisaEntry[] = userTrips.map((trip, index) => ({
-        id: trip.id,
-        country: trip.country,
-        startDate: trip.startDate,
-        endDate: trip.endDate,
-        days: trip.startDate && trip.endDate ?
-          Math.ceil((trip.endDate.getTime() - trip.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0,
-        daysInLast180: 0, // Will be recalculated
-        daysRemaining: 90, // Will be recalculated
-        activeColumn: trip.country ? (trip.startDate ? "complete" : "dates") : "country"
-      }))
-
-      // Add empty entry for new trip if user can add more trips
-      if (canAddTrips) {
-        convertedEntries.push({
-          id: `new-${Date.now()}`,
+    if (!user) {
+      // Ensure at least one empty row for unauthenticated sessions
+      if (entries.length === 0 || (entries.length === 1 && entries[0].country === "")) {
+        setEntries([{
+          id: "1",
           country: "",
           startDate: null,
           endDate: null,
@@ -702,24 +682,11 @@ export default function HomePage() {
           daysInLast180: 0,
           daysRemaining: 90,
           activeColumn: "country"
-        })
+        }])
       }
-
-      setEntries(recalculateEntries(convertedEntries))
-    } else if (!user && entries.length === 1 && entries[0].country === "") {
-      // User logged out - reset to single empty entry
-      setEntries([{
-        id: "1",
-        country: "",
-        startDate: null,
-        endDate: null,
-        days: 0,
-        daysInLast180: 0,
-        daysRemaining: 90,
-        activeColumn: "country"
-      }])
     }
-  }, [user, userTrips, canAddTrips])
+    // Intentionally skip auto-migrating localStorage or pre-filling from userTrips
+  }, [user])
 
   // Auto-save completed trips to database
   const autoSaveTrip = useCallback(async (entry: VisaEntry) => {
@@ -846,11 +813,9 @@ export default function HomePage() {
     }
   }
 
-  // Load user progress when user logs in
+  // Do not auto-load saved progress on initial page view to keep a blank starting state
   useEffect(() => {
-    if (user) {
-      loadUserProgress()
-    }
+    // Reserved for future explicit "Load saved trips" action
   }, [user])
 
   // Smart Floating Save: Detect future dates and trigger animation
