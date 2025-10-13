@@ -148,6 +148,11 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const datafastWebsiteId = process.env.NEXT_PUBLIC_DATAFAST_WEBSITE_ID || 'dfid_KnXAe6sq3hmznrzlDf0Pe'
+  const datafastDomain = process.env.NEXT_PUBLIC_DATAFAST_DOMAIN || 'euborder.com'
+  const datafastHost = (process.env.NEXT_PUBLIC_DATAFAST_HOST || 'https://datafa.st').replace(/\/+$/, '')
+  const shouldLoadDatafast = Boolean(datafastWebsiteId)
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -425,13 +430,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
         suppressHydrationWarning
       >
         {/* DataFast Analytics */}
-        <Script
-          id="datafast-tracker"
-          src="https://datafa.st/js/script.js"
-          strategy="afterInteractive"
-          data-website-id="dfid_KnXAe6sq3hmznrzlDf0Pe"
-          data-domain="euborder.com"
-        />
+        {shouldLoadDatafast && (
+          <Script
+            id="datafast-tracker"
+            src={`${datafastHost}/js/script.js`}
+            strategy="afterInteractive"
+            data-website-id={datafastWebsiteId}
+            data-domain={datafastDomain}
+          />
+        )}
         {/* Analytics */}
         <GoogleAnalytics GA_MEASUREMENT_ID="G-DPC560854T" />
         <ClientProviders>{children}</ClientProviders>

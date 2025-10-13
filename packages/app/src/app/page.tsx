@@ -502,6 +502,72 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   )
 }
 
+function EmptyCalculatorState({
+  canAddTrips,
+  onAddTrip,
+  onUpgrade
+}: {
+  canAddTrips: boolean
+  onAddTrip: () => void
+  onUpgrade: () => void
+}) {
+  return (
+    <div className="border border-dashed border-blue-200 bg-blue-50/60 rounded-2xl p-10 text-center">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+        <Calendar className="h-8 w-8 text-blue-500" />
+      </div>
+      <h3 className="mt-6 text-2xl font-poppins font-semibold text-gray-900">
+        Start with your own travel dates
+      </h3>
+      <p className="mt-3 text-sm text-gray-600 font-dm-sans max-w-xl mx-auto">
+        Enter the countries you plan to visit and we&rsquo;ll calculate your live 90/180 compliance.
+        No demo data&mdash;everything begins with your itinerary.
+      </p>
+      <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <Button
+          onClick={onAddTrip}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full min-h-[44px] shadow-sm"
+          leftIcon={<Plus className="h-4 w-4" />}
+        >
+          {canAddTrips ? 'Add your first trip' : 'Unlock trip planner'}
+        </Button>
+        {!canAddTrips && (
+          <Button
+            variant="outline"
+            onClick={onUpgrade}
+            className="min-h-[44px] px-6 py-2 rounded-full border-blue-200 text-blue-700 hover:bg-blue-50"
+          >
+            Upgrade to continue
+          </Button>
+        )}
+      </div>
+      <ul className="mt-8 grid gap-3 sm:grid-cols-3 text-sm text-gray-600 font-dm-sans">
+        <li className="flex flex-col items-center">
+          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow">
+            <span className="text-blue-600 font-semibold">1</span>
+          </div>
+          Choose a Schengen country
+        </li>
+        <li className="flex flex-col items-center">
+          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow">
+            <span className="text-blue-600 font-semibold">2</span>
+          </div>
+          Pick your exact travel dates
+        </li>
+        <li className="flex flex-col items-center">
+          <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow">
+            <span className="text-blue-600 font-semibold">3</span>
+          </div>
+          See compliance in real time
+        </li>
+      </ul>
+      <p className="mt-6 text-xs text-gray-500 font-dm-sans">
+        Your entries stay private on this device until you choose to save them.
+      </p>
+    </div>
+  )
+}
+
 // Component to handle search params with Suspense boundary
 function DataRestorationHandler({
   user,
@@ -564,18 +630,7 @@ function DataRestorationHandler({
 }
 
 export default function HomePage() {
-  const [entries, setEntries] = useState<VisaEntry[]>([
-    {
-      id: "1",
-      country: "",
-      startDate: null,
-      endDate: null,
-      days: 0,
-      daysInLast180: 0,
-      daysRemaining: 90,
-      activeColumn: "country",
-    },
-  ])
+  const [entries, setEntries] = useState<VisaEntry[]>([])
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [selectedEntryId, setSelectedEntryId] = useState<string>("")
@@ -667,26 +722,6 @@ export default function HomePage() {
   const calculatorRef = useRef<HTMLDivElement>(null)
 
   // User status is now managed by useUserStatus hook
-
-  // Always start with a blank entry; do not auto-load saved trips on first load
-  useEffect(() => {
-    if (!user) {
-      // Ensure at least one empty row for unauthenticated sessions
-      if (entries.length === 0 || (entries.length === 1 && entries[0].country === "")) {
-        setEntries([{
-          id: "1",
-          country: "",
-          startDate: null,
-          endDate: null,
-          days: 0,
-          daysInLast180: 0,
-          daysRemaining: 90,
-          activeColumn: "country"
-        }])
-      }
-    }
-    // Intentionally skip auto-migrating localStorage or pre-filling from userTrips
-  }, [user])
 
   // Auto-save completed trips to database
   const autoSaveTrip = useCallback(async (entry: VisaEntry) => {
@@ -1352,18 +1387,7 @@ export default function HomePage() {
 
       // Remove locally and recalculate
       const updatedEntries = entries.filter(e => e.id !== id)
-
-      // Always keep at least one empty row
-      const nextEntries = updatedEntries.length > 0 ? updatedEntries : [{
-        id: Date.now().toString(),
-        country: '',
-        startDate: null,
-        endDate: null,
-        days: 0,
-        daysInLast180: 0,
-        daysRemaining: 90,
-        activeColumn: 'country' as const
-      }]
+      const nextEntries = updatedEntries
 
       setSelectedEntryId('')
       setEntries(recalculateEntries(nextEntries))
@@ -1745,7 +1769,21 @@ export default function HomePage() {
 
             {/* Calculator Rows */}
             <div className="p-6 space-y-8">
-              {entries.map((entry, index) => (
+              {entries.length === 0 && (
+                <EmptyCalculatorState
+                  canAddTrips={canAddTrips}
+                  onAddTrip={addEntry}
+                  onUpgrade={() => {
+                    if (userStatus === UserStatus.FREE) {
+                      setShowConversionModal(true)
+                    } else {
+                      setShowPremiumUpgradeModal(true)
+                      setPremiumUpgradeTrigger('unlimited_trips')
+                    }
+                  }}
+                />
+              )}
+              {entries.length > 0 && entries.map((entry, index) => (
                 <div key={entry.id} className="relative">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-center mb-4 space-x-2 relative z-20">
@@ -1999,7 +2037,8 @@ export default function HomePage() {
               ))}
 
               {/* Action Button - B2C 3-Tier System */}
-              <div className="flex justify-center pt-4">
+              {entries.length > 0 && (
+                <div className="flex justify-center pt-4">
                 {isAtTierLimit() ? (
                   /* Tier-specific upgrade prompt */
                   <motion.div
@@ -2113,7 +2152,8 @@ export default function HomePage() {
                     )}
                   </div>
                 )}
-              </div>
+                </div>
+              )}
                 </div>
               </div>
         </div>
