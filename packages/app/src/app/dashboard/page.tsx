@@ -163,11 +163,14 @@ export default function DashboardPage() {
   // Convert database trips to visual entries
   useEffect(() => {
     if (userTrips && userTrips.length > 0) {
-      const convertedEntries: VisaEntry[] = userTrips.map(trip => ({
+      // Filter out trips without valid dates first
+      const validTrips = userTrips.filter(trip => trip.startDate && trip.endDate)
+
+      const convertedEntries: VisaEntry[] = validTrips.map(trip => ({
         id: trip.id || Date.now().toString(),
         country: trip.country,
-        startDate: new Date(trip.startDate),
-        endDate: new Date(trip.endDate),
+        startDate: new Date(trip.startDate!),
+        endDate: new Date(trip.endDate!),
         days: 0,
         daysInLast180: 0,
         daysRemaining: 90,
