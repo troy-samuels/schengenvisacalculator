@@ -477,7 +477,7 @@ export default function DashboardPage() {
             {/* Column Headers - Desktop */}
             <div
               className="hidden md:grid gap-4 p-6 bg-gray-50 border-b"
-              style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr" }}
+              style={{ gridTemplateColumns: "1.4fr 2fr 1.2fr 1.3fr 1fr 48px" }}
             >
               <div className="text-center">
                 <h3 className="font-dm-sans font-semibold text-gray-900">Country</h3>
@@ -497,6 +497,7 @@ export default function DashboardPage() {
                 <h3 className="font-dm-sans font-semibold text-gray-900">Remaining</h3>
                 <p className="text-xs text-gray-500">Out of 90</p>
               </div>
+              <div></div>
             </div>
 
             {/* Mobile Header */}
