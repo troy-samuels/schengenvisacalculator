@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '../supabase/client'
 import type { Database } from '../types/database'
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 type Purchase = Database['public']['Tables']['purchases']['Row']
 
@@ -47,7 +48,7 @@ export function usePurchases(): UsePurchasesReturn {
     getUser()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUserId(session?.user?.id || null)
     })
 

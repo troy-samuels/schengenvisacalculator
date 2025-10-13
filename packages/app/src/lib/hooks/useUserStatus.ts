@@ -7,7 +7,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { User } from '@supabase/supabase-js'
+import { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { createClient } from '../supabase/client'
 import {
   UserContext,
@@ -91,7 +91,7 @@ export function useUserStatus(): UserContext {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         const newUser = session?.user ?? null
         setUser(newUser)
         
