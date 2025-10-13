@@ -1,24 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "packages/app/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/packages/app/(.*)",
-      "dest": "packages/app/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "packages/app/$1"
-    }
-  ],
+  "buildCommand": "cd packages/app && npm run build",
+  "outputDirectory": "packages/app/.next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
   "redirects": [
     {
       "source": "/schengen-calculator",
@@ -76,11 +60,5 @@
   "env": {
     "NEXT_PUBLIC_APP_NAME": "EU Border Authority",
     "NEXT_PUBLIC_APP_URL": "https://euborder.com"
-  },
-  "functions": {
-    "packages/app/src/app/api/**/*.ts": {
-      "maxDuration": 60
-    }
-  },
-  "crons": []
+  }
 }
