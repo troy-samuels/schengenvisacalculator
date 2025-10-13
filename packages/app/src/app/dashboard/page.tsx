@@ -181,12 +181,16 @@ export default function DashboardPage() {
       const calculator = new RobustSchengenCalculator()
       const trips: Trip[] = convertedEntries
         .filter(e => e.startDate && e.endDate)
-        .map(e => ({
-          id: e.id,
-          country: e.country,
-          startDate: e.startDate!,
-          endDate: e.endDate!
-        }))
+        .map(e => {
+          const days = Math.ceil((e.endDate!.getTime() - e.startDate!.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          return {
+            id: e.id,
+            country: e.country,
+            startDate: e.startDate!,
+            endDate: e.endDate!,
+            days
+          }
+        })
 
       const result = calculator.calculateCompliance(trips)
 
