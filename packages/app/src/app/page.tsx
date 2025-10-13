@@ -903,6 +903,8 @@ export default function HomePage() {
       setAuthError(null)
       await signIn(email, password)
       setShowLoginModal(false)
+      // Redirect to dashboard after successful login
+      router.push('/dashboard')
     } catch (error: any) {
       console.error('Email login error:', error)
       setAuthError(error.message || 'Login failed. Please try again.')
@@ -1724,8 +1726,22 @@ export default function HomePage() {
         </motion.div>
       )}
 
-      {/* Hero Section with Social Proof */}
-      <HeroSection onScrollToCalculator={scrollToCalculator} />
+      {/* Minimal Header Section */}
+      <section className="pt-24 pb-8 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center space-y-6">
+            {/* EES Ready Header */}
+            <h2 className="text-sm md:text-base font-dm-sans font-medium text-gray-600">
+              EES Ready • Schengen Authority • EU Border Compliance
+            </h2>
+
+            {/* Authority Badge */}
+            <div className="flex justify-center">
+              <AuthorityStatement />
+            </div>
+          </div>
+        </div>
+      </section>
 
 
       {/* TODO: Strategic Header Advertising - Temporarily Hidden Until Feature Enabled */}
@@ -1742,9 +1758,9 @@ export default function HomePage() {
       */}
 
       {/* Calculator Section */}
-      <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8">
+      <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
             {/* Column Headers - Desktop */}
             <div
               className="hidden md:grid gap-4 p-6 bg-gray-50 border-b"
@@ -1780,33 +1796,27 @@ export default function HomePage() {
             <div className="p-6 space-y-8">
               {entries.map((entry, index) => (
                 <div key={entry.id} className="relative">
-                  {/* Progress Indicator */}
-                  <div className="flex items-center justify-center mb-4 space-x-2 relative z-20">
+                  {/* Progress Indicator - Simple Dots */}
+                  <div className="flex items-center justify-center mb-6 space-x-2">
                     <div
-                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                        entry.activeColumn === "country"
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                        entry.activeColumn === "country" || entry.country
                           ? "bg-blue-500"
-                          : entry.country
-                            ? "bg-green-500"
-                            : "bg-gray-300"
+                          : "bg-gray-300"
                       }`}
                     />
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
                     <div
-                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                        entry.activeColumn === "dates"
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                        entry.activeColumn === "dates" || (entry.startDate && entry.endDate)
                           ? "bg-blue-500"
-                          : (entry.startDate && entry.endDate)
-                            ? "bg-green-500"
-                            : entry.country
-                              ? "bg-orange-400"
-                              : "bg-gray-300"
+                          : "bg-gray-300"
                       }`}
                     />
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
                     <div
-                      className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                        entry.activeColumn === "complete" ? "bg-green-500" : "bg-gray-300"
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                        entry.activeColumn === "complete" || (entry.country && entry.startDate && entry.endDate)
+                          ? "bg-blue-500"
+                          : "bg-gray-300"
                       }`}
                     />
                   </div>
@@ -2031,6 +2041,15 @@ export default function HomePage() {
                 </div>
               ))}
 
+              {/* Helper Text */}
+              {entries.length === 1 && !entries[0].country && (
+                <div className="text-center py-6">
+                  <p className="text-sm text-gray-500 font-dm-sans">
+                    Please select a country first
+                  </p>
+                </div>
+              )}
+
               {/* Action Button - B2C 3-Tier System */}
               {entries.length > 0 && (
                 <div className="flex justify-center pt-4">
@@ -2088,15 +2107,15 @@ export default function HomePage() {
                       <button
                         onClick={addEntry}
                         disabled={!canAddNewRow()}
-                        className={`flex items-center justify-center gap-2 transition-colors duration-200 rounded-full px-4 sm:px-6 py-2.5 sm:py-2 border min-h-[44px] touch-manipulation ${
+                        className={`flex items-center justify-center gap-2 transition-all duration-200 rounded-md px-6 py-3 min-h-[44px] touch-manipulation text-sm font-medium ${
                           canAddNewRow()
-                            ? 'hover:bg-blue-50 bg-blue-500 border-blue-500 text-white cursor-pointer hover:bg-blue-600'
-                            : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-50'
+                            ? 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 cursor-pointer'
+                            : 'bg-gray-50 border border-gray-200 cursor-not-allowed opacity-50 text-gray-400'
                         }`}
                         style={{ fontFamily: 'inherit' }}
                       >
-                        <span className={`font-medium text-sm ${canAddNewRow() ? 'text-white' : 'text-gray-400'} flex-shrink-0`}>+</span>
-                        <span className={`font-medium text-xs sm:text-sm ${canAddNewRow() ? 'text-white' : 'text-gray-400'} text-center`}>Add Another Trip</span>
+                        <Plus className="w-4 h-4" />
+                        <span>Add Another Trip</span>
                       </button>
                       {!canAddNewRow() && (
                         <div className="text-xs text-gray-500 mt-2 text-center max-w-48">

@@ -35,16 +35,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={type}
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm text-foreground shadow-sm transition-colors",
-              "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
-              "placeholder:text-muted-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+              "flex h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-all",
+              "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-gray-900",
+              "placeholder:text-gray-400",
+              "focus-visible:outline-none focus-visible:border-blue-500 focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:ring-offset-0",
               "disabled:cursor-not-allowed disabled:opacity-50",
+              "autofill:bg-white autofill:shadow-[inset_0_0_0px_1000px_rgb(255,255,255)]",
               leftIcon && "pl-10",
               rightIcon && "pr-10",
-              error && "border-red-500 focus-visible:ring-red-500/50",
+              error && "border-red-500 focus-visible:ring-red-500/30",
               // Mobile optimizations
-              "min-h-[44px] md:min-h-[36px]", // Larger touch targets on mobile
+              "min-h-[44px] md:min-h-[40px]", // Larger touch targets on mobile
               className
             )}
             ref={ref}
