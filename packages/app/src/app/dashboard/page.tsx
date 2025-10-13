@@ -226,7 +226,7 @@ export default function DashboardPage() {
   // Update entry
   const updateEntry = useCallback((id: string, field: "country" | "dates", value: any) => {
     setEntries(prev => {
-      const updated = prev.map(entry => {
+      const updated: VisaEntry[] = prev.map((entry): VisaEntry => {
         if (entry.id !== id) return entry
 
         if (field === "country") {
@@ -234,7 +234,7 @@ export default function DashboardPage() {
             ...entry,
             country: value,
             activeColumn: value ? "dates" : "country"
-          }
+          } as VisaEntry
         }
 
         if (field === "dates" && value.startDate && value.endDate) {
@@ -245,7 +245,7 @@ export default function DashboardPage() {
             endDate: value.endDate,
             days,
             activeColumn: "complete"
-          }
+          } as VisaEntry
         }
 
         return entry
@@ -267,7 +267,7 @@ export default function DashboardPage() {
 
       if (trips.length > 0) {
         const result = RobustSchengenCalculator.calculateExactCompliance(trips)
-        return updated.map(entry => ({
+        return updated.map((entry): VisaEntry => ({
           ...entry,
           daysInLast180: result.totalDaysUsed,
           daysRemaining: result.daysRemaining
@@ -788,14 +788,20 @@ export default function DashboardPage() {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         onDateRangeSelect={handleDateRangeSelect}
-        existingTrips={entries
+        disabledDates={entries
           .filter(e => e.id !== selectedEntryId && e.startDate && e.endDate)
-          .map(e => ({
-            id: e.id,
-            country: e.country,
-            startDate: e.startDate!,
-            endDate: e.endDate!
-          }))}
+          .flatMap(e => {
+            // Generate all dates in the trip range
+            const dates: Date[] = []
+            const start = e.startDate!
+            const end = e.endDate!
+            const current = new Date(start)
+            while (current <= end) {
+              dates.push(new Date(current))
+              current.setDate(current.getDate() + 1)
+            }
+            return dates
+          })}
       />
     </div>
   )
