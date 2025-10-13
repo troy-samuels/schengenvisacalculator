@@ -4,7 +4,7 @@
  * Part of premium smart alerts system
  */
 
-const CACHE_NAME = 'etias-calculator-v1'
+const CACHE_NAME = 'etias-calculator-v2-20251013'
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
