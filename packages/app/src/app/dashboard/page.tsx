@@ -178,7 +178,6 @@ export default function DashboardPage() {
       }))
 
       // Calculate compliance for all trips
-      const calculator = new RobustSchengenCalculator()
       const trips: Trip[] = convertedEntries
         .filter(e => e.startDate && e.endDate)
         .map(e => {
@@ -192,7 +191,7 @@ export default function DashboardPage() {
           }
         })
 
-      const result = calculator.calculateCompliance(trips)
+      const result = RobustSchengenCalculator.calculateExactCompliance(trips)
 
       // Update entries with calculations
       const updatedEntries = convertedEntries.map(entry => {
@@ -201,7 +200,7 @@ export default function DashboardPage() {
           return {
             ...entry,
             days,
-            daysInLast180: result.daysUsed,
+            daysInLast180: result.totalDaysUsed,
             daysRemaining: result.daysRemaining
           }
         }
@@ -253,21 +252,24 @@ export default function DashboardPage() {
       })
 
       // Recalculate compliance
-      const calculator = new RobustSchengenCalculator()
       const trips: Trip[] = updated
         .filter(e => e.country && e.startDate && e.endDate)
-        .map(e => ({
-          id: e.id,
-          country: e.country,
-          startDate: e.startDate!,
-          endDate: e.endDate!
-        }))
+        .map(e => {
+          const days = Math.ceil((e.endDate!.getTime() - e.startDate!.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          return {
+            id: e.id,
+            country: e.country,
+            startDate: e.startDate!,
+            endDate: e.endDate!,
+            days
+          }
+        })
 
       if (trips.length > 0) {
-        const result = calculator.calculateCompliance(trips)
+        const result = RobustSchengenCalculator.calculateExactCompliance(trips)
         return updated.map(entry => ({
           ...entry,
-          daysInLast180: result.daysUsed,
+          daysInLast180: result.totalDaysUsed,
           daysRemaining: result.daysRemaining
         }))
       }
@@ -321,21 +323,24 @@ export default function DashboardPage() {
       }
 
       // Recalculate
-      const calculator = new RobustSchengenCalculator()
       const trips: Trip[] = filtered
         .filter(e => e.country && e.startDate && e.endDate)
-        .map(e => ({
-          id: e.id,
-          country: e.country,
-          startDate: e.startDate!,
-          endDate: e.endDate!
-        }))
+        .map(e => {
+          const days = Math.ceil((e.endDate!.getTime() - e.startDate!.getTime()) / (1000 * 60 * 60 * 24)) + 1
+          return {
+            id: e.id,
+            country: e.country,
+            startDate: e.startDate!,
+            endDate: e.endDate!,
+            days
+          }
+        })
 
       if (trips.length > 0) {
-        const result = calculator.calculateCompliance(trips)
+        const result = RobustSchengenCalculator.calculateExactCompliance(trips)
         return filtered.map(entry => ({
           ...entry,
-          daysInLast180: result.daysUsed,
+          daysInLast180: result.totalDaysUsed,
           daysRemaining: result.daysRemaining
         }))
       }
@@ -375,14 +380,16 @@ export default function DashboardPage() {
     setIsCalendarOpen(true)
   }, [])
 
-  const handleDateRangeSelect = useCallback((range: { startDate: Date; endDate: Date }) => {
-    updateEntry(selectedEntryId, "dates", range)
-    setIsCalendarOpen(false)
+  const handleDateRangeSelect = useCallback((range: { startDate: Date | null; endDate: Date | null }) => {
+    if (range.startDate && range.endDate) {
+      updateEntry(selectedEntryId, "dates", { startDate: range.startDate, endDate: range.endDate })
+      setIsCalendarOpen(false)
 
-    // Auto-save if it's an existing trip
-    const entry = entries.find(e => e.id === selectedEntryId)
-    if (entry && !entry.id.startsWith('new-')) {
-      handleSaveTrip({ ...entry, ...range })
+      // Auto-save if it's an existing trip
+      const entry = entries.find(e => e.id === selectedEntryId)
+      if (entry && !entry.id.startsWith('new-')) {
+        handleSaveTrip({ ...entry, startDate: range.startDate, endDate: range.endDate })
+      }
     }
   }, [selectedEntryId, updateEntry, entries, handleSaveTrip])
 
