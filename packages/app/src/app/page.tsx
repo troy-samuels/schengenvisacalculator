@@ -630,7 +630,16 @@ function DataRestorationHandler({
 }
 
 export default function HomePage() {
-  const [entries, setEntries] = useState<VisaEntry[]>([])
+  const [entries, setEntries] = useState<VisaEntry[]>([{
+    id: Date.now().toString(),
+    country: "",
+    startDate: null,
+    endDate: null,
+    days: 0,
+    daysInLast180: 0,
+    daysRemaining: 90,
+    activeColumn: "country",
+  }])
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [selectedEntryId, setSelectedEntryId] = useState<string>("")
@@ -1769,21 +1778,7 @@ export default function HomePage() {
 
             {/* Calculator Rows */}
             <div className="p-6 space-y-8">
-              {entries.length === 0 && (
-                <EmptyCalculatorState
-                  canAddTrips={canAddTrips}
-                  onAddTrip={addEntry}
-                  onUpgrade={() => {
-                    if (userStatus === UserStatus.FREE) {
-                      setShowConversionModal(true)
-                    } else {
-                      setShowPremiumUpgradeModal(true)
-                      setPremiumUpgradeTrigger('unlimited_trips')
-                    }
-                  }}
-                />
-              )}
-              {entries.length > 0 && entries.map((entry, index) => (
+              {entries.map((entry, index) => (
                 <div key={entry.id} className="relative">
                   {/* Progress Indicator */}
                   <div className="flex items-center justify-center mb-4 space-x-2 relative z-20">
