@@ -7,7 +7,7 @@ import { Drawer } from 'vaul'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import type { OccupiedDateInfo } from '../../validators/date-overlap-validator'
-import type { CalendarDateRange } from '../../types/calendar'
+import type { CalendarDateRange, CalendarDateInsight, CalendarDateStatus } from '../../types/calendar'
 
 export interface MobileCalendarDrawerProps {
   /** Whether the drawer is open */
@@ -28,6 +28,8 @@ export interface MobileCalendarDrawerProps {
   maxDate?: Date
   /** Additional className */
   className?: string
+  /** Function returning insight data for a calendar date */
+  getDateInsight?: (date: Date) => CalendarDateInsight | null
 }
 
 export function MobileCalendarDrawer({
@@ -39,13 +41,48 @@ export function MobileCalendarDrawer({
   occupiedDateInfo = [],
   minDate,
   maxDate,
-  className
+  className,
+  getDateInsight
 }: MobileCalendarDrawerProps) {
   const [selectedRange, setSelectedRange] = useState<CalendarDateRange>(
     initialRange || { startDate: null, endDate: null }
   )
   const [selectingEnd, setSelectingEnd] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [activeInsight, setActiveInsight] = useState<CalendarDateInsight | null>(null)
+
+  const STATUS_STYLES: Record<CalendarDateStatus, { bg: string; text: string; border: string; label: string }> = {
+    used: {
+      bg: 'bg-red-100 text-red-800 border-red-200',
+      text: 'text-red-800',
+      border: 'border-red-200',
+      label: 'Days already used'
+    },
+    blocked: {
+      bg: 'bg-red-200 text-red-900 border-red-300',
+      text: 'text-red-900',
+      border: 'border-red-300',
+      label: 'Cannot enter - 0 days remaining'
+    },
+    partial: {
+      bg: 'bg-amber-100 text-amber-800 border-amber-200',
+      text: 'text-amber-800',
+      border: 'border-amber-200',
+      label: '< 90 days remaining'
+    },
+    available: {
+      bg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      text: 'text-emerald-800',
+      border: 'border-emerald-200',
+      label: 'Full 90 days available'
+    },
+    past: {
+      bg: 'bg-gray-100 text-gray-500 border-gray-200',
+      text: 'text-gray-500',
+      border: 'border-gray-200',
+      label: 'Historical day'
+    }
+  }
 
   // Generate months: 12 months back + 12 months forward from current date (25 months total)
   const months = useMemo(() => {
@@ -95,8 +132,13 @@ export function MobileCalendarDrawer({
     if (isOpen) {
       setSelectedRange(initialRange || { startDate: null, endDate: null })
       setSelectingEnd(false)
+      if (initialRange?.startDate && getDateInsight) {
+        setActiveInsight(getDateInsight(initialRange.startDate))
+      } else {
+        setActiveInsight(null)
+      }
     }
-  }, [isOpen, initialRange])
+  }, [isOpen, initialRange, getDateInsight])
 
   // Auto-scroll to current month when drawer opens
   useEffect(() => {
@@ -251,6 +293,9 @@ export function MobileCalendarDrawer({
       setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
       console.log('📱 ✓ Start date set:', format(cleanDate, 'yyyy-MM-dd'))
+      if (getDateInsight) {
+        setActiveInsight(getDateInsight(cleanDate))
+      }
     } else if (!selectedRange.endDate) {
       // Second click: set end date or reset
       if (cleanDate.getTime() === selectedRange.startDate.getTime()) {
@@ -262,17 +307,26 @@ export function MobileCalendarDrawer({
         setSelectedRange({ ...selectedRange, endDate: cleanDate })
         setSelectingEnd(false)
         console.log('📱 ✓ End date set:', format(cleanDate, 'yyyy-MM-dd'))
+        if (getDateInsight) {
+          setActiveInsight(getDateInsight(cleanDate))
+        }
       } else {
         // Before start date - reset with new start
         setSelectedRange({ startDate: cleanDate, endDate: null })
         setSelectingEnd(true)
         console.log('📱 ↺ Reset with new start:', format(cleanDate, 'yyyy-MM-dd'))
+        if (getDateInsight) {
+          setActiveInsight(getDateInsight(cleanDate))
+        }
       }
     } else {
       // Both dates already selected - reset with new start
       setSelectedRange({ startDate: cleanDate, endDate: null })
       setSelectingEnd(true)
       console.log('📱 ↺ New selection started:', format(cleanDate, 'yyyy-MM-dd'))
+      if (getDateInsight) {
+        setActiveInsight(getDateInsight(cleanDate))
+      }
     }
   }
 
@@ -385,55 +439,68 @@ export function MobileCalendarDrawer({
             const rangeStart = isRangeStart(date, monthDate)
             const rangeEnd = isRangeEnd(date, monthDate)
             const today = isToday(date)
+            const insight = getDateInsight ? getDateInsight(date) : null
+            const statusStyle =
+              insight && !inRange && !rangeStart && !rangeEnd && !occupied && !disabled && isCurrentMonth
+                ? STATUS_STYLES[insight.status]
+                : null
+
+            let explicitColor: string | undefined
+            if (!statusStyle) {
+              if ((rangeStart || rangeEnd) && !occupied) {
+                explicitColor = '#ffffff'
+              } else if (occupied) {
+                explicitColor = '#4b5563'
+              } else if (disabled) {
+                explicitColor = '#e5e7eb'
+              } else if (!isCurrentMonth) {
+                explicitColor = '#6b7280'
+              } else if (today) {
+                explicitColor = '#1e3a8a'
+              } else {
+                explicitColor = '#111827'
+              }
+            }
+
+            const title = insight
+              ? [
+                  format(date, 'MMMM d, yyyy'),
+                  `Remaining: ${Math.max(0, insight.daysRemaining)} days`,
+                  `Max stay: ${insight.maxStay} days`,
+                  insight.message
+                ]
+                  .filter(Boolean)
+                  .join(' • ')
+              : occupied && occupiedInfo
+              ? `Already used by ${occupiedInfo.country} trip`
+              : undefined
 
             return (
               <button
                 key={`${format(monthDate, 'yyyy-MM')}-${index}`}
                 onClick={() => {
-                  // Allow clicks on any non-disabled, non-occupied date (past, present, future)
                   if (!disabled && !occupied) {
-                    console.log('📱 Selecting date:', format(date, 'yyyy-MM-dd'), 'from month:', format(monthDate, 'MMMM'))
                     handleDateClick(date)
-                  } else {
-                    console.log('📱 Click blocked - disabled:', disabled, 'occupied:', occupied)
                   }
                 }}
                 disabled={disabled || occupied}
-                title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
+                title={title}
                 className={cn(
-                  // Airbnb-style: 44px touch targets, clean design
-                  "h-11 w-11 text-sm font-medium transition-all duration-150 relative",
-                  "flex items-center justify-center",
+                  "relative flex h-11 w-11 items-center justify-center text-sm font-medium transition-all duration-150",
                   {
-                    // All valid dates styling - clickable (current, past, future months)
                     "text-gray-900 !text-gray-900 hover:bg-gray-100 hover:rounded-full focus:outline-none focus:ring-1 focus:ring-black cursor-pointer":
                       !disabled && !occupied && !inRange,
-
-                    // Other month dates that are outside valid range - lighter but still clickable
-                    "text-gray-500 !text-gray-500":
-                      !isCurrentMonth && !disabled && !occupied,
-
-                    // Disabled styling
+                    "text-gray-500 !text-gray-500": !isCurrentMonth && !disabled && !occupied,
                     "text-gray-200 cursor-not-allowed !text-gray-200": disabled,
-
-                    // Occupied styling (CLAUDE.md requirement: grey + strikethrough)
                     "bg-gray-200 text-gray-600 cursor-not-allowed opacity-60 !text-gray-600": occupied,
-
-                    // Range start and end styling - clear black circles
-                    "bg-black text-white rounded-full font-semibold !text-white":
-                      (rangeStart || rangeEnd) && !occupied,
-
-                    // Range middle styling - light background
-                    "bg-gray-100 text-gray-900 !text-gray-900":
-                      inRange && !rangeStart && !rangeEnd && !occupied,
-                  }
+                    "bg-black text-white rounded-full font-semibold !text-white": (rangeStart || rangeEnd) && !occupied,
+                    "bg-gray-100 text-gray-900 !text-gray-900": inRange && !rangeStart && !rangeEnd && !occupied
+                  },
+                  statusStyle && !inRange && !rangeStart && !rangeEnd
+                    ? `${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} border`
+                    : undefined
                 )}
-                style={{
-                  color: (rangeStart || rangeEnd) && !occupied ? 'white' :
-                         occupied ? '#4b5563' :
-                         disabled ? '#e5e7eb' :
-                         !isCurrentMonth ? '#6b7280' : '#111827'
-                }}
+                style={explicitColor ? { color: explicitColor } : undefined}
               >
                 <span className={occupied ? "line-through" : ""}>
                   {date.getDate()}
@@ -513,6 +580,45 @@ export function MobileCalendarDrawer({
                 })}
               </div>
             </div>
+          </div>
+
+          {activeInsight && (
+            <div className="mx-6 mb-4 mt-2 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">{format(activeInsight.date, 'EEEE, MMM d')}</p>
+                  <p className="text-xs text-blue-700">
+                    180-day window: {format(activeInsight.windowStart, 'MMM d')} – {format(activeInsight.windowEnd, 'MMM d')}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Days remaining</p>
+                  <p className="text-lg font-semibold text-gray-900">{Math.max(0, activeInsight.daysRemaining)}</p>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-gray-600">
+                <div className="rounded-lg border border-white/60 bg-white/70 p-3">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400">Max stay</p>
+                  <p className="text-sm font-semibold text-gray-800">{activeInsight.maxStay} days</p>
+                </div>
+                <div className="rounded-lg border border-white/60 bg-white/70 p-3">
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400">Status</p>
+                  <p className="text-sm font-semibold text-gray-800">{STATUS_STYLES[activeInsight.status].label}</p>
+                </div>
+              </div>
+              {activeInsight.message && (
+                <p className="mt-3 text-xs text-gray-600">{activeInsight.message}</p>
+              )}
+            </div>
+          )}
+
+          <div className="mx-6 mb-4 grid grid-cols-2 gap-3 text-xs text-gray-600">
+            {Object.entries(STATUS_STYLES).map(([key, value]) => (
+              <div key={key} className="flex items-center gap-2">
+                <span className={cn("h-3 w-3 rounded-full border", value.bg, value.border)} />
+                <span>{value.label}</span>
+              </div>
+            ))}
           </div>
 
           {/* Footer */}

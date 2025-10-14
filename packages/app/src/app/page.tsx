@@ -25,7 +25,7 @@ import {
 } from '@schengen/ui'
 import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { format, isFuture, addDays, differenceInCalendarDays } from 'date-fns'
+import { format, isFuture, addDays, differenceInCalendarDays, startOfDay, isBefore, isWithinInterval } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '../lib/supabase/client'
@@ -36,10 +36,10 @@ import { UserStatus } from '../lib/types/user-status'
 import { TripData } from '../lib/services/trip-data'
 import { TripEntry } from '../lib/types/schengen-trip'
 import { StrategicAdPlacement, AdFreeBadge } from '../lib/components/DisplayAdvertising'
-import { SmartAlertsPanel } from '../lib/components/SmartAlertsPanel'
 import { AITravelAssistant } from '../lib/components/AITravelAssistant'
 import { AffiliateWidgets } from '../lib/components/AffiliateWidgets'
 import { useIntelligentBackground } from '../lib/hooks/useIntelligentBackground'
+import { SmartOverstayAlerts } from '../lib/components/SmartOverstayAlerts'
 
 // Date range type for app state
 type AppDateRange = { startDate: Date | null; endDate: Date | null }
@@ -56,6 +56,18 @@ interface VisaEntry {
   daysInLast180: number
   daysRemaining: number
   activeColumn: "country" | "dates" | "complete" | null
+}
+
+type CalendarStatus = 'used' | 'available' | 'partial' | 'blocked' | 'past'
+
+interface CalendarInsight {
+  date: Date
+  status: CalendarStatus
+  daysRemaining: number
+  maxStay: number
+  windowStart: Date
+  windowEnd: Date
+  message?: string
 }
 
 const schengenCountries = [
@@ -1674,6 +1686,262 @@ export default function HomePage() {
   const disabledDates = useMemo(() => getDisabledDates(), [getDisabledDates])
   const occupiedDateInfo = useMemo(() => getOccupiedDateInfo(), [getOccupiedDateInfo])
 
+  const dateInsightCache = useRef<Map<string, CalendarInsight>>(new Map())
+
+  useEffect(() => {
+    dateInsightCache.current.clear()
+  }, [tripsForCalculation])
+
+  const getDateInsight = useCallback(
+    (rawDate: Date): CalendarInsight => {
+      const baseDate = startOfDay(rawDate)
+      const cacheKey = baseDate.toISOString()
+      const cached = dateInsightCache.current.get(cacheKey)
+      if (cached) {
+        return cached
+      }
+
+      const now = startOfDay(new Date())
+      const isPast = isBefore(baseDate, now)
+      const hasTrips = tripsForCalculation.length > 0
+
+      const complianceAtDate = hasTrips
+        ? RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, baseDate)
+        : {
+            totalDaysUsed: 0,
+            daysRemaining: 90,
+            isCompliant: true,
+            overstayDays: 0,
+            referenceDate: baseDate,
+            periodStart: addDays(baseDate, -179),
+            periodEnd: baseDate,
+            detailedBreakdown: []
+          }
+
+      const maxStay = Math.max(
+        0,
+        RobustSchengenCalculator.calculateMaxConsecutiveDays(tripsForCalculation, baseDate)
+      )
+
+      const isTripDay = tripsForCalculation.some(trip => {
+        const tripStart = startOfDay(trip.startDate)
+        const tripEnd = startOfDay(trip.endDate)
+        return isWithinInterval(baseDate, { start: tripStart, end: tripEnd })
+      })
+
+      let status: CalendarStatus
+      let message: string | undefined
+
+      if (isTripDay) {
+        status = 'used'
+        message = isPast
+          ? 'You were in the Schengen Area on this day.'
+          : 'Trip already scheduled on this day.'
+      } else if (isPast) {
+        status = 'past'
+        message = 'Historical day outside your current planning window.'
+      } else if (complianceAtDate.daysRemaining <= 0) {
+        status = 'blocked'
+        message = 'Entering on this date would exceed the 90/180-day rule.'
+      } else if (complianceAtDate.daysRemaining < 90) {
+        status = 'partial'
+        message = `Only ${complianceAtDate.daysRemaining} day${
+          complianceAtDate.daysRemaining === 1 ? '' : 's'
+        } remain if you enter on this date.`
+      } else {
+        status = 'available'
+        message = 'You have the full 90-day allowance from this date.'
+      }
+
+      const insight: CalendarInsight = {
+        date: baseDate,
+        status,
+        daysRemaining: complianceAtDate.daysRemaining,
+        maxStay,
+        windowStart: complianceAtDate.periodStart,
+        windowEnd: complianceAtDate.periodEnd,
+        message
+      }
+
+      dateInsightCache.current.set(cacheKey, insight)
+      return insight
+    },
+    [tripsForCalculation]
+  )
+
+  const rollingTimeline = useMemo(() => {
+    if (tripsForCalculation.length === 0) return []
+    const sorted = [...tripsForCalculation].sort(
+      (a, b) => a.endDate.getTime() - b.endDate.getTime()
+    )
+
+    return sorted.map((trip, index) => {
+      const subset = sorted.slice(0, index + 1)
+      const complianceAtEnd = RobustSchengenCalculator.calculateExactCompliance(subset, trip.endDate)
+      return {
+        date: trip.endDate,
+        daysUsed: complianceAtEnd.totalDaysUsed,
+        daysRemaining: complianceAtEnd.daysRemaining
+      }
+    })
+  }, [tripsForCalculation])
+
+  const today = startOfDay(new Date())
+
+  const todayMaxStay = useMemo(() => {
+    return Math.max(
+      0,
+      RobustSchengenCalculator.calculateMaxConsecutiveDays(tripsForCalculation, today)
+    )
+  }, [tripsForCalculation, today])
+
+  const nextFullResetDate = useMemo(() => {
+    const today = startOfDay(new Date())
+    if (tripsForCalculation.length === 0) return today
+
+    for (let offset = 0; offset <= 365; offset++) {
+      const testDate = addDays(today, offset)
+      const complianceSnapshot = RobustSchengenCalculator.calculateExactCompliance(tripsForCalculation, testDate)
+      if (complianceSnapshot.daysRemaining >= 90) {
+        return testDate
+      }
+    }
+
+    return addDays(today, 365)
+  }, [tripsForCalculation])
+
+  const optimalReentry = useMemo(() => {
+    if (tripsForCalculation.length === 0) {
+      return { date: today, maxStay: 90 }
+    }
+
+    for (let offset = 0; offset <= 365; offset++) {
+      const testDate = addDays(today, offset)
+      const maxStay = RobustSchengenCalculator.calculateMaxConsecutiveDays(tripsForCalculation, testDate)
+      if (maxStay >= 90) {
+        return { date: testDate, maxStay }
+      }
+    }
+
+    const fallbackDate = addDays(today, 30)
+    return {
+      date: fallbackDate,
+      maxStay: Math.max(
+        0,
+        RobustSchengenCalculator.calculateMaxConsecutiveDays(tripsForCalculation, fallbackDate)
+      )
+    }
+  }, [tripsForCalculation, today])
+
+  const currentTrip = useMemo(() => {
+    return tripsForCalculation.find(trip =>
+      isWithinInterval(today, {
+        start: startOfDay(trip.startDate),
+        end: startOfDay(trip.endDate)
+      })
+    )
+  }, [today, tripsForCalculation])
+
+  const overstayAlert = useMemo(() => {
+    if (tripsForCalculation.length === 0) return null
+
+    const daysRemaining = compliance.daysRemaining
+    const totalDaysUsed = compliance.totalDaysUsed
+    const latestSafeDeparture =
+      daysRemaining >= 0 ? addDays(today, daysRemaining) : today
+
+    if (!compliance.isCompliant) {
+      return {
+        severity: 'critical' as const,
+        heading: 'Immediate Action Required',
+        message: `You have exceeded the 90-day allowance by ${Math.abs(daysRemaining)} day${
+          Math.abs(daysRemaining) === 1 ? '' : 's'
+        }. Leave the Schengen Area immediately to avoid fines, deportation, or entry bans.`,
+        daysRemaining,
+        totalDaysUsed,
+        latestSafeDeparture: today,
+        nextResetDate: nextFullResetDate,
+        optimalReturnDate: optimalReentry.date,
+        maxStayIfEnterToday: todayMaxStay
+      }
+    }
+
+    if (daysRemaining <= 5) {
+      return {
+        severity: 'critical' as const,
+        heading: currentTrip
+          ? 'Depart Within the Next Few Days'
+          : 'Critical: Schengen Allowance Almost Exhausted',
+        message: currentTrip
+          ? `You are currently in the Schengen Area with only ${daysRemaining} day${
+              daysRemaining === 1 ? '' : 's'
+            } remaining. Book your departure before ${format(
+              latestSafeDeparture,
+              'MMM d'
+            )} to avoid penalties up to €500 and multi-year entry bans.`
+          : `Only ${daysRemaining} day${
+              daysRemaining === 1 ? '' : 's'
+            } remain in your allowance. Do not enter the Schengen Area unless you can exit by ${format(
+              latestSafeDeparture,
+              'MMM d'
+            )}.`,
+        daysRemaining,
+        totalDaysUsed,
+        latestSafeDeparture,
+        nextResetDate: nextFullResetDate,
+        optimalReturnDate: optimalReentry.date,
+        maxStayIfEnterToday: todayMaxStay
+      }
+    }
+
+    if (daysRemaining <= 15) {
+      return {
+        severity: 'warning' as const,
+        heading: 'Plan Your Exit Now',
+        message: `You have ${daysRemaining} days left in the Schengen Area. ${
+          currentTrip
+            ? `Plan to leave by ${format(latestSafeDeparture, 'MMM d')} and avoid adding extra days.`
+            : 'Any new trips must be short and carefully scheduled.'
+        }`,
+        daysRemaining,
+        totalDaysUsed,
+        latestSafeDeparture,
+        nextResetDate: nextFullResetDate,
+        optimalReturnDate: optimalReentry.date,
+        maxStayIfEnterToday: todayMaxStay
+      }
+    }
+
+    if (daysRemaining <= 30) {
+      return {
+        severity: 'caution' as const,
+        heading: 'Monitor Your 90/180 Usage',
+        message: `You have ${daysRemaining} days remaining. Review your timeline and plan recovery days so you regain the full allowance by ${format(
+          nextFullResetDate,
+          'MMM d'
+        )}.`,
+        daysRemaining,
+        totalDaysUsed,
+        latestSafeDeparture,
+        nextResetDate: nextFullResetDate,
+        optimalReturnDate: optimalReentry.date,
+        maxStayIfEnterToday: todayMaxStay
+      }
+    }
+
+    return null
+  }, [
+    tripsForCalculation.length,
+    compliance.daysRemaining,
+    compliance.isCompliant,
+    compliance.totalDaysUsed,
+    nextFullResetDate,
+    optimalReentry.date,
+    todayMaxStay,
+    today,
+    currentTrip
+  ])
+
   return (
     <div className="min-h-screen font-dm-sans bg-gray-50">
       {/* Header Navigation */}
@@ -1759,7 +2027,21 @@ export default function HomePage() {
 
       {/* Calculator Section */}
       <section ref={calculatorRef} className="pb-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {overstayAlert && (
+            <SmartOverstayAlerts
+              severity={overstayAlert.severity}
+              heading={overstayAlert.heading}
+              message={overstayAlert.message}
+              daysRemaining={overstayAlert.daysRemaining}
+              totalDaysUsed={overstayAlert.totalDaysUsed}
+              latestSafeDeparture={overstayAlert.latestSafeDeparture}
+              nextResetDate={overstayAlert.nextResetDate}
+              optimalReturnDate={overstayAlert.optimalReturnDate}
+              maxStayIfEnterToday={overstayAlert.maxStayIfEnterToday}
+              onPlanTrip={scrollToCalculator}
+            />
+          )}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
             {/* Column Headers - Desktop */}
             <div
@@ -2169,36 +2451,94 @@ export default function HomePage() {
                 )}
                 </div>
               )}
+
+              {(rollingTimeline.length > 0 || tripsForCalculation.length > 0) && (
+                <div className="mt-10 grid gap-6 md:grid-cols-2">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
+                    <h3 className="text-lg font-semibold text-blue-900">Rolling 180-Day Timeline</h3>
+                    <p className="mt-1 text-sm text-blue-700">
+                      Track how each trip influences your allowance over time.
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      {rollingTimeline.length === 0 ? (
+                        <p className="text-sm text-blue-700">
+                          Add completed trips to visualize how your 90/180 window evolves.
+                        </p>
+                      ) : (
+                        rollingTimeline.slice(-6).map(item => (
+                          <div key={item.date.toISOString()}>
+                            <div className="flex items-center justify-between text-xs text-blue-900">
+                              <span className="font-medium">{format(item.date, 'MMM d, yyyy')}</span>
+                              <span>
+                                {item.daysUsed}d used • {item.daysRemaining}d left
+                              </span>
+                            </div>
+                            <div className="mt-1 h-2 w-full rounded-full bg-white/70">
+                              <div
+                                className="h-full rounded-full bg-blue-500 transition-all"
+                                style={{ width: `${Math.min(100, (item.daysUsed / 90) * 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
+                    <h3 className="text-lg font-semibold text-emerald-900">Re-entry Planner</h3>
+                    <p className="mt-1 text-sm text-emerald-700">
+                      Instantly see when you regain days and how long you can stay.
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-emerald-900">
+                      <div className="rounded-lg border border-white/60 bg-white/70 p-3">
+                        <p className="text-[11px] uppercase tracking-wide text-emerald-500">Enter today</p>
+                        <p className="text-base font-semibold">{todayMaxStay} day{todayMaxStay === 1 ? '' : 's'}</p>
+                      </div>
+                      <div className="rounded-lg border border-white/60 bg-white/70 p-3">
+                        <p className="text-[11px] uppercase tracking-wide text-emerald-500">Full reset</p>
+                        <p className="text-base font-semibold">{format(nextFullResetDate, 'MMM d, yyyy')}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-emerald-200 bg-white/80 p-4 text-sm text-emerald-900">
+                      <p className="font-semibold">
+                        Optimal re-entry:{' '}
+                        {format(optimalReentry.date, 'MMM d, yyyy')}
+                      </p>
+                      <p className="mt-1 text-emerald-700">
+                        Stay up to {optimalReentry.maxStay} day{optimalReentry.maxStay === 1 ? '' : 's'} without breaking compliance.
+                      </p>
+                    </div>
+                    <p className="mt-3 text-xs text-emerald-700">
+                      Tip: Enter after {format(nextFullResetDate, 'MMM d, yyyy')} to regain the full 90-day allowance instantly.
+                    </p>
+                  </div>
+                </div>
+              )}
                 </div>
               </div>
         </div>
       </section>
 
-
-      {/* TODO: Smart Alerts Panel - Temporarily Hidden Until Feature Redesign */}
       {/*
-      <section className="py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <SmartAlertsPanel
-            userStatus={userStatus}
-            trips={tripsForCalculation.map(trip => ({
-              ...trip,
-              startDate: trip.startDate,
-              endDate: trip.endDate,
-              purpose: 'Tourism' // Default purpose
-            }))}
-            upcomingTrips={tripsForCalculation.filter(trip => 
-              trip.startDate > new Date()
-            ).map(trip => ({
-              ...trip,
-              startDate: trip.startDate,
-              endDate: trip.endDate,
-              purpose: 'Tourism'
-            }))}
-            userEmail={user?.email}
-          />
-        </div>
-      </section>
+        RETIRED: SmartAlertsPanel (October 2025)
+
+        Decision: Retired in favor of single-system approach with SmartOverstayAlerts as the sole alert UI.
+
+        Rationale:
+        - Feature duplication: Both showed identical compliance warnings
+        - UX confusion: Two alert systems showing the same data
+        - Premium value misdirection: Real value is proactive email delivery, not duplicate UI
+
+        Future Enhancement Path:
+        - Keep SmartOverstayAlerts as ONLY alert display (all users)
+        - Add premium email/SMS delivery for proactive notifications
+        - Add alert history in Dashboard (premium only)
+        - Simpler to maintain, clearer UX, better premium positioning
+
+        Component files preserved in codebase for reference:
+        - packages/app/src/lib/components/SmartAlertsPanel.tsx
+        - packages/app/src/lib/services/smart-alerts.ts
       */}
 
       {/* TODO: AI Travel Assistant - Temporarily Hidden Until Feature Redesign */}
@@ -2348,6 +2688,7 @@ export default function HomePage() {
         occupiedDateInfo={occupiedDateInfo}
         minDate={new Date(new Date().getFullYear() - 10, 0, 1)} // 10 years ago
         maxDate={new Date(new Date().getFullYear() + 5, 11, 31)} // 5 years in future
+        getDateInsight={getDateInsight}
         />
 
       {/* Conversion Modal */}

@@ -9,7 +9,7 @@ import { Button } from './button'
 import { useIsMobile } from '../../hooks/useMediaQuery'
 import { MobileCalendarDrawer } from './mobile-calendar-drawer'
 import type { OccupiedDateInfo } from '../../validators/date-overlap-validator'
-import type { CalendarDateRange } from '../../types/calendar'
+import type { CalendarDateRange, CalendarDateInsight, CalendarDateStatus } from '../../types/calendar'
 
 // Re-export for backward compatibility
 export type { CalendarDateRange }
@@ -33,6 +33,8 @@ export interface CalendarModalProps {
   maxDate?: Date
   /** Additional className */
   className?: string
+  /** Function returning insight data for a calendar date */
+  getDateInsight?: (date: Date) => CalendarDateInsight | null
 }
 
 export function CalendarModal({
@@ -44,7 +46,8 @@ export function CalendarModal({
   occupiedDateInfo = [],
   minDate,
   maxDate,
-  className
+  className,
+  getDateInsight
 }: CalendarModalProps) {
   const isMobile = useIsMobile()
 
@@ -61,6 +64,7 @@ export function CalendarModal({
         minDate={minDate}
         maxDate={maxDate}
         className={className}
+        getDateInsight={getDateInsight}
       />
     )
   }
@@ -71,12 +75,46 @@ export function CalendarModal({
     onClose={onClose}
     onDateRangeSelect={onDateRangeSelect}
     initialRange={initialRange || { startDate: null, endDate: null }}
-    disabledDates={disabledDates}
-    occupiedDateInfo={occupiedDateInfo}
-    minDate={minDate}
-    maxDate={maxDate}
-    className={className}
-  />
+  disabledDates={disabledDates}
+  occupiedDateInfo={occupiedDateInfo}
+  minDate={minDate}
+  maxDate={maxDate}
+  className={className}
+  getDateInsight={getDateInsight}
+/>
+}
+
+const STATUS_STYLES: Record<CalendarDateStatus, { bg: string; text: string; border: string; label: string }> = {
+  used: {
+    bg: 'bg-red-100 text-red-800 border-red-200',
+    text: 'text-red-800',
+    border: 'border-red-200',
+    label: 'Days already used'
+  },
+  blocked: {
+    bg: 'bg-red-200 text-red-900 border-red-300',
+    text: 'text-red-900',
+    border: 'border-red-300',
+    label: 'Cannot enter - 0 days remaining'
+  },
+  partial: {
+    bg: 'bg-amber-100 text-amber-800 border-amber-200',
+    text: 'text-amber-800',
+    border: 'border-amber-200',
+    label: '< 90 days remaining'
+  },
+  available: {
+    bg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    text: 'text-emerald-800',
+    border: 'border-emerald-200',
+    label: 'Full 90 days available'
+  },
+  past: {
+    bg: 'bg-gray-100 text-gray-500 border-gray-200',
+    text: 'text-gray-500',
+    border: 'border-gray-200',
+    label: 'Historical day'
+  }
 }
 
 // Desktop modal component (extracted from existing code)
@@ -89,7 +127,8 @@ function DesktopCalendarModal({
   occupiedDateInfo = [],
   minDate,
   maxDate,
-  className
+  className,
+  getDateInsight
 }: {
   isOpen: boolean
   onClose: () => void
@@ -100,6 +139,7 @@ function DesktopCalendarModal({
   minDate?: Date
   maxDate?: Date
   className?: string
+  getDateInsight?: (date: Date) => CalendarDateInsight | null
 }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [selectedRange, setSelectedRange] = useState<CalendarDateRange>(
@@ -277,15 +317,53 @@ function DesktopCalendarModal({
             const rangeStart = isRangeStart(date)
             const rangeEnd = isRangeEnd(date)
             const today = isToday(date)
+            const insight = getDateInsight ? getDateInsight(date) : null
+            const statusStyle =
+              insight && !inRange && !rangeStart && !rangeEnd && !occupied && !disabled && isCurrentMonth
+                ? STATUS_STYLES[insight.status]
+                : null
+
+            const tooltipLabel = insight
+              ? [
+                  format(date, 'MMMM d, yyyy'),
+                  insight.status === 'past'
+                    ? 'Historical day'
+                    : `Days remaining: ${Math.max(0, insight.daysRemaining)}`,
+                  `Max stay: ${insight.maxStay} day${insight.maxStay === 1 ? '' : 's'}`,
+                  insight.message
+                ]
+                  .filter(Boolean)
+                  .join(' • ')
+              : occupied && occupiedInfo
+              ? `Already used by ${occupiedInfo.country} trip`
+              : undefined
+
+            let explicitColor: string | undefined
+
+            if (!statusStyle) {
+              if ((rangeStart || rangeEnd) && !occupied) {
+                explicitColor = '#ffffff'
+              } else if (today && !inRange && !occupied && isCurrentMonth) {
+                explicitColor = '#1e3a8a'
+              } else if (occupied && isCurrentMonth) {
+                explicitColor = '#4b5563'
+              } else if (disabled) {
+                explicitColor = '#d1d5db'
+              } else if (!isCurrentMonth) {
+                explicitColor = '#9ca3af'
+              } else {
+                explicitColor = '#111827'
+              }
+            }
 
             return (
               <button
                 key={index}
                 onClick={() => handleDateClick(date)}
                 disabled={disabled || !isCurrentMonth || occupied}
-                title={occupied && occupiedInfo ? `Already used by ${occupiedInfo.country} trip` : undefined}
+                title={tooltipLabel}
                 className={cn(
-                  "h-10 w-10 text-sm font-medium rounded-lg transition-colors relative border border-transparent",
+                  "group h-10 w-10 text-sm font-medium rounded-lg transition-colors relative border border-transparent",
                   "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50",
                   {
                     // Current month styling - force readable text
@@ -309,18 +387,33 @@ function DesktopCalendarModal({
                     "hover:bg-primary/10": !disabled && !inRange && !occupied && isCurrentMonth,
                     "hover:bg-primary/90": (rangeStart || rangeEnd) && !disabled && !occupied,
                   }
+                ,
+                statusStyle && !inRange && !rangeStart && !rangeEnd
+                  ? `${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} border`
+                  : undefined
                 )}
-                style={{
-                  color: (rangeStart || rangeEnd) && !occupied ? 'white' :
-                         today && !inRange && !occupied && isCurrentMonth ? '#1e3a8a' :
-                         occupied && isCurrentMonth ? '#4b5563' :
-                         disabled ? '#d1d5db' :
-                         !isCurrentMonth ? '#9ca3af' : '#111827'
-                }}
+                style={explicitColor ? { color: explicitColor } : undefined}
               >
                 <span className={occupied ? "line-through" : ""}>
                   {date.getDate()}
                 </span>
+                {insight && (
+                  <div className="pointer-events-none absolute -top-2 left-1/2 z-20 hidden w-44 -translate-x-1/2 -translate-y-full rounded-lg bg-white p-2 text-left text-xs text-gray-700 shadow-lg ring-1 ring-black/5 group-hover:block">
+                    <p className="font-semibold text-gray-900">{format(date, 'EEEE, MMM d')}</p>
+                    <p className="mt-1 text-gray-600">
+                      Remaining: <span className="font-medium">{Math.max(0, insight.daysRemaining)} days</span>
+                    </p>
+                    <p className="text-gray-600">
+                      Max stay: <span className="font-medium">{insight.maxStay} days</span>
+                    </p>
+                    {insight.message && (
+                      <p className="mt-1 text-gray-500">{insight.message}</p>
+                    )}
+                    <p className="mt-1 text-[10px] uppercase tracking-wide text-gray-400">
+                      180-day window: {format(insight.windowStart, 'MMM d')} – {format(insight.windowEnd, 'MMM d')}
+                    </p>
+                  </div>
+                )}
               </button>
             )
           })}
@@ -401,6 +494,16 @@ function DesktopCalendarModal({
             >
               <ChevronRight className="h-6 w-6 text-gray-600 group-hover:text-gray-900" />
             </button>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-6 grid grid-cols-2 gap-3 text-sm text-gray-600 md:grid-cols-4">
+            {Object.entries(STATUS_STYLES).map(([key, value]) => (
+              <div key={key} className="flex items-center gap-2">
+                <span className={cn("h-3 w-3 rounded-full border", value.bg, value.border)} />
+                <span className="text-xs font-medium text-gray-600">{value.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
