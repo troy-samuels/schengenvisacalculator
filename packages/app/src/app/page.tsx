@@ -23,7 +23,7 @@ import {
   Footer,
   AccuracyVerificationBadge
 } from '@schengen/ui'
-import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown, Trash2 } from 'lucide-react'
+import { Calendar, ChevronRight, Plus, Save, Star, ChevronDown, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { format, isFuture, addDays, differenceInCalendarDays, startOfDay, isBefore, isWithinInterval } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -733,6 +733,7 @@ export default function HomePage() {
 
   const supabase = createClient()
   const [showConversionModal, setShowConversionModal] = useState(false)
+  const [showReentryModal, setShowReentryModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showAccountCreationModal, setShowAccountCreationModal] = useState(false)
   const [showPremiumUpgradeModal, setShowPremiumUpgradeModal] = useState(false)
@@ -1769,23 +1770,6 @@ export default function HomePage() {
     [tripsForCalculation]
   )
 
-  const rollingTimeline = useMemo(() => {
-    if (tripsForCalculation.length === 0) return []
-    const sorted = [...tripsForCalculation].sort(
-      (a, b) => a.endDate.getTime() - b.endDate.getTime()
-    )
-
-    return sorted.map((trip, index) => {
-      const subset = sorted.slice(0, index + 1)
-      const complianceAtEnd = RobustSchengenCalculator.calculateExactCompliance(subset, trip.endDate)
-      return {
-        date: trip.endDate,
-        daysUsed: complianceAtEnd.totalDaysUsed,
-        daysRemaining: complianceAtEnd.daysRemaining
-      }
-    })
-  }, [tripsForCalculation])
-
   const today = startOfDay(new Date())
 
   const todayMaxStay = useMemo(() => {
@@ -1832,6 +1816,12 @@ export default function HomePage() {
       )
     }
   }, [tripsForCalculation, today])
+
+  const latestSafeDepartureDate = useMemo(() => {
+    if (tripsForCalculation.length === 0) return null
+    if (compliance.daysRemaining <= 0) return today
+    return addDays(today, compliance.daysRemaining)
+  }, [tripsForCalculation.length, compliance.daysRemaining, today])
 
   const currentTrip = useMemo(() => {
     return tripsForCalculation.find(trip =>
@@ -1994,23 +1984,8 @@ export default function HomePage() {
         </motion.div>
       )}
 
-      {/* Minimal Header Section */}
-      <section className="pt-24 pb-8 px-4 bg-gray-50">
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center space-y-6">
-            {/* EES Ready Header */}
-            <h2 className="text-sm md:text-base font-dm-sans font-medium text-gray-600">
-              EES Ready • Schengen Authority • EU Border Compliance
-            </h2>
-
-            {/* Authority Badge */}
-            <div className="flex justify-center">
-              <AuthorityStatement />
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* Hero Section with H1 Tags for SEO */}
+      <HeroSection onScrollToCalculator={scrollToCalculator} />
 
       {/* TODO: Strategic Header Advertising - Temporarily Hidden Until Feature Enabled */}
       {/* 
@@ -2040,6 +2015,8 @@ export default function HomePage() {
               optimalReturnDate={overstayAlert.optimalReturnDate}
               maxStayIfEnterToday={overstayAlert.maxStayIfEnterToday}
               onPlanTrip={scrollToCalculator}
+               onViewCalendar={() => setShowReentryModal(true)}
+               onViewActionPlan={() => setShowReentryModal(true)}
             />
           )}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
@@ -2385,7 +2362,7 @@ export default function HomePage() {
                   </motion.div>
                 ) : (
                   /* Standard flow: Add Another Trip button + Login to Save */
-                  <div className="flex justify-center space-x-4">
+                  <div className="flex flex-wrap justify-center gap-3">
                     <div className="flex flex-col items-center">
                       <button
                         onClick={addEntry}
@@ -2406,6 +2383,14 @@ export default function HomePage() {
                         </div>
                       )}
                     </div>
+
+                    <Button
+                      variant="outline"
+                      className="min-h-[44px] px-5 text-sm"
+                      onClick={() => setShowReentryModal(true)}
+                    >
+                      Open Re-entry Planner
+                    </Button>
 
                     {totalDays > 0 && (
                       <motion.div
@@ -2452,69 +2437,6 @@ export default function HomePage() {
                 </div>
               )}
 
-              {(rollingTimeline.length > 0 || tripsForCalculation.length > 0) && (
-                <div className="mt-10 grid gap-6 md:grid-cols-2">
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
-                    <h3 className="text-lg font-semibold text-blue-900">Rolling 180-Day Timeline</h3>
-                    <p className="mt-1 text-sm text-blue-700">
-                      Track how each trip influences your allowance over time.
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {rollingTimeline.length === 0 ? (
-                        <p className="text-sm text-blue-700">
-                          Add completed trips to visualize how your 90/180 window evolves.
-                        </p>
-                      ) : (
-                        rollingTimeline.slice(-6).map(item => (
-                          <div key={item.date.toISOString()}>
-                            <div className="flex items-center justify-between text-xs text-blue-900">
-                              <span className="font-medium">{format(item.date, 'MMM d, yyyy')}</span>
-                              <span>
-                                {item.daysUsed}d used • {item.daysRemaining}d left
-                              </span>
-                            </div>
-                            <div className="mt-1 h-2 w-full rounded-full bg-white/70">
-                              <div
-                                className="h-full rounded-full bg-blue-500 transition-all"
-                                style={{ width: `${Math.min(100, (item.daysUsed / 90) * 100)}%` }}
-                              />
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
-                    <h3 className="text-lg font-semibold text-emerald-900">Re-entry Planner</h3>
-                    <p className="mt-1 text-sm text-emerald-700">
-                      Instantly see when you regain days and how long you can stay.
-                    </p>
-                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-emerald-900">
-                      <div className="rounded-lg border border-white/60 bg-white/70 p-3">
-                        <p className="text-[11px] uppercase tracking-wide text-emerald-500">Enter today</p>
-                        <p className="text-base font-semibold">{todayMaxStay} day{todayMaxStay === 1 ? '' : 's'}</p>
-                      </div>
-                      <div className="rounded-lg border border-white/60 bg-white/70 p-3">
-                        <p className="text-[11px] uppercase tracking-wide text-emerald-500">Full reset</p>
-                        <p className="text-base font-semibold">{format(nextFullResetDate, 'MMM d, yyyy')}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 rounded-xl border border-emerald-200 bg-white/80 p-4 text-sm text-emerald-900">
-                      <p className="font-semibold">
-                        Optimal re-entry:{' '}
-                        {format(optimalReentry.date, 'MMM d, yyyy')}
-                      </p>
-                      <p className="mt-1 text-emerald-700">
-                        Stay up to {optimalReentry.maxStay} day{optimalReentry.maxStay === 1 ? '' : 's'} without breaking compliance.
-                      </p>
-                    </div>
-                    <p className="mt-3 text-xs text-emerald-700">
-                      Tip: Enter after {format(nextFullResetDate, 'MMM d, yyyy')} to regain the full 90-day allowance instantly.
-                    </p>
-                  </div>
-                </div>
-              )}
                 </div>
               </div>
         </div>
@@ -2808,6 +2730,110 @@ export default function HomePage() {
                 <p className="text-xs text-gray-500 text-center mt-4 font-dm-sans">
                   No credit card required • Join travelers worldwide
                 </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReentryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6"
+            onClick={() => setShowReentryModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+              onClick={event => event.stopPropagation()}
+            >
+              <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-emerald-500 font-semibold">Re-entry planner</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-1">Plan your safest return</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Use this summary to decide when to leave and come back without breaching the 90/180 rule.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowReentryModal(false)}
+                  className="rounded-full border border-gray-200 p-2 text-gray-400 hover:text-gray-600"
+                  aria-label="Close re-entry planner"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="px-6 py-5 space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+                    <p className="text-[11px] uppercase tracking-wide text-gray-500">Enter today</p>
+                    <p className="mt-2 text-xl font-semibold text-gray-900">
+                      {todayMaxStay} day{todayMaxStay === 1 ? '' : 's'}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-600">
+                      Maximum stay allowed if you enter the Schengen Area right now.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-4">
+                    <p className="text-[11px] uppercase tracking-wide text-gray-500">Full allowance resets on</p>
+                    <p className="mt-2 text-xl font-semibold text-gray-900">
+                      {format(nextFullResetDate, 'MMM d, yyyy')}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-600">
+                      On this date your full 90-day allowance becomes available again.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-4 sm:col-span-2">
+                    <p className="text-[11px] uppercase tracking-wide text-gray-500">Optimal re-entry</p>
+                    <p className="mt-2 text-xl font-semibold text-gray-900">
+                      {format(optimalReentry.date, 'MMM d, yyyy')}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-600">
+                      Return after this date to secure up to {optimalReentry.maxStay} consecutive day
+                      {optimalReentry.maxStay === 1 ? '' : 's'} without violating the rule.
+                    </p>
+                  </div>
+                </div>
+
+                {latestSafeDepartureDate && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-800">
+                    Exit by <span className="font-semibold text-amber-900">{format(latestSafeDepartureDate, 'MMM d, yyyy')}</span>{' '}
+                    to keep your record clean. We recommend booking transport at least 48 hours before this date.
+                  </div>
+                )}
+
+                <div className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
+                  Tip: entering after <span className="font-semibold text-emerald-900">{format(nextFullResetDate, 'MMM d, yyyy')}</span> restores
+                  your full 90-day allowance immediately. Pair this with Smart Alerts to get email reminders ahead of time.
+                </div>
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <Button
+                    variant="ghost"
+                    className="sm:w-auto"
+                    onClick={() => setShowReentryModal(false)}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    className="bg-blue-600 text-white hover:bg-blue-700 sm:w-auto"
+                    onClick={() => {
+                      setShowReentryModal(false)
+                      setShowPremiumUpgradeModal(true)
+                      setPremiumUpgradeTrigger('reentry_planner_modal')
+                    }}
+                  >
+                    Get email reminders
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
