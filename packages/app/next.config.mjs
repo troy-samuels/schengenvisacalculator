@@ -120,12 +120,8 @@ const nextConfig = {
         destination: '/:path*',
         permanent: true,
       },
-      // Strategic domain redirects for EU Border Authority consolidation
-      {
-        source: '/schengen-calculator',
-        destination: '/calculator',
-        permanent: false,
-      },
+      // REMOVED: Broken redirect to non-existent /calculator
+      // /schengen-calculator page exists and should be accessible directly
       {
         source: '/etias-calculator',
         destination: '/etias',
