@@ -2016,7 +2016,6 @@ export default function HomePage() {
               maxStayIfEnterToday={overstayAlert.maxStayIfEnterToday}
               onPlanTrip={scrollToCalculator}
                onViewCalendar={() => setShowReentryModal(true)}
-               onViewActionPlan={() => setShowReentryModal(true)}
             />
           )}
           <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
