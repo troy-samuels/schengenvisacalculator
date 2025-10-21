@@ -163,13 +163,6 @@ export function EnhancedSchema({
         priceCurrency: 'USD',
         availability: 'https://schema.org/InStock'
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        reviewCount: '1247',
-        bestRating: '5',
-        worstRating: '1'
-      },
       featureList: [
         '90/180 day rule calculation',
         'Date overlap prevention',
