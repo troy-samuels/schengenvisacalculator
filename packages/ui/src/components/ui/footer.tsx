@@ -107,7 +107,7 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/ees-preparation"
+                  href="/ees/preparation"
                   className="text-gray-400 hover:text-gray-200 transition-colors text-sm"
                 >
                   Entry/Exit System
@@ -147,22 +147,22 @@ export function Footer({ className = '', onPremiumClick }: FooterProps) {
                 </li>
               )}
               <li>
-                <a 
+                <Link 
                   href="/privacy-policy" 
                   className="flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
                 >
                   <Shield className="w-3 h-3" />
                   <span>Privacy Policy</span>
-                </a>
+                </Link>
               </li>
               <li>
-                <a 
+                <Link 
                   href="/terms-of-service" 
                   className="flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
                 >
                   <FileText className="w-3 h-3" />
                   <span>Terms of Service</span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

@@ -74,12 +74,6 @@ export async function GET() {
       lastmod: currentDate
     },
     {
-      url: '/dashboard',
-      priority: '0.8',
-      changefreq: 'weekly',
-      lastmod: currentDate
-    },
-    {
       url: '/save-progress',
       priority: '0.6',
       changefreq: 'monthly',

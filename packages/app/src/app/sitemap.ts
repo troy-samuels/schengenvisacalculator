@@ -32,13 +32,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/privacy`,
+      url: `${baseUrl}/privacy-policy`,
       lastModified: currentDate,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/terms`,
+      url: `${baseUrl}/terms-of-service`,
       lastModified: currentDate,
       changeFrequency: 'monthly' as const,
       priority: 0.5,
@@ -175,6 +175,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     // Individual blog posts - dynamically generated
+    {
+      url: `${baseUrl}/blog/90-180-day-rule-calculator`,
+      lastModified: new Date('2025-01-10'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/blog/digital-nomad-visa-guide-2025`,
+      lastModified: new Date('2025-01-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/blog/schengen-area-countries-2025`,
+      lastModified: new Date('2025-01-08'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    },
     {
       url: `${baseUrl}/blog/schengen-90-180-rule-explained-2026`,
       lastModified: new Date('2026-01-10'),

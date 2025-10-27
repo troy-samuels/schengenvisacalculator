@@ -8,6 +8,7 @@ export * from "./lib/utils"
 export * from "./hooks/useMediaQuery"
 export * from "./hooks/useFeatureAccess"
 export * from "./hooks/useConversionAnalytics"
+export * from "./hooks/useAnalyticsConsent"
 
 // Shared types
 export * from "./types/calendar"
@@ -51,3 +52,12 @@ export type {
 export * from "./components/PhaseGate"
 export * from "./components/PhaseAwareNavigation"
 export * from "./hooks/useFeaturePhase"
+
+// Analytics Components
+export * from "./components/PrivacyConsentBanner"
+export * from "./components/PrivacySettings"
+export * from "./components/CommunityInsightsDashboard"
+
+// Nationality & Visa Components
+export * from "./components/NationalitySelector"
+export type { Country } from "./components/NationalitySelector"

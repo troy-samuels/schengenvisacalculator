@@ -322,51 +322,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   ]
                 },
                 {
-                  "@type": "FAQPage",
-                  "mainEntity": [
-                    {
-                      "@type": "Question",
-                      "name": "What is the 90/180 day rule for Schengen visas?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "The 90/180 day rule allows visa-free travelers to stay in the Schengen area for up to 90 days within any 180-day period. This rule applies to all 29 Schengen countries and is strictly enforced at border controls. Our calculator helps you track compliance with this rule automatically."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "How does the Schengen calculator work?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Simply enter your trip dates and countries visited. The calculator automatically tracks your days and ensures you don't exceed the 90-day limit within any 180-day rolling period. It prevents date overlaps and provides real-time compliance status for you and your family members."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Is the Schengen calculator free to use?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes, our basic Schengen calculator is completely free with up to 5 trips. Premium features like unlimited trips, family tracking for 4 members, PDF reports, and compliance alerts are available from £5.99 lifetime or £2.99 annually."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "What is EES and how does it affect Schengen travel?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "The Entry/Exit System (EES) is the EU's new biometric border control system launching in 2024. It will automatically track entries and exits, making precise compliance calculation even more critical. Our calculator prepares you for EES implementation."
-                      }
-                    },
-                    {
-                      "@type": "Question",
-                      "name": "Can I track multiple family members?",
-                      "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": "Yes! Our premium plans allow family tracking for up to 4 members with coordinated trip planning, shared compliance monitoring, and family-specific alerts. Perfect for families traveling together to Europe."
-                      }
-                    }
-                  ]
-                },
-                {
                   "@type": "HowTo",
                   "name": "How to Calculate Schengen 90/180 Day Rule Compliance",
                   "description": "Step-by-step guide to using our Schengen calculator for perfect EU travel compliance",

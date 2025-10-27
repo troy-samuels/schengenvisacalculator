@@ -245,7 +245,7 @@ Ready to plan your European adventure? Use our [Schengen Visa Calculator](/calcu
   },
   {
     id: "2",
-    slug: "90-180-day-rule-calculator-never-overstay-schengen-visa",
+    slug: "90-180-day-rule-calculator",
     title: "90/180 Day Rule Calculator: Never Overstay Your Schengen Visa Again",
     description: "Master the Schengen 90/180 day rule with our free calculator. Avoid overstays, plan multiple trips, and stay compliant with EU visa regulations.",
     seoTitle: "Schengen 90/180 Day Rule Calculator - Free Visa Compliance Tool",
@@ -446,7 +446,7 @@ Ready to plan your perfect European journey? Use our [Schengen Visa Calculator](
   },
   {
     id: "3",
-    slug: "digital-nomad-visa-guide-2025-schengen-countries-remote-work",
+    slug: "digital-nomad-visa-guide-2025",
     title: "Digital Nomad Visa Guide 2025: Schengen Countries with Remote Work Permits",
     description: "Complete guide to digital nomad visas in Schengen countries. Compare Italy, Croatia, Estonia, Portugal and more. Income requirements, application process, and tax benefits.",
     seoTitle: "Digital Nomad Visa Europe 2025 - Schengen Countries Guide",
@@ -803,7 +803,7 @@ Ready to make Europe your remote work playground? Start with our compliance calc
   },
   {
     id: "4",
-    slug: "schengen-area-countries-2025-complete-list-travel-tips",
+    slug: "schengen-area-countries-2025",
     title: "Schengen Area Countries 2025: Complete List with Travel Tips",
     description: "Complete guide to all 29 Schengen countries in 2025. Maps, entry requirements, travel tips, and visa-free access for each destination.",
     seoTitle: "Schengen Countries List 2025 - Complete Guide | Travel Tips & Requirements",

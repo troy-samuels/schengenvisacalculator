@@ -201,7 +201,7 @@ export class ContentManagementService {
         type: 'FAQ',
         schema: {
           ...schema,
-          '@type': ['Article', 'FAQPage'],
+          '@type': 'FAQPage',
           mainEntity: this.generateFAQSchema(generated.content)
         }
       }
@@ -213,7 +213,7 @@ export class ContentManagementService {
         type: 'HowTo',
         schema: {
           ...schema,
-          '@type': ['Article', 'HowTo'],
+          '@type': 'HowTo',
           step: this.generateHowToSchema(generated.content)
         }
       }

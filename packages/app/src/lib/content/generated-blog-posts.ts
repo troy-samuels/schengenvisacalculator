@@ -56,7 +56,7 @@ export const GENERATED_BLOG_POSTS: BlogPost[] = [
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Schengen 90/180 Rule Explained: Complete Guide for 2025 Travelers',
         description: 'Master the Schengen 90/180 day rule with step-by-step examples, visual timelines, and practical scenarios for perfect compliance.',
         author: { '@type': 'Organization', name: 'ETIAS Calculator' },
@@ -340,7 +340,7 @@ Remember: With ETIAS launching in 2026, compliance tracking will become even mor
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'What is ETIAS? Everything You Need to Know Before 2026',
         description: 'Complete ETIAS guide covering costs, requirements, application process, and timeline for Europe\'s new travel authorization system.',
         author: { '@type': 'Organization', name: 'ETIAS Calculator' },
@@ -716,7 +716,7 @@ Start planning now by ensuring your passport is valid and familiarizing yourself
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES vs ETIAS: Key Differences Every Traveler Must Understand',
         description: 'Clear comparison of EES and ETIAS systems - timeline, requirements, costs, and what they mean for your European travels.',
         author: { '@type': 'Organization', name: 'ETIAS Calculator' }
@@ -2219,7 +2219,7 @@ Ready to start your European nomad journey? Use our [Schengen Calculator](/schen
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES System 2025: Complete Guide for UK Travelers to EU',
         description: 'Everything UK travelers need to know about the EU Entry/Exit System launching October 12, 2025.',
         author: { '@type': 'Organization', name: 'EU Border Authority' },
@@ -3357,7 +3357,7 @@ The Entry/Exit System launch on October 12, 2025, represents the culmination of 
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES vs ETIAS: Complete Differences Every Traveler Must Understand (2025)',
         datePublished: '2025-10-07',
         author: { '@type': 'Organization', name: 'EU Border Authority' }
@@ -3886,7 +3886,7 @@ EES and ETIAS are two distinct but complementary systems that will transform Eur
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES Family Travel Guide 2025: Preparing Children for Biometric Registration',
         description: 'Complete guide for families traveling to EU after October 12, 2025. How to prepare children for EES biometric registration, age requirements, and family-friendly tips.',
         author: {
@@ -3899,51 +3899,48 @@ EES and ETIAS are two distinct but complementary systems that will transform Eur
           '@type': 'WebPage',
           '@id': 'https://euborder.com/blog/ees-family-travel-guide-2025-preparing-children-biometric-registration'
         },
-        mainEntity: {
-          '@type': 'FAQPage',
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: 'Do children need EES biometric registration?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes, all travelers regardless of age must complete EES biometric registration. However, requirements differ by age: children under 12 only provide facial photos (no fingerprints), while ages 12+ provide both fingerprints and facial images.'
-              }
-            },
-            {
-              '@type': 'Question',
-              name: 'How long does family EES registration take?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Family EES registration typically takes 5-7 minutes per family member at first entry. For a family of 4, expect 20-30 minutes total, though this can extend to 45-60 minutes during peak times or if children are uncooperative.'
-              }
-            },
-            {
-              '@type': 'Question',
-              name: 'Can parents help children during EES registration?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes, parents or legal guardians must be present for children\'s EES registration. Border officers allow parents to assist, comfort, and explain the process to children. For very young children (under 3), officers are trained to work quickly and gently.'
-              }
-            },
-            {
-              '@type': 'Question',
-              name: 'What if my child refuses biometric registration?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'If a child refuses EES registration, the family will not be permitted to enter the EU. Prepare children in advance by explaining the process, showing practice photos, and treating it as an exciting adventure. Border officers are trained to work with children, but cooperation is mandatory for entry.'
-              }
-            },
-            {
-              '@type': 'Question',
-              name: 'Does EES affect family travel time at borders?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes, expect significantly longer border processing for families during the first 3-6 months of EES (October 2025 - March 2026). Initial registration takes longer than subsequent entries. Plan for 60-90 minute buffer at airports for family border processing.'
-              }
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name: 'Do children need EES biometric registration?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes, all travelers regardless of age must complete EES biometric registration. However, requirements differ by age: children under 12 only provide facial photos (no fingerprints), while ages 12+ provide both fingerprints and facial images.'
             }
-          ]
-        }
+          },
+          {
+            '@type': 'Question',
+            name: 'How long does family EES registration take?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Family EES registration typically takes 5-7 minutes per family member at first entry. For a family of 4, expect 20-30 minutes total, though this can extend to 45-60 minutes during peak times or if children are uncooperative.'
+            }
+          },
+          {
+            '@type': 'Question',
+            name: 'Can parents help children during EES registration?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes, parents or legal guardians must be present for children\'s EES registration. Border officers allow parents to assist, comfort, and explain the process to children. For very young children (under 3), officers are trained to work quickly and gently.'
+            }
+          },
+          {
+            '@type': 'Question',
+            name: 'What if my child refuses biometric registration?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'If a child refuses EES registration, the family will not be permitted to enter the EU. Prepare children in advance by explaining the process, showing practice photos, and treating it as an exciting adventure. Border officers are trained to work with children, but cooperation is mandatory for entry.'
+            }
+          },
+          {
+            '@type': 'Question',
+            name: 'Does EES affect family travel time at borders?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: 'Yes, expect significantly longer border processing for families during the first 3-6 months of EES (October 2025 - March 2026). Initial registration takes longer than subsequent entries. Plan for 60-90 minute buffer at airports for family border processing.'
+            }
+          }
+        ]
       }
     },
     internalLinks: [
@@ -4593,7 +4590,7 @@ The EU Entry/Exit System represents a significant change for families traveling 
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES Country Comparison 2025: France vs Spain vs Germany Border Processing',
         description: 'Compare EES implementation across France, Spain, and Germany. Processing times, infrastructure readiness, best entry points, and which country will be fastest.',
         author: {
@@ -5120,7 +5117,7 @@ The EES system launches uniformly across the EU, but country-level implementatio
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Digital Nomads and EES 2025: How the 90/180 Rule Changes with Automatic Tracking',
         description: 'Complete guide for digital nomads navigating EES after October 12, 2025. How automatic tracking changes the 90/180 rule and compliance strategies.',
         author: {
@@ -5706,7 +5703,7 @@ EES brings certainty. The 90/180 rule is now enforced perfectly, but that means 
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Brexit and EES 2025: Complete Guide for UK Travelers to EU Post-Brexit',
         description: 'How Brexit and EES combine to change UK travel to EU. Complete guide for British travelers navigating post-Brexit EU travel.',
         author: {
@@ -6316,7 +6313,7 @@ Brexit fundamentally changed UK-EU travel, and EES cements the new reality. UK c
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES Overstay Consequences 2025: What Happens If You Exceed 90/180 Days',
         description: 'Complete guide to EES overstay penalties, fines, entry bans, and legal consequences after October 12, 2025.',
         author: {
@@ -6809,7 +6806,7 @@ EES makes overstaying the Schengen 90/180 limit virtually impossible to get away
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'HowTo', 'FAQPage'],
+        '@type': 'HowTo',
         headline: 'EES Airport Guide 2025: Step-by-Step First-Time Registration & What to Expect',
         description: 'Complete step-by-step walkthrough of EES registration at EU airports for first-time travelers.',
         author: {
@@ -7376,7 +7373,7 @@ The EES airport process adds 5-10 minutes to first-time border crossing but make
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Complete Guide to Schengen Area 2025: 90/180 Day Rule for Travelers & Digital Nomads',
         description: 'Master the Schengen 90/180 day rule: how it works, calculating days, strategies, and avoiding overstays.',
         author: {
@@ -7888,7 +7885,7 @@ The Schengen 90/180 day rule is straightforward once you understand the rolling 
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'ETIAS 2026: Complete Guide to European Travel Authorization & How It Differs from EES',
         description: 'Complete ETIAS guide: what it is, application process, costs, validity, and EES vs ETIAS differences.',
         author: {
@@ -8470,7 +8467,7 @@ ETIAS represents a minor administrative step for European travel—€7 and 10 m
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Americans Traveling to Europe 2025: Complete EES Guide for US Citizens After October 12',
         description: 'Complete guide for American travelers: EES requirements, biometric registration, costs, and what changes after October 12, 2025.',
         author: {
@@ -9024,7 +9021,7 @@ The Entry/Exit System represents a small change for American travelers to Europe
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Cruise Passengers and EES 2025: How Entry/Exit System Affects European Cruises',
         description: 'Complete guide for cruise passengers on EES registration, shore excursions, and 90/180 day tracking.',
         author: {
@@ -9550,7 +9547,7 @@ EES adds a registration step for cruise passengers but doesn't fundamentally cha
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'Christmas Travel Europe 2025: Complete EES Guide for Holiday Season',
         description: 'Complete guide for Christmas travelers: EES during holidays, airport delays, Christmas markets, and winter travel tips.',
         author: {
@@ -10052,7 +10049,7 @@ Christmas 2025 in Europe remains magical and accessible despite EES. The system 
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'What is the EES System? Complete EU Entry/Exit System Guide 2025',
         description: 'Everything you need to know about the EU Entry/Exit System (EES) launching October 12, 2025.',
         author: { '@type': 'Organization', name: 'EU Border Authority' },
@@ -10415,7 +10412,7 @@ The Entry/Exit System modernizes EU border management for the 21st century. Whil
       type: 'Article',
       schema: {
         '@context': 'https://schema.org',
-        '@type': ['Article', 'FAQPage'],
+        '@type': 'FAQPage',
         headline: 'EES vs ETIAS: What\'s the Difference? Complete 2025 Comparison',
         description: 'Complete comparison of EES and ETIAS systems for EU travel.',
         author: { '@type': 'Organization', name: 'EU Border Authority' },

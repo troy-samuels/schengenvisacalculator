@@ -120,6 +120,31 @@ const nextConfig = {
         destination: '/:path*',
         permanent: true,
       },
+      {
+        source: '/calculator',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/ees-preparation',
+        destination: '/ees/preparation',
+        permanent: true,
+      },
+      {
+        source: '/blog/90-180-day-rule-calculator-never-overstay-schengen-visa',
+        destination: '/blog/90-180-day-rule-calculator',
+        permanent: true,
+      },
+      {
+        source: '/blog/digital-nomad-visa-guide-2025-schengen-countries-remote-work',
+        destination: '/blog/digital-nomad-visa-guide-2025',
+        permanent: true,
+      },
+      {
+        source: '/blog/schengen-area-countries-2025-complete-list-travel-tips',
+        destination: '/blog/schengen-area-countries-2025',
+        permanent: true,
+      },
       // REMOVED: Broken redirect to non-existent /calculator
       // /schengen-calculator page exists and should be accessible directly
       {
