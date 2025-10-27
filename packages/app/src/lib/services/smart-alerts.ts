@@ -9,7 +9,11 @@
 import { SchengenTrip } from '../types/schengen-trip'
 import { UserStatus } from '../types/user-status'
 import { RobustSchengenCalculator } from '@schengen/calculator'
-import { format, addDays, differenceInDays, isBefore, isAfter } from 'date-fns'
+import { format } from 'date-fns/format'
+import { addDays } from 'date-fns/addDays'
+import { differenceInDays } from 'date-fns/differenceInDays'
+import { isBefore } from 'date-fns/isBefore'
+import { isAfter } from 'date-fns/isAfter'
 
 export interface SmartAlert {
   id: string

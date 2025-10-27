@@ -30,7 +30,7 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface SmartAlertsPanelProps {

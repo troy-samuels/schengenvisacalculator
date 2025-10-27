@@ -15,9 +15,10 @@ import {
   PDFReportGenerator, 
   ComplianceReportData, 
   ReportOptions,
-  usePDFReportGenerator 
+  usePDFReportGenerator
 } from '../services/pdf-report-generator'
-import { format, subDays } from 'date-fns'
+import { format } from 'date-fns/format'
+import { subDays } from 'date-fns/subDays'
 
 interface PDFExportButtonProps {
   userStatus: UserStatus

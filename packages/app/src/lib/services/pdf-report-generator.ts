@@ -20,7 +20,10 @@ const loadPDFLibraries = async () => {
 };
 import { SchengenTrip } from '../types/schengen-trip'
 import { UserProfile } from '../types/user-status'
-import { format, differenceInDays, startOfDay, endOfDay } from 'date-fns'
+import { format } from 'date-fns/format'
+import { differenceInDays } from 'date-fns/differenceInDays'
+import { startOfDay } from 'date-fns/startOfDay'
+import { endOfDay } from 'date-fns/endOfDay'
 
 // Extend jsPDF with autoTable
 interface jsPDFWithPlugin {

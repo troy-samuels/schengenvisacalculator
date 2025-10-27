@@ -1,0 +1,70 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flagWiggle {
+  0%, 100% {
+    transform: rotate(-1.5deg) scale(1);
+  }
+  50% {
+    transform: rotate(1.5deg) scale(1.02);
+  }
+}
+
+.heroFadeIn {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.heroFadeInDelay1 {
+  animation: fadeInUp 0.6s ease-out 0.1s both;
+}
+
+.heroFadeInDelay2 {
+  animation: fadeInUp 0.6s ease-out 0.15s both;
+}
+
+.heroFadeInDelay3 {
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.heroFadeInDelay4 {
+  animation: fadeInUp 0.6s ease-out 0.25s both;
+}
+
+.heroFadeInDelay5 {
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.heroFadeInDelay6 {
+  animation: fadeInUp 0.6s ease-out 0.35s both;
+}
+
+.flagWiggle {
+  animation: flagWiggle 3s ease-in-out infinite;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .heroFadeIn,
+  .heroFadeInDelay1,
+  .heroFadeInDelay2,
+  .heroFadeInDelay3,
+  .heroFadeInDelay4,
+  .heroFadeInDelay5,
+  .heroFadeInDelay6 {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .flagWiggle {
+    animation: none;
+  }
+}

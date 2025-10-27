@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { format, isFuture } from 'date-fns'
+import { format } from 'date-fns/format'
+import { isFuture } from 'date-fns/isFuture'
 import { Calendar, Plus, Trash2, ChevronRight, LogOut, User } from 'lucide-react'
 import { toast } from 'sonner'
 import {

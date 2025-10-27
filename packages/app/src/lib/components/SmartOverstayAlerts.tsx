@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { format } from 'date-fns'
+import { format } from 'date-fns/format'
 import { AlertCircle, AlertTriangle, Shield, Plane, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button, cn } from '@schengen/ui'
 
